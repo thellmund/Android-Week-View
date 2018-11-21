@@ -202,7 +202,14 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
         Calendar endTime = (Calendar) this.endTime.clone();
         endTime.add(Calendar.MILLISECOND, -1);
 
-        if (!isSameDay(endTime)) {
+        if(DateUtils.isAtStartOfNewDay(this.getStartTime(), endTime)) {
+            // Set end time to 1 minute before midnight to ensure the EventRect will get drawn correctly
+            endTime.set(Calendar.HOUR_OF_DAY, 23);
+            endTime.set(Calendar.MINUTE, 59);
+            WeekViewEvent<T> event1 = new WeekViewEvent<>(id, title, startTime, endTime, location, isAllDay);
+            event1.setColor(this.getColor());
+            events.add(event1);
+        }else if (!isSameDay(endTime)) {
             endTime = (Calendar) startTime.clone();
             endTime.set(Calendar.HOUR_OF_DAY, 23);
             endTime.set(Calendar.MINUTE, 59);
