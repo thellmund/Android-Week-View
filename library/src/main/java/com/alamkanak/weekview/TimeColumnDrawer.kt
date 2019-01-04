@@ -27,7 +27,9 @@ private class TimeColumnDrawer(
         // The original header height
         val headerHeight = top
 
-        for (i in 1..HOURS_PER_DAY) {
+        val startHour = if (config.showMidnightHour) 0 else 1
+
+        for (i in startHour..HOURS_PER_DAY) {
             val headerBottomMargin = drawingConfig.headerMarginBottom
             val heightOfHour = (config.hourHeight * i).toFloat()
             top = headerHeight + drawingConfig.currentOrigin.y + heightOfHour + headerBottomMargin
@@ -38,7 +40,10 @@ private class TimeColumnDrawer(
 
             if (top < bottom) {
                 val x = drawingConfig.timeTextWidth + config.timeColumnPadding
-                val y = top + drawingConfig.timeTextHeight / 2
+                var y = top + drawingConfig.timeTextHeight / 2
+
+                y += if (i==0) drawingConfig.timeTextHeight / 2f + config.hourSeparatorStrokeWidth else 0f
+
                 canvas.drawText(time, x, y, drawingConfig.timeTextPaint)
             }
         }
