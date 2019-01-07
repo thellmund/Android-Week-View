@@ -31,7 +31,9 @@ private class TimeColumnDrawer(
 
         val hourLines = FloatArray(HOURS_PER_DAY * 4)
 
-        for (i in startHour..HOURS_PER_DAY) {
+        val hourStep = config.timeColumnIntervalDisplayed
+
+        for (i in startHour..HOURS_PER_DAY step hourStep) {
             val headerBottomMargin = drawingConfig.headerMarginBottom
             val heightOfHour = (config.hourHeight * i).toFloat()
             top = headerHeight + drawingConfig.currentOrigin.y + heightOfHour + headerBottomMargin

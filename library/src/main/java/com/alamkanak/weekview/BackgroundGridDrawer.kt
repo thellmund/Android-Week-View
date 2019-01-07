@@ -73,24 +73,28 @@ internal class BackgroundGridDrawer(
         val height = WeekView.getViewHeight()
         val headerHeight = drawConfig.headerHeight + config.headerRowPadding * 2
 
+        val hourStep = config.timeColumnIntervalDisplayed
+
         var i = 0
-        for (hour in 1 until HOURS_PER_DAY) {
-            val heightOfHour = (config.hourHeight * hour).toFloat()
-            val top = headerHeight + drawConfig.currentOrigin.y + heightOfHour
+        for (hour in 0 until HOURS_PER_DAY step hourStep) {
+            if (hour > 0) {
+                val heightOfHour = (config.hourHeight * hour).toFloat()
+                val top = headerHeight + drawConfig.currentOrigin.y + heightOfHour
 
-            val widthPerDay = config.totalDayWidth
-            val separatorWidth = config.hourSeparatorStrokeWidth.toFloat()
+                val widthPerDay = config.totalDayWidth
+                val separatorWidth = config.hourSeparatorStrokeWidth.toFloat()
 
-            val isNotHiddenByHeader = top > headerHeight - separatorWidth
-            val isWithinVisibleRange = top < height
-            val isVisibleHorizontally = startPixel + widthPerDay - startX > 0
+                val isNotHiddenByHeader = top > headerHeight - separatorWidth
+                val isWithinVisibleRange = top < height
+                val isVisibleHorizontally = startPixel + widthPerDay - startX > 0
 
-            if (isNotHiddenByHeader && isWithinVisibleRange && isVisibleHorizontally) {
-                hourLines[i * 4] = startX
-                hourLines[i * 4 + 1] = top
-                hourLines[i * 4 + 2] = startPixel + widthPerDay
-                hourLines[i * 4 + 3] = top
-                i++
+                if (isNotHiddenByHeader && isWithinVisibleRange && isVisibleHorizontally) {
+                    hourLines[i * 4] = startX
+                    hourLines[i * 4 + 1] = top
+                    hourLines[i * 4 + 2] = startPixel + widthPerDay
+                    hourLines[i * 4 + 3] = top
+                    i++
+                }
             }
         }
 

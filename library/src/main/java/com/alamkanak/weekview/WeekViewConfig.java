@@ -29,6 +29,7 @@ public class WeekViewConfig {
     int timeColumnTextSize = 12;
     boolean showMidnightHour = false;
     boolean showTimeColumnHourSeparator = false;
+    int timeColumnIntervalDisplayed = 1;
 
     // Time column separator
     boolean showTimeColumnSeparator = false;
@@ -119,6 +120,7 @@ public class WeekViewConfig {
             timeColumnBackgroundColor = a.getColor(R.styleable.WeekView_timeColumnBackgroundColor, timeColumnBackgroundColor);
             showMidnightHour = a.getBoolean(R.styleable.WeekView_showMidnightHour, showMidnightHour);
             showTimeColumnHourSeparator = a.getBoolean(R.styleable.WeekView_showTimeColumnHourSeparator, showTimeColumnHourSeparator);
+            timeColumnIntervalDisplayed = a.getInteger(R.styleable.WeekView_timeColumnIntervalDisplayed, timeColumnIntervalDisplayed);
 
             // Time column separator
             showTimeColumnSeparator = a.getBoolean(R.styleable.WeekView_showTimeColumnSeparator, showTimeColumnSeparator);
