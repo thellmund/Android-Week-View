@@ -29,6 +29,8 @@ private class TimeColumnDrawer(
 
         val startHour = if (config.showMidnightHour) 0 else 1
 
+        val hourLines = FloatArray(HOURS_PER_DAY * 4)
+
         for (i in startHour..HOURS_PER_DAY) {
             val headerBottomMargin = drawingConfig.headerMarginBottom
             val heightOfHour = (config.hourHeight * i).toFloat()
@@ -44,7 +46,22 @@ private class TimeColumnDrawer(
 
                 y += if (i==0) drawingConfig.timeTextHeight / 2f + config.hourSeparatorStrokeWidth else 0f
 
+                // if we show the hour separator in the time column, we move the time lable below
+                // the separator
+                if (i!=0 && config.showTimeColumnHourSeparator) {
+                    y += drawingConfig.timeTextHeight / 2 + config.hourSeparatorStrokeWidth
+                }
+
                 canvas.drawText(time, x, y, drawingConfig.timeTextPaint)
+
+                if (config.showTimeColumnHourSeparator && i > 0) {
+                    val j = i-1
+                    val  yHoursLines = top
+                    hourLines[j * 4] = 0f
+                    hourLines[j * 4 + 1] = yHoursLines
+                    hourLines[j * 4 + 2] = drawingConfig.timeColumnWidth
+                    hourLines[j * 4 + 3] = yHoursLines
+                }
             }
         }
 
@@ -52,6 +69,11 @@ private class TimeColumnDrawer(
         if (config.showTimeColumnSeparator) {
             val lineX = drawingConfig.timeColumnWidth - config.timeColumnSeparatorStrokeWidth
             canvas.drawLine(lineX, headerHeight, lineX, bottom.toFloat(), drawingConfig.timeColumnSeparatorPaint)
+        }
+
+        // Draw the hour separator inside the time column
+        if (config.showTimeColumnHourSeparator) {
+            canvas.drawLines(hourLines, drawingConfig.hourSeparatorPaint)
         }
 
         canvas.restore()
