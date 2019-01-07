@@ -30,6 +30,7 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
     private String location;
     private int color;
     private boolean isAllDay;
+    private int textColor = -1;
 
     private T data;
 
@@ -164,6 +165,14 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
 
     boolean isSameDay(WeekViewEvent other) {
         return DateUtils.isSameDay(startTime, other.startTime);
+    }
+
+    public int getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
     }
 
     boolean collidesWith(WeekViewEvent other) {

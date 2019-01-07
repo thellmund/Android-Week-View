@@ -113,6 +113,11 @@ class EventChip<T> {
 
         // Get text dimensions.
         final TextPaint textPaint = config.drawingConfig.eventTextPaint;
+
+        if (event.getTextColor() != -1) {
+            textPaint.setColor(event.getTextColor());
+        }
+
         StaticLayout textLayout = new StaticLayout(stringBuilder,
                 textPaint, availableWidth, ALIGN_NORMAL, 1.0f, 0.0f, false);
 
