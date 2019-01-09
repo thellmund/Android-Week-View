@@ -58,7 +58,7 @@ class WeekViewDrawingConfig {
     Paint timeColumnBackgroundPaint;
     boolean hasEventInHeader;
 
-    int newHourHeight = -1;
+    float newHourHeight = -1;
 
     DateTimeInterpreter dateTimeInterpreter;
 
@@ -166,7 +166,7 @@ class WeekViewDrawingConfig {
       }
 
       if (config.dynamicHourHeight) {
-          config.hourHeight = (int)((WeekView.getViewHeight() - headerHeight) / HOURS_PER_DAY);
+          config.hourHeight = (WeekView.getViewHeight() - headerHeight) / HOURS_PER_DAY;
           newHourHeight = config.hourHeight;
       }
   }

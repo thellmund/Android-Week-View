@@ -112,7 +112,7 @@ public final class WeekView<T> extends View
         WeekView.height = height;
 
         if (config.dynamicHourHeight) {
-          config.hourHeight = (int)((height - drawConfig.headerHeight) / HOURS_PER_DAY);
+          config.hourHeight = (height - drawConfig.headerHeight) / HOURS_PER_DAY;
           drawConfig.newHourHeight = config.hourHeight;
         }
     }
@@ -649,11 +649,11 @@ public final class WeekView<T> extends View
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int getHourHeight() {
+    public float getHourHeight() {
         return config.hourHeight;
     }
 
-    public void setHourHeight(int hourHeight) {
+    public void setHourHeight(float hourHeight) {
         config.drawingConfig.newHourHeight = hourHeight;
         invalidate();
     }
@@ -1049,13 +1049,13 @@ public final class WeekView<T> extends View
         }
 
         hour = min(hour, HOURS_PER_DAY);
-        int verticalOffset = config.hourHeight * hour;
+        float verticalOffset = config.hourHeight * hour;
 
         final float dayHeight = config.getTotalDayHeight();
         final double viewHeight = getHeight();
 
         final double desiredOffset = dayHeight - viewHeight;
-        verticalOffset = (int) min(desiredOffset, verticalOffset);
+        verticalOffset = min((float)desiredOffset, verticalOffset);
 
         config.drawingConfig.currentOrigin.y = -verticalOffset;
         invalidate();

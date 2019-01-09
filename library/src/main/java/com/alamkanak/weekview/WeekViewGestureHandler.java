@@ -82,7 +82,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
                 float hourHeight = WeekViewGestureHandler.this.config.hourHeight;
-                drawingConfig.newHourHeight = round(hourHeight * detector.getScaleFactor());
+                drawingConfig.newHourHeight = hourHeight * detector.getScaleFactor();
                 listener.onScaled();
                 return true;
             }
@@ -196,7 +196,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         final int minX = Integer.MIN_VALUE;
         final int maxX = Integer.MAX_VALUE;
 
-        final int dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
+        final float dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
         final int viewHeight = WeekView.getViewHeight();
 
         final int minY = (int) (dayHeight + drawingConfig.headerHeight - viewHeight) * (-1);
@@ -215,7 +215,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         final int minX = Integer.MIN_VALUE;
         final int maxX = Integer.MAX_VALUE;
 
-        final int dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
+        final float dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
         final int viewHeight = WeekView.getViewHeight();
 
         final int minY = (int) (dayHeight + drawingConfig.headerHeight - viewHeight) * (-1);

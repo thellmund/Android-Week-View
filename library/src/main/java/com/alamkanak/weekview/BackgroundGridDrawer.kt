@@ -71,7 +71,7 @@ internal class BackgroundGridDrawer(
 
         var i = 0
         for (hour in hourStep until HOURS_PER_DAY step hourStep) {
-            val heightOfHour = (config.hourHeight * hour).toFloat()
+            val heightOfHour = (config.hourHeight * hour)
             val top = drawConfig.headerHeight + drawConfig.currentOrigin.y + heightOfHour
 
             val widthPerDay = config.totalDayWidth

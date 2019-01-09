@@ -32,7 +32,7 @@ private class TimeColumnDrawer(
         val hourStep = config.timeColumnHoursInterval
 
         for (i in startHour..HOURS_PER_DAY step hourStep) {
-            val heightOfHour = (config.hourHeight * i).toFloat()
+            val heightOfHour = (config.hourHeight * i)
             top = drawingConfig.headerHeight + drawingConfig.currentOrigin.y + heightOfHour
 
             // Draw the text if its y position is not outside of the visible area. The pivot point
