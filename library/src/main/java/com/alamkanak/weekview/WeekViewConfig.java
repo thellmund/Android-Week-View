@@ -259,10 +259,7 @@ public class WeekViewConfig {
 
     float getTotalDayHeight() {
         float dayHeight = hourHeight * Constants.HOURS_PER_DAY;
-        float headerHeight = drawingConfig.headerHeight;
-        float totalHeaderPadding = headerRowPadding * 2;
-        float headerBottomMargin = drawingConfig.headerMarginBottom;
-        return dayHeight + headerHeight + totalHeaderPadding + headerBottomMargin;
+        return dayHeight + drawingConfig.headerHeight;
     }
 
     boolean isSingleDay() {

@@ -106,12 +106,7 @@ class EventsDrawer<T> {
         // Hide events when they are in the top left corner
         final Paint headerBackground = drawingConfig.headerBackgroundPaint;
 
-        float headerRowBottomLine = 0;
-        if (config.showHeaderRowBottomLine) {
-            headerRowBottomLine = config.headerRowBottomLineWidth;
-        }
-
-        final float height = drawingConfig.headerHeight + config.headerRowPadding * 2 - headerRowBottomLine;
+        final float height = drawingConfig.headerTextHeight + config.headerRowPadding * 2;
         final float width = drawingConfig.timeTextWidth + config.timeColumnPadding * 2;
 
         canvas.clipRect(0, 0, width, height);
@@ -136,15 +131,11 @@ class EventsDrawer<T> {
     }
 
     private boolean isValidSingleEventRect(RectF rect) {
-        final float totalHeaderHeight = drawingConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawingConfig.headerMarginBottom;
-
         return rect.left < rect.right
                 && rect.left < WeekView.getViewWidth()
                 && rect.top < WeekView.getViewHeight()
                 && rect.right > drawingConfig.timeColumnWidth
-                && rect.bottom > totalHeaderHeight;
+                && rect.bottom > drawingConfig.headerHeight;
     }
 
     private boolean isValidAllDayEventRect(RectF rect) {

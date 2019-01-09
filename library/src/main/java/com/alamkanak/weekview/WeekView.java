@@ -202,11 +202,7 @@ public final class WeekView<T> extends View
         final int height = WeekView.getViewHeight();
 
         // Clip to paint events only.
-        final float headerHeight = drawConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawConfig.headerMarginBottom;
-
-        canvas.clipRect(drawConfig.timeColumnWidth, headerHeight, width, height);
+        canvas.clipRect(drawConfig.timeColumnWidth, drawConfig.headerHeight, width, height);
     }
 
     @Override
