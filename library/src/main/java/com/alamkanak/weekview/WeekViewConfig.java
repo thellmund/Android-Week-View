@@ -75,6 +75,7 @@ public class WeekViewConfig {
     int minHourHeight;
     int maxHourHeight;
     int effectiveMinHourHeight;
+    boolean dynamicHourHeight;
 
     // Now line
     boolean showNowLine;
@@ -166,6 +167,7 @@ public class WeekViewConfig {
             minHourHeight = a.getDimensionPixelSize(R.styleable.WeekView_minHourHeight, 0);
             maxHourHeight = a.getDimensionPixelSize(R.styleable.WeekView_maxHourHeight, 250);
             effectiveMinHourHeight = minHourHeight;
+            dynamicHourHeight = a.getBoolean(R.styleable.WeekView_dynamicHourHeight, false);
 
             // Now line
             showNowLine = a.getBoolean(R.styleable.WeekView_showNowLine, false);

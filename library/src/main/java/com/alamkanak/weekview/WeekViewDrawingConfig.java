@@ -11,6 +11,7 @@ import android.text.TextPaint;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import static com.alamkanak.weekview.Constants.HOURS_PER_DAY;
 import static com.alamkanak.weekview.DateUtils.today;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -163,6 +164,11 @@ class WeekViewDrawingConfig {
       if (hasEventInHeader) {
           headerHeight += config.eventPadding * 2 + config.allDayEventHeight;
       }
+
+      if (config.dynamicHourHeight) {
+          config.hourHeight = (int)((WeekView.getViewHeight() - headerHeight) / HOURS_PER_DAY);
+          newHourHeight = config.hourHeight;
+      }
   }
 
   void moveCurrentOriginIfFirstDraw(WeekViewConfig config) {
@@ -183,7 +189,7 @@ class WeekViewDrawingConfig {
     }
 
     void refreshAfterZooming(WeekViewConfig config) {
-        if (newHourHeight > 0) {
+        if (newHourHeight > 0 && !config.dynamicHourHeight) {
             if (newHourHeight < config.effectiveMinHourHeight) {
                 newHourHeight = config.effectiveMinHourHeight;
             } else if (newHourHeight > config.maxHourHeight) {
