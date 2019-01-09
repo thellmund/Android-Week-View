@@ -44,7 +44,7 @@ private class TimeColumnDrawer(
 
             if (top < bottom) {
                 val x = drawingConfig.timeTextWidth + config.timeColumnPadding
-                var y = top + drawingConfig.timeTextHeight / 2
+                var y = top + drawingConfig.timeTextHeight / 2 + config.timeColumnTextTopPadding
 
                 y += if (i==0) drawingConfig.timeTextHeight / 2f + config.hourSeparatorStrokeWidth else 0f
 

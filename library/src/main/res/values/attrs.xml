@@ -29,6 +29,7 @@
         <attr name="showMidnightHour" format="boolean" />
         <attr name="showTimeColumnHourSeparator" format="boolean" />
         <attr name="timeColumnIntervalDisplayed" format="integer" />
+        <attr name="timeColumnTextTopPadding" format="dimension" />
 
         <!-- Time column separator -->
         <attr name="showTimeColumnSeparator" format="boolean" />
