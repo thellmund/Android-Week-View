@@ -80,8 +80,7 @@ class WeekViewDrawingConfig {
         headerTextPaint.setTextAlign(Paint.Align.CENTER);
         headerTextPaint.setTextSize(config.headerRowTextSize);
         headerTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        headerTextPaint.getTextBounds("00 PM", 0, "00 PM".length(), rect);
-        headerTextHeight = rect.height();
+        headerTextHeight = headerTextPaint.descent() - headerTextPaint.ascent();
 
         // Prepare header background paint.
         headerBackgroundPaint = new Paint();
@@ -162,7 +161,7 @@ class WeekViewDrawingConfig {
           headerHeight += config.headerRowBottomLineWidth;
       }
       if (hasEventInHeader) {
-          headerHeight += config.eventPadding * 2 + config.allDayEventHeight;
+          headerHeight += config.allDayEventHeight;
       }
 
       if (config.dynamicHourHeight) {

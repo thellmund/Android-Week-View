@@ -183,28 +183,23 @@ class EventsDrawer<T> {
 
         final int lineHeight = textLayout.getHeight() / textLayout.getLineCount();
 
-        // For an all day event, we display just one line
-        final int chipHeight = lineHeight + (config.eventPadding * 2);
-        eventChip.rect.bottom = eventChip.rect.top + chipHeight;
         // Compute the available height on the right size of the chip
-        final int availableHeight = (int) (eventChip.rect.bottom - top - config.eventPadding * 2);
+        final int availableHeight = (int) (bottom - top - config.eventPadding * 2);
 
-        if (availableHeight >= lineHeight) {
-            int availableLineCount = availableHeight / lineHeight;
-            do {
-                // Ellipsize text to fit into event rect.
-                final int availableArea = availableLineCount * availableWidth;
-                final CharSequence ellipsized =
-                        TextUtils.ellipsize(stringBuilder, textPaint, availableArea, TruncateAt.END);
-                final int width = (int) (right - left - config.eventPadding * 2);
-                textLayout = new StaticLayout(ellipsized, textPaint, width, ALIGN_NORMAL, 1.0f, 0.0f, false);
+        int availableLineCount = availableHeight / lineHeight;
+        do {
+            // Ellipsize text to fit into event rect.
+            final int availableArea = availableLineCount * availableWidth;
+            final CharSequence ellipsized =
+                    TextUtils.ellipsize(stringBuilder, textPaint, availableArea, TruncateAt.END);
+            final int width = (int) (right - left - config.eventPadding * 2);
+            textLayout = new StaticLayout(ellipsized, textPaint, width, ALIGN_NORMAL, 1.0f, 0.0f, false);
 
-                // Reduce line count.
-                availableLineCount--;
+            // Reduce line count.
+            availableLineCount--;
 
-                // Repeat until text is short enough.
-            } while (textLayout.getHeight() > availableHeight);
-        }
+            // Repeat until text is short enough.
+        } while (textLayout.getHeight() > availableHeight && availableLineCount > 0);
 
         return textLayout;
     }
