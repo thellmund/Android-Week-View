@@ -45,6 +45,7 @@ public class WeekViewConfig {
     int headerRowTextSize;
     int headerRowPadding;
     int todayHeaderTextColor;
+    int headerMarginBottom;
 
     // Event chips
     int allDayEventHeight;
@@ -137,6 +138,7 @@ public class WeekViewConfig {
             headerRowTextSize = a.getDimensionPixelSize(R.styleable.WeekView_headerRowTextSize, Defaults.textSize(context));
             headerRowPadding = a.getDimensionPixelSize(R.styleable.WeekView_headerRowPadding, 10);
             todayHeaderTextColor = a.getColor(R.styleable.WeekView_todayHeaderTextColor, Defaults.HIGHLIGHT_COLOR);
+            headerMarginBottom = a.getDimensionPixelSize(R.styleable.WeekView_headerMarginBottom, 0);
 
             // Event chips
             allDayEventHeight = a.getDimensionPixelSize(R.styleable.WeekView_allDayEventHeight, 100);

@@ -151,6 +151,8 @@ class WeekViewDrawingConfig {
         eventTextPaint.setColor(config.eventTextColor);
         eventTextPaint.setTextSize(config.eventTextSize);
 
+        headerMarginBottom = config.headerMarginBottom;
+
         hasEventInHeader = false;
         refreshHeaderHeight(config);
     }
