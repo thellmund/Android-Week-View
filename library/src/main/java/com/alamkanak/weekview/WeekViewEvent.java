@@ -22,6 +22,7 @@ import static java.util.Calendar.DATE;
 public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekViewEvent> {
 
     private static final int DEFAULT_COLOR = Color.parseColor("#9fc6e7");
+    static final int DEFAULT_TEXT_COLOR = Color.BLACK; // Default color of WeekViewConfig.eventTextColor
 
     private long id;
     private String title;
@@ -30,7 +31,7 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
     private String location;
     private int color;
     private boolean isAllDay;
-    private int textColor = -1;
+    private int textColor = DEFAULT_TEXT_COLOR;
 
     private T data;
 
