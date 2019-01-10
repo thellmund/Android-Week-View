@@ -73,11 +73,10 @@ internal class BackgroundGridDrawer(
         val height = WeekView.getViewHeight()
         val headerHeight = drawConfig.headerHeight + config.headerRowPadding * 2
 
-        val hourStep = config.timeColumnIntervalDisplayed
+        val hourStep = config.timeColumnHoursInterval
 
         var i = 0
-        for (hour in 0 until HOURS_PER_DAY step hourStep) {
-            if (hour > 0) {
+        for (hour in hourStep until HOURS_PER_DAY step hourStep) {
                 val heightOfHour = (config.hourHeight * hour).toFloat()
                 val top = headerHeight + drawConfig.currentOrigin.y + heightOfHour
 
@@ -95,7 +94,6 @@ internal class BackgroundGridDrawer(
                     hourLines[i * 4 + 3] = top
                     i++
                 }
-            }
         }
 
         canvas.drawLines(hourLines, drawConfig.hourSeparatorPaint)
