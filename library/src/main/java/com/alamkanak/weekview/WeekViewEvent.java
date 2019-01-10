@@ -176,6 +176,10 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
         this.textColor = textColor;
     }
 
+    public int getTextColorOrDefault(WeekViewConfig config) {
+        return (textColor != DEFAULT_TEXT_COLOR) ? textColor : config.eventTextColor;
+    }
+
     boolean collidesWith(WeekViewEvent other) {
         long thisStart = startTime.getTimeInMillis();
         long thisEnd = endTime.getTimeInMillis();
@@ -265,6 +269,7 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
 
         WeekViewEvent<T> firstEvent = new WeekViewEvent<>(id, title,
                 startTime, firstEventEnd, location, color, isAllDay, data);
+        firstEvent.setTextColor(textColor);
         results.add(firstEvent);
 
         // Get event for last day
@@ -273,6 +278,7 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
 
         WeekViewEvent<T> lastEvent = new WeekViewEvent<>(id, title,
                 lastEventStart, endTime, location, color, isAllDay, data);
+        lastEvent.setTextColor(textColor);
         results.add(lastEvent);
 
         // Get events for all days in-between
@@ -294,6 +300,7 @@ public class WeekViewEvent<T> implements WeekViewDisplayable, Comparable<WeekVie
 
                 WeekViewEvent<T> intermediateEvent = new WeekViewEvent<>(id, title,
                         intermediateStart, intermediateEnd, location, color, isAllDay, data);
+                intermediateEvent.setTextColor(textColor);
                 results.add(intermediateEvent);
 
                 start.add(DATE, 1);

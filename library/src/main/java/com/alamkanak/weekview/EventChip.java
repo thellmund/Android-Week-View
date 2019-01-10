@@ -114,11 +114,7 @@ class EventChip<T> {
         // Get text dimensions.
         final TextPaint textPaint = config.drawingConfig.eventTextPaint;
 
-        if (event.getTextColor() != WeekViewEvent.DEFAULT_TEXT_COLOR) {
-            textPaint.setColor(event.getTextColor());
-        } else {
-            textPaint.setColor(config.eventTextColor);
-        }
+        textPaint.setColor(event.getTextColorOrDefault(config));
 
         StaticLayout textLayout = new StaticLayout(stringBuilder,
                 textPaint, availableWidth, ALIGN_NORMAL, 1.0f, 0.0f, false);
