@@ -155,15 +155,7 @@ class WeekViewDrawingConfig {
         final boolean currentDayIsNotToday = today.get(DAY_OF_WEEK) != config.firstDayOfWeek;
 
         if (isWeekView && currentDayIsNotToday && config.showFirstDayOfWeekFirst) {
-            int currentDay = today.get(DAY_OF_WEEK);
-            int difference;
-
-            if (config.firstDayOfWeek == MONDAY && currentDay == SUNDAY) {
-                // Special case, because Sunday (1) has a lower index than Monday (2)
-                difference = 6;
-            } else {
-                difference = today.get(DAY_OF_WEEK) - config.firstDayOfWeek;
-            }
+            int difference = (today.get(DAY_OF_WEEK) + 7 - config.firstDayOfWeek) % 7;
 
             currentOrigin.x += (widthPerDay + config.columnGap) * difference;
         }
