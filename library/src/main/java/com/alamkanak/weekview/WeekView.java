@@ -19,6 +19,7 @@ import static com.alamkanak.weekview.DateUtils.today;
 import static java.lang.Math.ceil;
 import static java.lang.Math.min;
 import static java.util.Calendar.DATE;
+import static java.util.Calendar.DAY_OF_WEEK;
 import static java.util.Calendar.HOUR_OF_DAY;
 
 /**
@@ -117,6 +118,8 @@ public final class WeekView<T> extends View
         super.onDraw(canvas);
         final boolean isFirstDraw = viewState.isFirstDraw();
 
+        calculateWidthPerDay();
+
         viewState.update(config, this);
 
         config.drawingConfig.refreshAfterZooming(config);
@@ -174,7 +177,6 @@ public final class WeekView<T> extends View
         data.clearEventChipsCache();
         canvas.save();
         clipEventsRect(canvas);
-        calculateWidthPerDay();
     }
 
     private void calculateWidthPerDay() {
@@ -1009,7 +1011,12 @@ public final class WeekView<T> extends View
 
         viewState.setShouldRefreshEvents(true);
 
-        final int diff = DateUtils.getDaysUntilDate(date);
+        int diff = DateUtils.getDaysUntilDate(date);
+
+        if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
+                diff -= (date.get(DAY_OF_WEEK) + 7 - config.firstDayOfWeek) % 7;
+        }
+
         config.drawingConfig.currentOrigin.x = diff * (-1) * config.getTotalDayWidth();
         invalidate();
     }
