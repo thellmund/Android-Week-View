@@ -111,7 +111,7 @@ public final class WeekView<T> extends View
         WeekView.width = width;
         WeekView.height = height;
 
-        if (config.dynamicHourHeight) {
+        if (config.showCompleteDay) {
           config.hourHeight = (height - drawConfig.headerHeight) / HOURS_PER_DAY;
           drawConfig.newHourHeight = config.hourHeight;
         }

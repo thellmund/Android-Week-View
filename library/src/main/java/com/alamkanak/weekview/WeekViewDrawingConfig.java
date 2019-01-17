@@ -17,8 +17,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Calendar.DAY_OF_WEEK;
 import static java.util.Calendar.HOUR_OF_DAY;
-import static java.util.Calendar.MONDAY;
-import static java.util.Calendar.SUNDAY;
 
 class WeekViewDrawingConfig {
 
@@ -166,7 +164,7 @@ class WeekViewDrawingConfig {
           headerHeight += config.allDayEventHeight;
       }
 
-      if (config.dynamicHourHeight) {
+      if (config.showCompleteDay) {
           config.hourHeight = (WeekView.getViewHeight() - headerHeight) / HOURS_PER_DAY;
           newHourHeight = config.hourHeight;
       }
@@ -190,7 +188,7 @@ class WeekViewDrawingConfig {
     }
 
     void refreshAfterZooming(WeekViewConfig config) {
-        if (newHourHeight > 0 && !config.dynamicHourHeight) {
+        if (newHourHeight > 0 && !config.showCompleteDay) {
             if (newHourHeight < config.effectiveMinHourHeight) {
                 newHourHeight = config.effectiveMinHourHeight;
             } else if (newHourHeight > config.maxHourHeight) {

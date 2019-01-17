@@ -23,8 +23,6 @@ private class TimeColumnDrawer(
         canvas.clipRect(0f, top, drawingConfig.timeColumnWidth, bottom.toFloat())
 
         // The original header height
-        val headerHeight = top
-
         val startHour = config.startHour
 
         val hourLines = FloatArray(HOURS_PER_DAY * 4)

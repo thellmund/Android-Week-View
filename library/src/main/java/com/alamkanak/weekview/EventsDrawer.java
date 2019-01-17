@@ -106,7 +106,9 @@ class EventsDrawer<T> {
         // Hide events when they are in the top left corner
         final Paint headerBackground = drawingConfig.headerBackgroundPaint;
 
-        final float height = drawingConfig.headerTextHeight + config.headerRowPadding * 2;
+        float headerRowBottomLine = config.showHeaderRowBottomLine ? config.headerRowBottomLineWidth : 0;
+
+        final float height = drawingConfig.headerHeight - headerRowBottomLine;
         final float width = drawingConfig.timeTextWidth + config.timeColumnPadding * 2;
 
         canvas.clipRect(0, 0, width, height);

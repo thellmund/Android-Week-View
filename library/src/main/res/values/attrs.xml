@@ -71,7 +71,7 @@
         <attr name="hourHeight" format="dimension" />
         <attr name="minHourHeight" format="dimension" />
         <attr name="maxHourHeight" format="dimension" />
-        <attr name="dynamicHourHeight" format="boolean" />
+        <attr name="showCompleteDay" format="boolean" />
 
         <!-- Now line -->
         <attr name="showNowLine" format="boolean" />
