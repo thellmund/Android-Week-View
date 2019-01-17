@@ -27,10 +27,7 @@ private class TimeColumnDrawer(
         // The original header height
         val headerHeight = top
 
-        val startHour = if (config.showMidnightHour && config.showTimeColumnHourSeparator)
-                            0
-                        else
-                            config.timeColumnHoursInterval
+        val startHour = config.startHour
 
         val hourLines = FloatArray(HOURS_PER_DAY * 4)
 

@@ -266,4 +266,8 @@ public class WeekViewConfig {
         return numberOfVisibleDays == 1;
     }
 
+    int getStartHour() {
+      return (showMidnightHour && showTimeColumnHourSeparator) ? 0 : timeColumnHoursInterval;
+    }
+
 }
