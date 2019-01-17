@@ -2,6 +2,7 @@ package com.alamkanak.weekview.sample;
 
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -35,7 +36,6 @@ public class StaticActivity extends AppCompatActivity
     private EventsDatabase mDatabase;
 
     private TextView mDateTV;
-    private Calendar currentCal;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,16 +54,14 @@ public class StaticActivity extends AppCompatActivity
 
         setupDateTimeInterpreter();
 
-        currentCal = DateUtils.today();
-        updateDateText();
-
         ImageView left = findViewById(R.id.left_arrow);
         left.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentCal.add(Calendar.DAY_OF_MONTH, -7);
-                updateDateText();
-                mWeekView.goToDate(currentCal);
+                Calendar cal = mWeekView.getFirstVisibleDay();
+                cal.add(Calendar.DAY_OF_MONTH, -7);
+                mWeekView.goToDate(cal);
+                refreshText();
             }
         });
 
@@ -71,11 +69,14 @@ public class StaticActivity extends AppCompatActivity
         right.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentCal.add(Calendar.DAY_OF_MONTH, 7);
-                updateDateText();
-                mWeekView.goToDate(currentCal);
+                Calendar cal = mWeekView.getFirstVisibleDay();
+                cal.add(Calendar.DAY_OF_MONTH, 7);
+                mWeekView.goToDate(cal);
+                refreshText();
             }
         });
+
+        refreshText();
     }
 
     /**
@@ -132,8 +133,19 @@ public class StaticActivity extends AppCompatActivity
         Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show();
     }
 
+    private void refreshText() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                updateDateText();
+            }
+        }, 100);
+    }
+
     private void updateDateText() {
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        mDateTV.setText(format.format(currentCal.getTime()));
+        mDateTV.setText(getString(R.string.date_infos
+            , format.format(mWeekView.getFirstVisibleDay().getTime())
+            , format.format(mWeekView.getLastVisibleDay().getTime())));
     }
 }

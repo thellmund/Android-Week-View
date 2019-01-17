@@ -161,10 +161,12 @@ public final class WeekView<T> extends View
         final Calendar today = today();
 
         viewState.setFirstVisibleDay((Calendar) today.clone());
+        viewState.setLastVisibleDay((Calendar) today.clone());
 
         final float totalDayWidth = config.getTotalDayWidth();
         final int delta = (int) ceil(drawConfig.currentOrigin.x / totalDayWidth) * -1;
         viewState.getFirstVisibleDay().add(DATE, delta);
+        viewState.getLastVisibleDay().add(DATE, config.numberOfVisibleDays - 1 + delta);
 
         final boolean hasFirstVisibleDayChanged = !viewState.getFirstVisibleDay().equals(oldFirstVisibleDay);
         if (hasFirstVisibleDayChanged && getScrollListener() != null) {
@@ -1014,7 +1016,7 @@ public final class WeekView<T> extends View
         int diff = DateUtils.getDaysUntilDate(date);
 
         if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
-                diff -= (date.get(DAY_OF_WEEK) + 7 - config.firstDayOfWeek) % 7;
+                diff -= config.drawingConfig.computeDifferenceWithFirstDayOfWeek(config, date);
         }
 
         config.drawingConfig.currentOrigin.x = diff * (-1) * config.getTotalDayWidth();

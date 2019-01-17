@@ -155,10 +155,14 @@ class WeekViewDrawingConfig {
         final boolean currentDayIsNotToday = today.get(DAY_OF_WEEK) != config.firstDayOfWeek;
 
         if (isWeekView && currentDayIsNotToday && config.showFirstDayOfWeekFirst) {
-            int difference = (today.get(DAY_OF_WEEK) + 7 - config.firstDayOfWeek) % 7;
+            int difference = computeDifferenceWithFirstDayOfWeek(config, today);
 
             currentOrigin.x += (widthPerDay + config.columnGap) * difference;
         }
+    }
+
+    int computeDifferenceWithFirstDayOfWeek(@NonNull WeekViewConfig config ,@NonNull Calendar date) {
+        return (date.get(DAY_OF_WEEK) + 7 - config.firstDayOfWeek) % 7;
     }
 
     void refreshAfterZooming(WeekViewConfig config) {
