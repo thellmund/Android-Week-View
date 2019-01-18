@@ -27,10 +27,11 @@ class WeekViewDrawingConfig {
     Paint headerTextPaint;
     float headerTextHeight;
     // headerHeight = config.headerRowPadding * 2 + headerTextHeight
-    // + config.eventPadding * 2 + eventTextHeight
+    // + config.eventPadding * 2 + currentAllDayEventHeight
     // + headerMarginBottom + config.headerRowBottomLineWidth
     float headerHeight;
     Paint todayHeaderTextPaint;
+    private int currentAllDayEventHeight;
 
     PointF currentOrigin = new PointF(0f, 0f);
     Paint headerBackgroundPaint;
@@ -38,7 +39,7 @@ class WeekViewDrawingConfig {
     Paint dayBackgroundPaint;
     Paint hourSeparatorPaint;
     Paint daySeparatorPaint;
-    float headerMarginBottom;
+    private float headerMarginBottom;
 
     Paint todayBackgroundPaint;
     private Paint futureBackgroundPaint;
@@ -53,6 +54,7 @@ class WeekViewDrawingConfig {
 
     float timeColumnWidth;
     TextPaint eventTextPaint;
+    TextPaint allDayEventTextPaint;
     Paint timeColumnBackgroundPaint;
     boolean hasEventInHeader;
 
@@ -149,8 +151,15 @@ class WeekViewDrawingConfig {
         eventTextPaint.setColor(config.eventTextColor);
         eventTextPaint.setTextSize(config.eventTextSize);
 
+        // Prepare event text size and color.
+        allDayEventTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
+        allDayEventTextPaint.setStyle(Paint.Style.FILL);
+        allDayEventTextPaint.setColor(config.eventTextColor);
+        allDayEventTextPaint.setTextSize(config.allDayEventTextSize);
+
         headerMarginBottom = config.headerMarginBottom;
 
+        currentAllDayEventHeight = 0;
         hasEventInHeader = false;
         refreshHeaderHeight(config);
     }
@@ -161,7 +170,7 @@ class WeekViewDrawingConfig {
           headerHeight += config.headerRowBottomLineWidth;
       }
       if (hasEventInHeader) {
-          headerHeight += config.allDayEventHeight;
+          headerHeight += currentAllDayEventHeight;
       }
 
       if (config.showCompleteDay) {
@@ -170,7 +179,16 @@ class WeekViewDrawingConfig {
       }
   }
 
-  void moveCurrentOriginIfFirstDraw(WeekViewConfig config) {
+  void setCurrentAllDayEventHeight(int height, WeekViewConfig config) {
+      currentAllDayEventHeight = height;
+      refreshHeaderHeight(config);
+  }
+
+    int getCurrentAllDayEventHeight() {
+        return currentAllDayEventHeight;
+    }
+
+    void moveCurrentOriginIfFirstDraw(WeekViewConfig config) {
         // If the week view is being drawn for the first time, then consider the first day of the week.
         final Calendar today = today();
         final boolean isWeekView = config.numberOfVisibleDays >= 7;

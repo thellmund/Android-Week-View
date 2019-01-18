@@ -8,11 +8,14 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.text.StaticLayout;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.Calendar;
+import java.util.List;
 
 import static com.alamkanak.weekview.Constants.HOURS_PER_DAY;
 import static com.alamkanak.weekview.DateUtils.today;
@@ -140,6 +143,9 @@ public final class WeekView<T> extends View
         final DrawingContext drawingContext = DrawingContext.create(config);
         eventChipsProvider.loadEventsIfNecessary(this, drawingContext.getDayRange());
 
+        List<Pair<EventChip<T>, StaticLayout>> allDayEvents =
+                eventsDrawer.prepareDrawAllDayEvents(data.getAllDayEventChips(), drawingContext);
+
         dayBackgroundDrawer.draw(drawingContext, canvas);
         backgroundGridDrawer.draw(drawingContext, canvas);
 
@@ -149,7 +155,7 @@ public final class WeekView<T> extends View
         headerRowDrawer.draw(canvas);
         dayLabelDrawer.draw(drawingContext, canvas);
 
-        eventsDrawer.drawAllDayEvents(data.getAllDayEventChips(), drawingContext, canvas);
+        eventsDrawer.drawAllDayEvents(allDayEvents, canvas);
 
         timeColumnDrawer.drawTimeColumn(canvas);
 
@@ -447,19 +453,19 @@ public final class WeekView<T> extends View
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get the height of all-day events.
+     * Get the max height of all-day events.
      *
-     * @return Height of all-day events.
+     * @return max Height of all-day events.
      */
-    public int getAllDayEventHeight() {
-        return config.allDayEventHeight;
+    public int getMaxAllDayEventHeight() {
+        return config.maxAllDayEventHeight;
     }
 
     /**
      * Set the height of AllDay-events.
      */
-    public void setAllDayEventHeight(int height) {
-        config.allDayEventHeight = height;
+    public void setMaxAllDayEventHeight(int height) {
+        config.maxAllDayEventHeight = height;
     }
 
     public int getEventCornerRadius() {

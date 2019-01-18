@@ -48,12 +48,13 @@ public class WeekViewConfig {
     int headerMarginBottom;
 
     // Event chips
-    int allDayEventHeight;
+    int maxAllDayEventHeight;
     int eventCornerRadius;
     int eventTextSize;
     int eventTextColor;
     int eventPadding;
     int defaultEventColor;
+    int allDayEventTextSize;
 
     // Event margins
     int columnGap;
@@ -141,12 +142,13 @@ public class WeekViewConfig {
             headerMarginBottom = a.getDimensionPixelSize(R.styleable.WeekView_headerMarginBottom, 0);
 
             // Event chips
-            allDayEventHeight = a.getDimensionPixelSize(R.styleable.WeekView_allDayEventHeight, 100);
+            maxAllDayEventHeight = a.getDimensionPixelSize(R.styleable.WeekView_maxAllDayEventHeight, 100);
             eventCornerRadius = a.getDimensionPixelSize(R.styleable.WeekView_eventCornerRadius, 0);
             eventTextSize = a.getDimensionPixelSize(R.styleable.WeekView_eventTextSize, Defaults.textSize(context));
             eventTextColor = a.getColor(R.styleable.WeekView_eventTextColor, Color.BLACK);
             eventPadding = a.getDimensionPixelSize(R.styleable.WeekView_eventPadding, 8);
             defaultEventColor = a.getColor(R.styleable.WeekView_defaultEventColor, Defaults.EVENT_COLOR);
+            allDayEventTextSize = a.getDimensionPixelSize(R.styleable.WeekView_allDayEventTextSize, eventTextSize);
 
             // Event margins
             columnGap = a.getDimensionPixelSize(R.styleable.WeekView_columnGap, 10);
