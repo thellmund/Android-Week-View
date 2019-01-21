@@ -349,6 +349,9 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private void goToNearestOrigin() {
         final float totalDayWidth = config.getTotalDayWidth();
+        if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
+            totalDayWidth *= config.numberOfVisibleDays;
+        }
         double leftDays = config.getCurrentOrigin().x / totalDayWidth;
 
         if (currentFlingDirection != Direction.NONE) {
