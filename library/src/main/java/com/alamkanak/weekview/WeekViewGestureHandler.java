@@ -349,7 +349,9 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private void goToNearestOrigin() {
         final float totalDayWidth = config.getTotalDayWidth();
+        float timeShift = 0f;
         if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
+            timeShift = drawingConfig.computeDifferenceWithFirstDayOfWeek(config, DateUtils.today()) * totalDayWidth;
             totalDayWidth *= config.numberOfVisibleDays;
         }
         double leftDays = config.getCurrentOrigin().x / totalDayWidth;
@@ -368,7 +370,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             leftDays = round(leftDays);
         }
 
-        final int nearestOrigin = (int) (config.getCurrentOrigin().x - leftDays * totalDayWidth);
+        final int nearestOrigin = (int) (config.getCurrentOrigin().x - leftDays * totalDayWidth - timeShift);
 
         if (nearestOrigin != 0) {
             // Stop current animation
