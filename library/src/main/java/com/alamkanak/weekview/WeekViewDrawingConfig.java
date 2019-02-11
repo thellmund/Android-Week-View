@@ -162,6 +162,23 @@ class WeekViewDrawingConfig {
 
             currentOrigin.x += (widthPerDay + config.columnGap) * difference;
         }
+
+        //HACKY Workaround for LIMIT
+        float minX = Integer.MIN_VALUE;
+        if (config.maxDate != null) {
+            Calendar date = (Calendar) config.maxDate.clone();
+            date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
+            minX = DateUtils.getXOriginForDate(date, config.getTotalDayWidth());
+        }
+        float maxX = Integer.MAX_VALUE;
+        if (config.minDate != null) {
+            maxX = DateUtils.getXOriginForDate(config.minDate, config.getTotalDayWidth());
+        }
+        if (currentOrigin.x > maxX) {
+            currentOrigin.x = maxX;
+        } else if (currentOrigin.x < minX) {
+            currentOrigin.x = minX;
+        }
     }
 
     int computeDifferenceWithFirstDayOfWeek(@NonNull WeekViewConfig config ,@NonNull Calendar date) {

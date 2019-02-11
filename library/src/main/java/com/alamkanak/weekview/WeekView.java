@@ -1032,6 +1032,12 @@ public final class WeekView<T> extends View
      * @param date The date to show.
      */
     public void goToDate(@NonNull Calendar date) {
+        if(config.minDate != null && date.before(config.minDate)){
+            date = (Calendar) config.minDate.clone();
+        }else if(config.maxDate != null && date.after(config.maxDate)){
+            date = (Calendar) config.maxDate.clone();
+            date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
+        }
         gestureHandler.forceScrollFinished();
 
         if (viewState.areDimensionsInvalid) {
