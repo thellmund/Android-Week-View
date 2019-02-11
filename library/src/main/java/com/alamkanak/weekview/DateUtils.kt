@@ -2,7 +2,6 @@ package com.alamkanak.weekview
 
 import android.content.Context
 import android.text.format.DateFormat
-import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar.DATE
