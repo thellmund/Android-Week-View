@@ -2,6 +2,7 @@ package com.alamkanak.weekview
 
 import android.content.Context
 import android.text.format.DateFormat
+import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar.DATE
@@ -104,4 +105,8 @@ internal object DateUtils {
         }
     }
 
+    @JvmStatic
+    fun getXOriginForDate(date: Calendar, totalDayWidth: Float): Float {
+        return - getDaysUntilDate(date) * totalDayWidth
+    }
 }

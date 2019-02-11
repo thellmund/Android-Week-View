@@ -103,6 +103,10 @@ public class WeekViewConfig {
     boolean horizontalScrollingEnabled;
     int scrollDuration;
 
+    // Min Max Date
+    Calendar minDate = null;
+    Calendar maxDate = null;
+
     WeekViewConfig(Context context, AttributeSet attrs) {
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.WeekView, 0, 0);
         try {
@@ -251,6 +255,14 @@ public class WeekViewConfig {
     void setTimeColumnBackgroundColor(int timeColumnBackgroundColor) {
         this.timeColumnBackgroundColor = timeColumnBackgroundColor;
         drawingConfig.timeColumnBackgroundPaint.setColor(timeColumnBackgroundColor);
+    }
+
+    public void setMinDate(Calendar minDate) {
+        this.minDate = minDate;
+    }
+
+    public void setMaxDate(Calendar maxDate) {
+        this.maxDate = maxDate;
     }
 
     float getTotalDayWidth() {

@@ -857,6 +857,30 @@ public final class WeekView<T> extends View
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //
+    //  Min Max Date
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Calendar getMinDate(){
+        return config.minDate;
+    }
+
+    public void setMinDate(Calendar minDate){
+        config.minDate = DateExtKt.withTimeAtStartOfDay(minDate);
+        invalidate();
+    }
+
+    public Calendar getMaxDate(){
+        return config.maxDate;
+    }
+
+    public void setMaxDate(Calendar maxDate) {
+        config.maxDate = DateExtKt.withTimeAtEndOfDay(maxDate);
+        invalidate();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //
     //  Scrolling
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -12,11 +12,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alamkanak.weekview.DateTimeInterpreter;
-import com.alamkanak.weekview.DateUtils;
 import com.alamkanak.weekview.EmptyViewLongPressListener;
 import com.alamkanak.weekview.EventClickListener;
 import com.alamkanak.weekview.EventLongPressListener;
 import com.alamkanak.weekview.MonthChangeListener;
+import com.alamkanak.weekview.ScrollListener;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewDisplayable;
 import com.alamkanak.weekview.sample.apiclient.Event;

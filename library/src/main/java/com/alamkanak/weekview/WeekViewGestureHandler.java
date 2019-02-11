@@ -2,6 +2,7 @@ package com.alamkanak.weekview;
 
 import android.content.Context;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -146,7 +147,22 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         switch (currentScrollDirection) {
             case LEFT:
             case RIGHT:
+                float minX = Integer.MIN_VALUE;
+                if (config.maxDate != null) {
+                    Calendar date = (Calendar) config.maxDate.clone();
+                    date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
+                    minX = DateUtils.getXOriginForDate(date, config.getTotalDayWidth());
+                }
+                float maxX = Integer.MAX_VALUE;
+                if (config.minDate != null) {
+                    maxX = DateUtils.getXOriginForDate(config.minDate, config.getTotalDayWidth());
+                }
                 drawingConfig.currentOrigin.x -= distanceX * config.xScrollingSpeed;
+                if (drawingConfig.currentOrigin.x > maxX) {
+                    drawingConfig.currentOrigin.x = maxX;
+                } else if (drawingConfig.currentOrigin.x < minX) {
+                    drawingConfig.currentOrigin.x = minX;
+                }
                 listener.onScrolled();
                 break;
             case VERTICAL:
@@ -193,8 +209,16 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         final int velocityX = (int) (originalVelocityX * config.xScrollingSpeed);
         final int velocityY = 0;
 
-        final int minX = Integer.MIN_VALUE;
-        final int maxX = Integer.MAX_VALUE;
+        int minX = Integer.MIN_VALUE;
+        int maxX = Integer.MAX_VALUE;
+        if (config.maxDate != null) {
+            Calendar date = (Calendar) config.maxDate.clone();
+            date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
+            minX = (int) DateUtils.getXOriginForDate(date, config.getTotalDayWidth());
+        }
+        if (config.minDate != null) {
+            maxX = (int) DateUtils.getXOriginForDate(config.minDate, config.getTotalDayWidth());
+        }
 
         final int dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
         final int viewHeight = WeekView.getViewHeight();
