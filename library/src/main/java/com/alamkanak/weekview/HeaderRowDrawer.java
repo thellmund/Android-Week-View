@@ -60,9 +60,9 @@ class HeaderRowDrawer<T> {
         }
         //HOTFIX
         if(!containsAllDayEvent){
-            if(drawConfig.currentOrigin.x%config.getTotalDayWidth()!=0){
+            if(drawConfig.currentOrigin.x % config.getTotalDayWidth() != 0){
                 final Calendar day = (Calendar) viewState.getFirstVisibleDay().clone();
-                day.add(DATE, config.numberOfVisibleDays+1);
+                day.add(DATE, config.numberOfVisibleDays);
 
                 for (int j = 0; j < eventChips.size(); j++) {
                     final WeekViewEvent event = eventChips.get(j).event;
