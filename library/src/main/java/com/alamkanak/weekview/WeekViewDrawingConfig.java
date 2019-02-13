@@ -8,9 +8,9 @@ import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.text.TextPaint;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import static com.alamkanak.weekview.Constants.HOURS_PER_DAY;
 import static com.alamkanak.weekview.DateUtils.today;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -27,6 +27,7 @@ class WeekViewDrawingConfig {
     float headerTextHeight;
     float headerHeight;
     Paint todayHeaderTextPaint;
+    private int currentAllDayEventHeight;
 
 
     /**
@@ -39,7 +40,7 @@ class WeekViewDrawingConfig {
     Paint dayBackgroundPaint;
     Paint hourSeparatorPaint;
     Paint daySeparatorPaint;
-    float headerMarginBottom;
+    private float headerMarginBottom;
 
     Paint todayBackgroundPaint;
     private Paint futureBackgroundPaint;
@@ -54,9 +55,11 @@ class WeekViewDrawingConfig {
 
     float timeColumnWidth;
     TextPaint eventTextPaint;
+    TextPaint allDayEventTextPaint;
     Paint timeColumnBackgroundPaint;
+    boolean hasEventInHeader;
 
-    int newHourHeight = -1;
+    float newHourHeight = -1;
 
     DateTimeInterpreter dateTimeInterpreter;
 
@@ -77,9 +80,8 @@ class WeekViewDrawingConfig {
         headerTextPaint.setColor(config.headerRowTextColor);
         headerTextPaint.setTextAlign(Paint.Align.CENTER);
         headerTextPaint.setTextSize(config.headerRowTextSize);
-        headerTextPaint.getTextBounds("00 PM", 0, "00 PM".length(), rect);
-        headerTextHeight = rect.height();
         headerTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        headerTextHeight = headerTextPaint.descent() - headerTextPaint.ascent();
 
         // Prepare header background paint.
         headerBackgroundPaint = new Paint();
@@ -136,10 +138,6 @@ class WeekViewDrawingConfig {
         todayHeaderTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
         todayHeaderTextPaint.setColor(config.todayHeaderTextColor);
 
-        // Prepare event background color.
-        //eventBackgroundPaint = new Paint();
-        //eventBackgroundPaint.setColor(Color.rgb(174, 208, 238));
-
         // Prepare header column background color.
         timeColumnBackgroundPaint = new Paint();
         timeColumnBackgroundPaint.setColor(config.timeColumnBackgroundColor);
@@ -149,6 +147,42 @@ class WeekViewDrawingConfig {
         eventTextPaint.setStyle(Paint.Style.FILL);
         eventTextPaint.setColor(config.eventTextColor);
         eventTextPaint.setTextSize(config.eventTextSize);
+
+        // Prepare event text size and color.
+        allDayEventTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
+        allDayEventTextPaint.setStyle(Paint.Style.FILL);
+        allDayEventTextPaint.setColor(config.eventTextColor);
+        allDayEventTextPaint.setTextSize(config.allDayEventTextSize);
+
+        headerMarginBottom = config.headerMarginBottom;
+
+        currentAllDayEventHeight = 0;
+        hasEventInHeader = false;
+        refreshHeaderHeight(config);
+    }
+
+  void refreshHeaderHeight(WeekViewConfig config) {
+      headerHeight = config.headerRowPadding * 2 + headerTextHeight + headerMarginBottom;
+      if (config.showHeaderRowBottomLine) {
+          headerHeight += config.headerRowBottomLineWidth;
+      }
+      if (hasEventInHeader) {
+          headerHeight += currentAllDayEventHeight;
+      }
+
+      if (config.showCompleteDay) {
+          config.hourHeight = (WeekView.getViewHeight() - headerHeight) / HOURS_PER_DAY;
+          newHourHeight = config.hourHeight;
+      }
+  }
+
+  void setCurrentAllDayEventHeight(int height, WeekViewConfig config) {
+      currentAllDayEventHeight = height;
+      refreshHeaderHeight(config);
+  }
+
+    int getCurrentAllDayEventHeight() {
+        return currentAllDayEventHeight;
     }
 
     void moveCurrentOriginIfFirstDraw(WeekViewConfig config) {
@@ -186,7 +220,7 @@ class WeekViewDrawingConfig {
     }
 
     void refreshAfterZooming(WeekViewConfig config) {
-        if (newHourHeight > 0) {
+        if (newHourHeight > 0 && !config.showCompleteDay) {
             if (newHourHeight < config.effectiveMinHourHeight) {
                 newHourHeight = config.effectiveMinHourHeight;
             } else if (newHourHeight > config.maxHourHeight) {
@@ -204,12 +238,25 @@ class WeekViewDrawingConfig {
 
         // If the new currentOrigin.y is invalid, make it valid.
         final float dayHeight = config.hourHeight * 24;
-        final float headerHeight = this.headerHeight + config.headerRowPadding * 2 + headerMarginBottom;
 
         final float potentialNewVerticalOrigin = height - (dayHeight + headerHeight);
 
         currentOrigin.y = max(currentOrigin.y, potentialNewVerticalOrigin);
         currentOrigin.y = min(currentOrigin.y, 0);
+    }
+
+    float getHeaderBottomPosition(WeekViewConfig config) {
+        return currentOrigin.y + getTotalHeaderHeight(config);
+    }
+
+    float getTotalHeaderHeight(WeekViewConfig config) {
+        return headerHeight
+                + (config.headerRowPadding * 2f)
+                + headerMarginBottom;
+    }
+
+    float getTotalTimeColumnWidth(WeekViewConfig config) {
+        return timeTextWidth + config.timeColumnPadding * 2;
     }
 
     void resetOrigin() {
@@ -262,44 +309,10 @@ class WeekViewDrawingConfig {
 
     DateTimeInterpreter getDateTimeInterpreter(Context context) {
         if (dateTimeInterpreter == null) {
-            dateTimeInterpreter = buildDefaultDateTimeInterpreter(context);
+            dateTimeInterpreter = new DefaultDateTimeInterpreter(context);
         }
 
         return dateTimeInterpreter;
-    }
-
-    private DateTimeInterpreter buildDefaultDateTimeInterpreter(final Context context) {
-        return new DateTimeInterpreter() {
-
-            private SimpleDateFormat sdfDate = DateUtils.getDateFormat();
-            private SimpleDateFormat sdfTime = DateUtils.getTimeFormat(context);
-            private Calendar calendar = Calendar.getInstance();
-
-            @NonNull
-            @Override
-            public String interpretDate(@NonNull Calendar date) {
-                try {
-                    return sdfDate.format(date.getTime()).toUpperCase();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return "";
-                }
-            }
-
-            @NonNull
-            @Override
-            public String interpretTime(int hour) {
-                calendar.set(Calendar.HOUR_OF_DAY, hour);
-                calendar.set(Calendar.MINUTE, 0);
-
-                try {
-                    return sdfTime.format(calendar.getTime());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return "";
-                }
-            }
-        };
     }
 
 }

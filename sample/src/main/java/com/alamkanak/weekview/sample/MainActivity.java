@@ -42,6 +42,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.buttonConstraint).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ConstraintActivity.class);
+                startActivity(intent);
+            }
+        });
+
         findViewById(R.id.buttonLimited).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

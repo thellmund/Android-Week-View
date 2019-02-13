@@ -2,8 +2,8 @@ package com.alamkanak.weekview.sample;
 
 import android.graphics.RectF;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -78,7 +78,8 @@ public class StaticActivity extends AppCompatActivity
 
         mWeekView.setScrollListener(new ScrollListener() {
             @Override
-            public void onFirstVisibleDayChanged(@NonNull Calendar newFirstVisibleDay, @Nullable Calendar oldFirstVisibleDay) {
+            public void onFirstVisibleDayChanged(@NonNull Calendar newFirstVisibleDay,
+                                                 @Nullable Calendar oldFirstVisibleDay) {
                 updateDateText();
             }
         });

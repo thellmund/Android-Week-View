@@ -25,7 +25,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
 
     private Listener listener;
 
-    private WeekViewData<T> data;
+    private WeekViewCache<T> data;
     private WeekViewConfig config;
     private WeekViewDrawingConfig drawingConfig;
 
@@ -52,7 +52,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     private ScrollListener scrollListener;
 
     WeekViewGestureHandler(Context context, View view,
-                           WeekViewConfig config, WeekViewData<T> data) {
+                           WeekViewConfig config, WeekViewCache<T> data) {
         this.listener = (Listener) view;
 
         this.data = data;
@@ -82,7 +82,7 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
                 float hourHeight = WeekViewGestureHandler.this.config.hourHeight;
-                drawingConfig.newHourHeight = round(hourHeight * detector.getScaleFactor());
+                drawingConfig.newHourHeight = hourHeight * detector.getScaleFactor();
                 listener.onScaled();
                 return true;
             }
@@ -224,14 +224,10 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             maxX = Integer.MAX_VALUE;
         }
 
-        final int dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
+        final float dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
         final int viewHeight = WeekView.getViewHeight();
 
-        final float headerHeight = drawingConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawingConfig.headerMarginBottom;
-
-        final int minY = (int) (dayHeight + headerHeight - viewHeight) * (-1);
+        final int minY = (int) (dayHeight + drawingConfig.headerHeight - viewHeight) * (-1);
         final int maxY = 0;
 
         scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
@@ -247,14 +243,10 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         final int minX = Integer.MIN_VALUE;
         final int maxX = Integer.MAX_VALUE;
 
-        final int dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
+        final float dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
         final int viewHeight = WeekView.getViewHeight();
 
-        final float headerHeight = drawingConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawingConfig.headerMarginBottom;
-
-        final int minY = (int) (dayHeight + headerHeight - viewHeight) * (-1);
+        final int minY = (int) (dayHeight + drawingConfig.headerHeight - viewHeight) * (-1);
         final int maxY = 0;
 
         scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
@@ -275,13 +267,10 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         }
 
         // If the tap was on in an empty space, then trigger the callback.
-        final float headerHeight = drawingConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawingConfig.headerMarginBottom;
         final float timeColumnWidth = drawingConfig.timeColumnWidth;
 
         if (emptyViewClickListener != null
-                && e.getX() > timeColumnWidth && e.getY() > headerHeight) {
+                && e.getX() > timeColumnWidth && e.getY() > drawingConfig.headerHeight) {
             final Calendar selectedTime = touchHandler.getTimeFromPoint(e);
             if (selectedTime != null) {
                 emptyViewClickListener.onEmptyViewClicked(selectedTime);
@@ -305,14 +294,11 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             }
         }
 
-        final float headerHeight = drawingConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawingConfig.headerMarginBottom;
         final float timeColumnWidth = drawingConfig.timeColumnWidth;
 
         // If the tap was on in an empty space, then trigger the callback.
         if (emptyViewLongPressListener != null
-                && e.getX() > timeColumnWidth && e.getY() > headerHeight) {
+                && e.getX() > timeColumnWidth && e.getY() > drawingConfig.headerHeight) {
             final Calendar selectedTime = touchHandler.getTimeFromPoint(e);
             if (selectedTime != null) {
                 emptyViewLongPressListener.onEmptyViewLongPress(selectedTime);

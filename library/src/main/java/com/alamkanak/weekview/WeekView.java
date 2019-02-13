@@ -8,14 +8,18 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.text.StaticLayout;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.Calendar;
+import java.util.List;
 
 import static com.alamkanak.weekview.Constants.HOURS_PER_DAY;
 import static com.alamkanak.weekview.DateUtils.today;
+import static java.lang.Math.ceil;
 import static java.lang.Math.round;
 import static java.lang.Math.min;
 import static java.util.Calendar.DATE;
@@ -33,7 +37,7 @@ public final class WeekView<T> extends View
 
     private WeekViewConfig config;
     private WeekViewDrawingConfig drawConfig;
-    private WeekViewData<T> data;
+    private WeekViewCache<T> data;
 
     private WeekViewViewState viewState;
     private WeekViewGestureHandler<T> gestureHandler;
@@ -63,7 +67,7 @@ public final class WeekView<T> extends View
         drawConfig = new WeekViewDrawingConfig(context, config);
         config.drawingConfig = drawConfig;
 
-        data = new WeekViewData<>();
+        data = new WeekViewCache<>();
         viewState = new WeekViewViewState();
 
         gestureHandler = new WeekViewGestureHandler<>(context, this, config, data);
@@ -110,6 +114,11 @@ public final class WeekView<T> extends View
 
         WeekView.width = width;
         WeekView.height = height;
+
+        if (config.showCompleteDay) {
+          config.hourHeight = (height - drawConfig.headerHeight) / HOURS_PER_DAY;
+          drawConfig.newHourHeight = config.hourHeight;
+        }
     }
 
     @Override
@@ -133,7 +142,10 @@ public final class WeekView<T> extends View
         }
 
         final DrawingContext drawingContext = DrawingContext.create(config);
-        eventChipsProvider.loadEventsIfNecessary(this, drawingContext.getDayRange());
+        eventChipsProvider.loadEventsIfNecessary(this, drawingContext.getDateRange());
+
+        List<Pair<EventChip<T>, StaticLayout>> allDayEvents =
+                eventsDrawer.prepareDrawAllDayEvents(data.getAllDayEventChips(), drawingContext);
 
         dayBackgroundDrawer.draw(drawingContext, canvas);
         backgroundGridDrawer.draw(drawingContext, canvas);
@@ -144,7 +156,7 @@ public final class WeekView<T> extends View
         headerRowDrawer.draw(canvas);
         dayLabelDrawer.draw(drawingContext, canvas);
 
-        eventsDrawer.drawAllDayEvents(data.getAllDayEventChips(), drawingContext, canvas);
+        eventsDrawer.drawAllDayEvents(allDayEvents, canvas);
 
         timeColumnDrawer.drawTimeColumn(canvas);
 
@@ -164,17 +176,21 @@ public final class WeekView<T> extends View
         final Calendar oldFirstVisibleDay = viewState.getFirstVisibleDay();
         final Calendar today = today();
 
-        viewState.setFirstVisibleDay((Calendar) today.clone());
-        viewState.setLastVisibleDay((Calendar) today.clone());
+        Calendar firstVisibleDay = (Calendar) today.clone();
+        Calendar lastVisibleDay = (Calendar) today.clone();
 
         final float totalDayWidth = config.getTotalDayWidth();
-        final int delta = round(drawConfig.currentOrigin.x / totalDayWidth) * -1;
-        viewState.getFirstVisibleDay().add(DATE, delta);
-        viewState.getLastVisibleDay().add(DATE, config.numberOfVisibleDays - 1 + delta);
+        final int delta = (int) round(ceil(drawConfig.currentOrigin.x / totalDayWidth)) * -1;
 
-        final boolean hasFirstVisibleDayChanged = !viewState.getFirstVisibleDay().equals(oldFirstVisibleDay);
+        firstVisibleDay.add(DATE, delta);
+        lastVisibleDay.add(DATE, config.numberOfVisibleDays - 1 + delta);
+
+        viewState.setFirstVisibleDay(firstVisibleDay);
+        viewState.setLastVisibleDay(lastVisibleDay);
+
+        final boolean hasFirstVisibleDayChanged = !firstVisibleDay.equals(oldFirstVisibleDay);
         if (hasFirstVisibleDayChanged && getScrollListener() != null) {
-            getScrollListener().onFirstVisibleDayChanged(viewState.getFirstVisibleDay(), oldFirstVisibleDay);
+            getScrollListener().onFirstVisibleDayChanged(firstVisibleDay, oldFirstVisibleDay);
         }
     }
 
@@ -202,11 +218,7 @@ public final class WeekView<T> extends View
         final int height = WeekView.getViewHeight();
 
         // Clip to paint events only.
-        final float headerHeight = drawConfig.headerHeight
-                + config.headerRowPadding * 2
-                + drawConfig.headerMarginBottom;
-
-        canvas.clipRect(drawConfig.timeColumnWidth, headerHeight, width, height);
+        canvas.clipRect(drawConfig.timeColumnWidth, drawConfig.headerHeight, width, height);
     }
 
     @Override
@@ -269,6 +281,17 @@ public final class WeekView<T> extends View
      */
     public void setNumberOfVisibleDays(int numberOfVisibleDays) {
         config.setNumberOfVisibleDays(numberOfVisibleDays);
+
+        Calendar firstVisibleDay = viewState.getFirstVisibleDay();
+        if (firstVisibleDay != null) {
+            viewState.setScrollToDay(firstVisibleDay);
+        }
+
+        Integer hour = viewState.getScrollToHour();
+        if (hour != null) {
+            viewState.setScrollToHour(hour);
+        }
+
         invalidate();
     }
 
@@ -444,22 +467,6 @@ public final class WeekView<T> extends View
     //  Event chips
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Get the height of all-day events.
-     *
-     * @return Height of all-day events.
-     */
-    public int getAllDayEventHeight() {
-        return config.allDayEventHeight;
-    }
-
-    /**
-     * Set the height of AllDay-events.
-     */
-    public void setAllDayEventHeight(int height) {
-        config.allDayEventHeight = height;
-    }
 
     public int getEventCornerRadius() {
         return config.eventCornerRadius;
@@ -648,11 +655,11 @@ public final class WeekView<T> extends View
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int getHourHeight() {
+    public float getHourHeight() {
         return config.hourHeight;
     }
 
-    public void setHourHeight(int hourHeight) {
+    public void setHourHeight(float hourHeight) {
         config.drawingConfig.newHourHeight = hourHeight;
         invalidate();
     }
@@ -1078,13 +1085,13 @@ public final class WeekView<T> extends View
         }
 
         hour = min(hour, HOURS_PER_DAY);
-        int verticalOffset = config.hourHeight * hour;
+        float verticalOffset = config.hourHeight * hour;
 
         final float dayHeight = config.getTotalDayHeight();
         final double viewHeight = getHeight();
 
         final double desiredOffset = dayHeight - viewHeight;
-        verticalOffset = (int) min(desiredOffset, verticalOffset);
+        verticalOffset = min((float)desiredOffset, verticalOffset);
 
         config.drawingConfig.currentOrigin.y = -verticalOffset;
         invalidate();
