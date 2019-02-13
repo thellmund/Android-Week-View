@@ -58,6 +58,21 @@ class HeaderRowDrawer<T> {
                 break;
             }
         }
+        //HOTFIX
+        if(!containsAllDayEvent){
+            if(drawConfig.currentOrigin.x%config.getTotalDayWidth()!=0){
+                final Calendar day = (Calendar) viewState.getFirstVisibleDay().clone();
+                day.add(DATE, config.numberOfVisibleDays+1);
+
+                for (int j = 0; j < eventChips.size(); j++) {
+                    final WeekViewEvent event = eventChips.get(j).event;
+                    if (event.isSameDay(day) && event.isAllDay()) {
+                        containsAllDayEvent = true;
+                        break;
+                    }
+                }
+            }
+        }
 
         drawConfig.hasEventInHeader = containsAllDayEvent;
         drawConfig.refreshHeaderHeight(config);
