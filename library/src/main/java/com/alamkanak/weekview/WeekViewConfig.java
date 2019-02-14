@@ -46,6 +46,7 @@ public class WeekViewConfig {
     int headerRowTextSize;
     int headerRowPadding;
     int todayHeaderTextColor;
+    boolean enableMultilinesHeaderRow;
 
     // Event chips
     int eventCornerRadius;
@@ -143,6 +144,7 @@ public class WeekViewConfig {
             headerRowTextSize = a.getDimensionPixelSize(R.styleable.WeekView_headerRowTextSize, Defaults.textSize(context));
             headerRowPadding = a.getDimensionPixelSize(R.styleable.WeekView_headerRowPadding, 10);
             todayHeaderTextColor = a.getColor(R.styleable.WeekView_todayHeaderTextColor, Defaults.HIGHLIGHT_COLOR);
+            enableMultilinesHeaderRow = a.getBoolean(R.styleable.WeekView_enableMultilinesHeaderRow, false);
 
             // Event chips
             eventCornerRadius = a.getDimensionPixelSize(R.styleable.WeekView_eventCornerRadius, 0);

@@ -1,6 +1,10 @@
 package com.alamkanak.weekview
 
 import android.graphics.Canvas
+import android.os.Build
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import java.util.*
 
 internal class DayLabelDrawer(
@@ -28,7 +32,30 @@ internal class DayLabelDrawer(
         } else {
             drawingConfig.headerTextPaint
         }
-        canvas.drawText(dayLabel, x, y, textPaint)
+
+        if (!config.enableMultilinesHeaderRow) {
+            canvas.drawText(dayLabel, x, y, textPaint)
+        } else {
+
+            val textPaint2 = TextPaint(textPaint)
+            val staticLayout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                  StaticLayout.Builder
+                                      .obtain(dayLabel, 0, dayLabel.length, textPaint2
+                                              , config.totalDayWidth.toInt())
+                                      .build()
+                                } else {
+                                  StaticLayout(dayLabel, textPaint2, config.totalDayWidth.toInt(),
+                                      Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false)
+                                }
+
+            drawingConfig.headerTextHeight = staticLayout.height.toFloat()
+            drawingConfig.refreshHeaderHeight(config)
+
+            canvas.save()
+            canvas.translate(x, config.headerRowPadding.toFloat())
+            staticLayout.draw(canvas)
+            canvas.restore()
+        }
     }
 
 }
