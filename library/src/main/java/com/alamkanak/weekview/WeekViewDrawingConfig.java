@@ -211,11 +211,14 @@ class WeekViewDrawingConfig {
 
     void refreshAfterZooming(WeekViewConfig config) {
         if (newHourHeight > 0 && !config.showCompleteDay) {
-            if (newHourHeight < config.effectiveMinHourHeight) {
-                newHourHeight = config.effectiveMinHourHeight;
-            } else if (newHourHeight > config.maxHourHeight) {
-                newHourHeight = config.maxHourHeight;
-            }
+            newHourHeight = Math.max(newHourHeight, config.effectiveMinHourHeight);
+            newHourHeight = Math.min(newHourHeight, config.maxHourHeight);
+
+            // potentialMinHourHeight
+            // needed to suppress the zooming below 24:00
+            final int height = WeekView.getViewHeight();
+            float potentialMinHourHeight = (height - headerHeight) / 24;
+            newHourHeight = Math.max(newHourHeight, potentialMinHourHeight);
 
             currentOrigin.y = (currentOrigin.y / config.hourHeight) * newHourHeight;
             config.hourHeight = newHourHeight;
