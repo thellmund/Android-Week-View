@@ -1039,13 +1039,18 @@ public final class WeekView<T> extends View
      * @param date The date to show.
      */
     public void goToDate(@NonNull Calendar date) {
-        //handle out of date range
+        //permits to move programmatically beyond the range border
+        // e.g goToDate(today()) shouldn't allow to jump out of the range
         //forces to lower/upper limit of date range
         if (config.minDate != null && date.before(config.minDate)) {
             date = (Calendar) config.minDate.clone();
         }else if (config.maxDate != null && date.after(config.maxDate)) {
             date = (Calendar) config.maxDate.clone();
             date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
+        }else if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
+            date = (Calendar) date.clone();
+            int diffFirst = config.drawingConfig.computeDifferenceWithFirstDayOfWeek(config, date);
+            date.add(Calendar.DAY_OF_YEAR, (-1) * diffFirst);
         }
 
         gestureHandler.forceScrollFinished();
@@ -1058,11 +1063,6 @@ public final class WeekView<T> extends View
         viewState.setShouldRefreshEvents(true);
 
         int diff = DateUtils.getDaysUntilDate(date);
-
-        //TODO ignore if already out of range
-        if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
-            diff -= config.drawingConfig.computeDifferenceWithFirstDayOfWeek(config, date);
-        }
 
         config.drawingConfig.currentOrigin.x = diff * (-1) * config.getTotalDayWidth();
         viewState.requiresPostInvalidateOnAnimation = true;
