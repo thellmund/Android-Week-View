@@ -107,8 +107,8 @@ public class WeekViewConfig {
     int scrollDuration;
 
     // Min Max Date
-    Calendar minDate = null;
-    Calendar maxDate = null;
+    Calendar minDate;
+    Calendar maxDate;
 
     WeekViewConfig(Context context, AttributeSet attrs) {
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.WeekView, 0, 0);
@@ -271,6 +271,22 @@ public class WeekViewConfig {
         this.maxDate = maxDate;
     }
 
+    float getMinX() {
+        if (maxDate != null) {
+            Calendar date = (Calendar) maxDate.clone();
+            date.add(Calendar.DAY_OF_YEAR,1-numberOfVisibleDays);
+            return getXOriginForDate(date);
+        }
+        return Float.NEGATIVE_INFINITY;
+    }
+
+    float getMaxX() {
+        if (minDate != null) {
+            return getXOriginForDate(minDate);
+        }
+        return Float.POSITIVE_INFINITY;
+    }
+
     float getTotalDayWidth() {
         return drawingConfig.widthPerDay + columnGap;
     }
@@ -286,6 +302,10 @@ public class WeekViewConfig {
 
     int getStartHour() {
         return (showMidnightHour && showTimeColumnHourSeparator) ? 0 : timeColumnHoursInterval;
+    }
+
+    float getXOriginForDate(Calendar date) {
+        return (-1f) * DateUtils.getDaysUntilDate(date) * getTotalDayWidth();
     }
 
     static class Defaults {

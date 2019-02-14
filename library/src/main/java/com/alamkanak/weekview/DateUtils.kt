@@ -104,8 +104,4 @@ internal object DateUtils {
         }
     }
 
-    @JvmStatic
-    fun getXOriginForDate(date: Calendar, totalDayWidth: Float): Float {
-        return - getDaysUntilDate(date) * totalDayWidth
-    }
 }

@@ -868,16 +868,16 @@ public final class WeekView<T> extends View
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Calendar getMinDate(){
+    public Calendar getMinDate() {
         return config.minDate;
     }
 
-    public void setMinDate(Calendar minDate){
+    public void setMinDate(Calendar minDate) {
         config.minDate = DateExtKt.withTimeAtStartOfDay(minDate);
         invalidate();
     }
 
-    public Calendar getMaxDate(){
+    public Calendar getMaxDate() {
         return config.maxDate;
     }
 
@@ -1039,12 +1039,15 @@ public final class WeekView<T> extends View
      * @param date The date to show.
      */
     public void goToDate(@NonNull Calendar date) {
-        if(config.minDate != null && date.before(config.minDate)){
+        //handle out of date range
+        //forces to lower/upper limit of date range
+        if (config.minDate != null && date.before(config.minDate)) {
             date = (Calendar) config.minDate.clone();
-        }else if(config.maxDate != null && date.after(config.maxDate)){
+        }else if (config.maxDate != null && date.after(config.maxDate)) {
             date = (Calendar) config.maxDate.clone();
             date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
         }
+
         gestureHandler.forceScrollFinished();
 
         if (viewState.areDimensionsInvalid) {
@@ -1056,6 +1059,7 @@ public final class WeekView<T> extends View
 
         int diff = DateUtils.getDaysUntilDate(date);
 
+        //TODO ignore if already out of range
         if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
             diff -= config.drawingConfig.computeDifferenceWithFirstDayOfWeek(config, date);
         }

@@ -31,8 +31,9 @@ class WeekViewDrawingConfig {
 
 
     /**
-     * Post     DATES Have Origin > 0
-     * Upcoming DATES have Origin < 0
+     * dates in the past have origin.x > 0
+     * dates in the future have origin.x < 0
+     * relative to today()
      */
     PointF currentOrigin = new PointF(0f, 0f);
     Paint headerBackgroundPaint;
@@ -197,22 +198,11 @@ class WeekViewDrawingConfig {
             currentOrigin.x += (widthPerDay + config.columnGap) * difference;
         }
 
-        //HACKY Workaround for LIMIT
-        float minX = Integer.MIN_VALUE;
-        if (config.maxDate != null) {
-            Calendar date = (Calendar) config.maxDate.clone();
-            date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
-            minX = DateUtils.getXOriginForDate(date, config.getTotalDayWidth());
-        }
-        float maxX = Integer.MAX_VALUE;
-        if (config.minDate != null) {
-            maxX = DateUtils.getXOriginForDate(config.minDate, config.getTotalDayWidth());
-        }
-        if (currentOrigin.x > maxX) {
-            currentOrigin.x = maxX;
-        } else if (currentOrigin.x < minX) {
-            currentOrigin.x = minX;
-        }
+        // Overwrites the origin when today is out of date range
+        float minX = config.getMinX();
+        float maxX = config.getMaxX();
+        currentOrigin.x = Math.min(currentOrigin.x,maxX);
+        currentOrigin.x = Math.max(currentOrigin.x,minX);
     }
 
     int computeDifferenceWithFirstDayOfWeek(@NonNull WeekViewConfig config ,@NonNull Calendar date) {

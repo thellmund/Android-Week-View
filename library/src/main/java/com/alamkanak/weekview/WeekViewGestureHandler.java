@@ -146,22 +146,13 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         switch (currentScrollDirection) {
             case LEFT:
             case RIGHT:
-                float minX = Integer.MIN_VALUE;
-                if (config.maxDate != null) {
-                    Calendar date = (Calendar) config.maxDate.clone();
-                    date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
-                    minX = DateUtils.getXOriginForDate(date, config.getTotalDayWidth());
-                }
-                float maxX = Integer.MAX_VALUE;
-                if (config.minDate != null) {
-                    maxX = DateUtils.getXOriginForDate(config.minDate, config.getTotalDayWidth());
-                }
                 drawingConfig.currentOrigin.x -= distanceX * config.xScrollingSpeed;
-                if (drawingConfig.currentOrigin.x > maxX) {
-                    drawingConfig.currentOrigin.x = maxX;
-                } else if (drawingConfig.currentOrigin.x < minX) {
-                    drawingConfig.currentOrigin.x = minX;
-                }
+
+                float minX = config.getMinX();
+                float maxX = config.getMaxX();
+                drawingConfig.currentOrigin.x = Math.min(drawingConfig.currentOrigin.x,maxX);
+                drawingConfig.currentOrigin.x = Math.max(drawingConfig.currentOrigin.x,minX);
+
                 listener.onScrolled();
                 break;
             case VERTICAL:
@@ -208,21 +199,8 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
         final int velocityX = (int) (originalVelocityX * config.xScrollingSpeed);
         final int velocityY = 0;
 
-        final int minX;
-        final int maxX;
-        if (config.maxDate != null) {
-            Calendar date = (Calendar) config.maxDate.clone();
-            date.add(Calendar.DAY_OF_YEAR,1-config.numberOfVisibleDays);
-            minX = (int) DateUtils.getXOriginForDate(date, config.getTotalDayWidth());
-        }else{
-            minX = Integer.MIN_VALUE;
-        }
-
-        if (config.minDate != null) {
-            maxX = (int) DateUtils.getXOriginForDate(config.minDate, config.getTotalDayWidth());
-        }else{
-            maxX = Integer.MAX_VALUE;
-        }
+        final int minX = (int) config.getMinX();
+        final int maxX = (int) config.getMaxX();
 
         final float dayHeight = config.hourHeight * Constants.HOURS_PER_DAY;
         final int viewHeight = WeekView.getViewHeight();
