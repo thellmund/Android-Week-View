@@ -25,7 +25,6 @@ internal class DayLabelDrawer(
         val dayLabel = drawingConfig.dateTimeInterpreter.interpretDate(day)
 
         val x = startPixel + drawingConfig.widthPerDay / 2
-        val y = drawingConfig.headerTextHeight + config.headerRowPadding
 
         val textPaint = if (day.isToday) {
             drawingConfig.todayHeaderTextPaint
@@ -34,6 +33,7 @@ internal class DayLabelDrawer(
         }
 
         if (!config.enableMultilinesHeaderRow) {
+            val y = config.headerRowPadding.toFloat() - textPaint.ascent()
             canvas.drawText(dayLabel, x, y, textPaint)
         } else {
 
