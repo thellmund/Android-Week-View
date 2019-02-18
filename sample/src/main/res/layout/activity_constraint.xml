@@ -18,11 +18,10 @@
             android:layout_height="0dp"
             android:layout_marginTop="0dp"
             app:columnGap="1dp"
-            app:enableMultilinesHeaderRow="true"
             app:eventCornerRadius="4dp"
             app:eventTextColor="@android:color/white"
             app:firstDayOfWeek="monday"
-            app:headerRowPadding="12dp"
+            app:headerRowPadding="8dp"
             app:horizontalScrollingEnabled="false"
             app:hourHeight="10dp"
             app:layout_constraintBottom_toTopOf="@id/guideline"
@@ -37,6 +36,7 @@
             app:showHeaderRowBottomLine="true"
             app:showNowLine="true"
             app:showTimeColumnSeparator="true"
+            app:singleLineHeader="false"
             app:timeColumnPadding="8dp"
             app:timeColumnTextSize="8sp" />
 
