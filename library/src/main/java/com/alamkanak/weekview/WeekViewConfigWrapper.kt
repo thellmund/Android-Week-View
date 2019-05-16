@@ -28,6 +28,8 @@ internal class WeekViewConfigWrapper(
         color = config.timeColumnTextColor
     }
 
+    var wereNumberOfDaysSet: Boolean = config.wereNumberOfVisibleDaysSet
+
     var timeTextWidth: Float = 0.toFloat()
 
     var timeTextHeight: Float = 0.toFloat()
