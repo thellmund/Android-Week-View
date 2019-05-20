@@ -53,7 +53,7 @@
         app:headerRowBottomLineColor="@color/header_bottom_line"
         app:headerRowBottomLineWidth="1dp"
         app:headerRowPadding="12dp"
-        app:horizontalScrollingEnabled="false"
+        app:horizontalScrollingEnabled="true"
         app:hourHeight="60dp"
         app:nowLineColor="@color/accent"
         app:nowLineDotColor="@color/accent"

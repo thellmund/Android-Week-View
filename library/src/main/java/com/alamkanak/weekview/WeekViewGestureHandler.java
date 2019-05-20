@@ -173,9 +173,9 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
             return true;
         }
 
-        if ((currentFlingDirection == Direction.LEFT && !config.getHorizontalScrollingEnabled()) ||
-                (currentFlingDirection == Direction.RIGHT && !config.getHorizontalFlingEnabled()) ||
-                (currentFlingDirection == Direction.VERTICAL && !config.getVerticalFlingEnabled())) {
+        if ((currentScrollDirection == Direction.LEFT && !config.getHorizontalFlingEnabled()) ||
+                (currentScrollDirection == Direction.RIGHT && !config.getHorizontalFlingEnabled()) ||
+                (currentScrollDirection == Direction.VERTICAL && !config.getVerticalFlingEnabled())) {
             return true;
         }
 
@@ -348,23 +348,25 @@ final class WeekViewGestureHandler<T> extends GestureDetector.SimpleOnGestureLis
     }
 
     private void goToNearestOrigin() {
-        final float totalDayWidth = config.getTotalDayWidth();
+        float totalDayWidth = config.getTotalDayWidth();
         float timeShift = 0f;
-        if (config.numberOfVisibleDays >= 7 && config.showFirstDayOfWeekFirst) {
-            timeShift = drawingConfig.computeDifferenceWithFirstDayOfWeek(config, DateUtils.today()) * totalDayWidth;
-            totalDayWidth *= config.numberOfVisibleDays;
+        if (config.getNumberOfVisibleDays() >= 7 && config.getShowFirstDayOfWeekFirst()) {
+            timeShift = config.computeDifferenceWithFirstDayOfWeek(DateUtils.today()) * totalDayWidth;
+            totalDayWidth *= config.getNumberOfVisibleDays();
         }
-        double leftDays = config.getCurrentOrigin().x / totalDayWidth;
+        double leftDays = (config.getCurrentOrigin().x - timeShift) / totalDayWidth;
 
         if (currentFlingDirection != Direction.NONE) {
-            // snap to nearest day
-            leftDays = round(leftDays);
-        } else if (currentScrollDirection == Direction.LEFT) {
-            // snap to last day
-            leftDays = floor(leftDays);
-        } else if (currentScrollDirection == Direction.RIGHT) {
-            // snap to next day
-            leftDays = ceil(leftDays);
+            if (currentScrollDirection == Direction.LEFT) {
+                // snap to last day
+                leftDays = floor(leftDays);
+            } else if (currentScrollDirection == Direction.RIGHT) {
+                // snap to next day
+                leftDays = ceil(leftDays);
+            } else {
+                // snap to nearest day
+                leftDays = round(leftDays);
+            }
         } else {
             // snap to nearest day
             leftDays = round(leftDays);
