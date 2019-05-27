@@ -89,6 +89,8 @@ public final class WeekView<T> extends View
 
         eventChipsProvider = new EventChipsProvider<>(configWrapper, cache, viewState);
         eventChipsProvider.setWeekViewLoader(getWeekViewLoader());
+
+        timeColumnDrawer.prepareTimes();
     }
 
     static int getViewWidth() {
@@ -699,7 +701,7 @@ public final class WeekView<T> extends View
      * and `pastBackgroundColor`.
      *
      * @param color True if past and future should have two different
-     *                                    background colors.
+     *              background colors.
      */
     public void setShowDistinctPastFutureColor(boolean color) {
         configWrapper.setShowDistinctPastFutureColor(color);
