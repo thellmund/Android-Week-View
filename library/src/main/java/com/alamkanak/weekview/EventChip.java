@@ -43,7 +43,7 @@ class EventChip<T> {
      *
      * @param event         Represents the event which this instance of rectangle represents.
      * @param originalEvent The original event that was passed by the user.
-     * @param rect         The rectangle.
+     * @param rect          The rectangle.
      */
     EventChip(WeekViewEvent<T> event, WeekViewEvent<T> originalEvent, RectF rect) {
         this.event = event;
@@ -51,17 +51,17 @@ class EventChip<T> {
         this.originalEvent = originalEvent;
     }
 
-    void draw(WeekViewConfigWrapper config, Canvas canvas) {
-        draw(config, null, canvas);
+    void draw(WeekViewConfigWrapper config, Canvas canvas, Paint paint) {
+        draw(config, null, canvas, paint);
     }
 
-    void draw(WeekViewConfigWrapper config, @Nullable StaticLayout textLayout, Canvas canvas) {
+    void draw(WeekViewConfigWrapper config, @Nullable StaticLayout textLayout, Canvas canvas, Paint paint) {
         final float cornerRadius = config.getEventCornerRadius();
-        final Paint backgroundPaint = getBackgroundPaint(config);
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, backgroundPaint);
+        setBackgroundPaint(config, paint);
+        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint);
 
         if (event.hasBorder()) {
-            final Paint borderPaint = getBorderPaint();
+            setBorderPaint(paint);
             final int borderWidth = event.getBorderWidth();
 
             final RectF adjustedRect = new RectF(
@@ -69,11 +69,11 @@ class EventChip<T> {
                     rect.top + borderWidth / 2f,
                     rect.right - borderWidth / 2f,
                     rect.bottom - borderWidth / 2f);
-            canvas.drawRoundRect(adjustedRect, cornerRadius, cornerRadius, borderPaint);
+            canvas.drawRoundRect(adjustedRect, cornerRadius, cornerRadius, paint);
         }
 
         if (event.isNotAllDay()) {
-            drawCornersForMultiDayEvents(backgroundPaint, cornerRadius, canvas);
+            drawCornersForMultiDayEvents(paint, cornerRadius, canvas);
         }
 
         if (textLayout != null) {
@@ -123,18 +123,16 @@ class EventChip<T> {
         }
     }
 
-    private Paint getBackgroundPaint(WeekViewConfigWrapper config) {
-        final Paint paint = new Paint();
+    private void setBackgroundPaint(WeekViewConfigWrapper config, Paint paint) {
         paint.setColor(event.getColorOrDefault(config));
-        return paint;
+        paint.setStrokeWidth(0);
+        paint.setStyle(Paint.Style.FILL);
     }
 
-    private Paint getBorderPaint() {
-        final Paint paint = new Paint();
+    private void setBorderPaint(Paint paint) {
         paint.setColor(event.getBorderColor());
         paint.setStrokeWidth(event.getBorderWidth());
         paint.setStyle(Paint.Style.STROKE);
-        return paint;
     }
 
     private void calculateTextHeightAndDrawTitle(WeekViewConfigWrapper config, Canvas canvas) {
