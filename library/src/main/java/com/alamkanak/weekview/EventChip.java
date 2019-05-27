@@ -33,6 +33,10 @@ class EventChip<T> {
     float top;
     float bottom;
 
+    private StaticLayout layoutCache;
+    private int availableWidthCache;
+    private int availableHeightCache;
+
     /**
      * Create a new instance of event rect. An EventRect is actually the rectangle that is drawn
      * on the calendar for a given event. There may be more than one rectangle for a single
@@ -159,31 +163,36 @@ class EventChip<T> {
         final int availableWidth = (int) (rect.right - rect.left - config.getEventPadding() * 2);
 
         // Get text dimensions.
-        final TextPaint textPaint = event.getTextPaint(config);
-        StaticLayout textLayout = new StaticLayout(stringBuilder,
-                textPaint, availableWidth, ALIGN_NORMAL, 1.0f, 0.0f, false);
+        if (availableWidth != availableWidthCache || availableHeight != availableHeightCache || layoutCache == null) {
+            final TextPaint textPaint = event.getTextPaint(config);
+            StaticLayout textLayout = new StaticLayout(stringBuilder,
+                    textPaint, availableWidth, ALIGN_NORMAL, 1.0f, 0.0f, false);
 
-        final int lineHeight = textLayout.getHeight() / textLayout.getLineCount();
+            final int lineHeight = textLayout.getHeight() / textLayout.getLineCount();
 
-        if (availableHeight >= lineHeight) {
-            int availableLineCount = availableHeight / lineHeight;
-            do {
-                // TODO: Don't truncate
-                // Ellipsize text to fit into event rect.
-                final int availableArea = availableLineCount * availableWidth;
-                final CharSequence ellipsized = TextUtils.ellipsize(stringBuilder,
-                        textPaint, availableArea, TextUtils.TruncateAt.END);
+            if (availableHeight >= lineHeight) {
+                int availableLineCount = availableHeight / lineHeight;
+                do {
+                    // TODO: Don't truncate
+                    // Ellipsize text to fit into event rect.
+                    final int availableArea = availableLineCount * availableWidth;
+                    final CharSequence ellipsized = TextUtils.ellipsize(stringBuilder,
+                            textPaint, availableArea, TextUtils.TruncateAt.END);
 
-                final int width = (int) (rect.right - rect.left - config.getEventPadding() * 2);
-                textLayout = new StaticLayout(ellipsized, textPaint, width, ALIGN_NORMAL, 1.0f, 0.0f, false);
+                    final int width = (int) (rect.right - rect.left - config.getEventPadding() * 2);
+                    textLayout = new StaticLayout(ellipsized, textPaint, width, ALIGN_NORMAL, 1.0f, 0.0f, false);
 
-                // Repeat until text is short enough.
-                availableLineCount--;
-            } while (textLayout.getHeight() > availableHeight);
+                    // Repeat until text is short enough.
+                    availableLineCount--;
+                } while (textLayout.getHeight() > availableHeight);
 
-            // Draw text.
-            drawEventTitle(config, textLayout, canvas);
+            }
+            availableWidthCache = availableWidth;
+            availableHeightCache = availableHeight;
+            layoutCache = textLayout;
         }
+        // Draw text.
+        drawEventTitle(config, layoutCache, canvas);
     }
 
     private void drawEventTitle(WeekViewConfigWrapper config, StaticLayout textLayout, Canvas canvas) {
