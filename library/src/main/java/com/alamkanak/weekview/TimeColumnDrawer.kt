@@ -8,9 +8,9 @@ internal class TimeColumnDrawer(
 ) {
     private val times = SparseArray<String>()
 
-    fun prepareTimes() {
-        for (i in config.startHour until config.hoursPerDay step config.timeColumnHoursInterval) {
-            times.put(i, config.dateTimeInterpreter.interpretTime(i + config.minHour))
+    init {
+        for (hour in config.startHour until config.hoursPerDay step config.timeColumnHoursInterval) {
+            times.put(hour, config.dateTimeInterpreter.interpretTime(hour + config.minHour))
         }
     }
 
@@ -31,8 +31,8 @@ internal class TimeColumnDrawer(
         val hourLines = FloatArray(config.hoursPerDay * 4)
         val hourStep = config.timeColumnHoursInterval
 
-        for (i in startHour until config.hoursPerDay step hourStep) {
-            val heightOfHour = (config.hourHeight * i)
+        for (hour in startHour until config.hoursPerDay step hourStep) {
+            val heightOfHour = (config.hourHeight * hour)
             top = config.headerHeight + config.currentOrigin.y + heightOfHour
 
             // Draw the text if its y position is not outside of the visible area. The pivot point
@@ -46,10 +46,10 @@ internal class TimeColumnDrawer(
                     y += config.timeTextHeight / 2 + config.hourSeparatorPaint.strokeWidth + config.timeColumnPadding
                 }
 
-                canvas.drawText(times[i], x, y, config.timeTextPaint)
+                canvas.drawText(times[hour], x, y, config.timeTextPaint)
 
-                if (config.showTimeColumnHourSeparator && i > 0) {
-                    val j = i - 1
+                if (config.showTimeColumnHourSeparator && hour > 0) {
+                    val j = hour - 1
                     val yHoursLines = top
                     hourLines[j * 4] = 0f
                     hourLines[j * 4 + 1] = yHoursLines

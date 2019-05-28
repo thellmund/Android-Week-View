@@ -89,8 +89,6 @@ public final class WeekView<T> extends View
 
         eventChipsProvider = new EventChipsProvider<>(configWrapper, cache, viewState);
         eventChipsProvider.setWeekViewLoader(getWeekViewLoader());
-
-        timeColumnDrawer.prepareTimes();
     }
 
     static int getViewWidth() {
@@ -170,7 +168,7 @@ public final class WeekView<T> extends View
         eventsDrawer.drawSingleEvents(cache.getNormalEventChips(), drawingContext, canvas, paint);
 
         nowLineDrawer.draw(drawingContext, canvas);
-        headerRowDrawer.draw(drawingContext, canvas);
+        headerRowDrawer.draw(drawingContext, canvas, paint);
         dayLabelDrawer.draw(drawingContext, canvas);
 
         eventsDrawer.drawAllDayEvents(allDayEvents, canvas, paint);

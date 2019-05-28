@@ -13,7 +13,7 @@ internal class DayLabelDrawer(
         private val config: WeekViewConfigWrapper
 ) {
 
-    private val sparseArray = SparseArray<String>()
+    private val dayLabelCache = SparseArray<String>()
 
     fun draw(drawingContext: DrawingContext, canvas: Canvas) {
         drawingContext
@@ -24,7 +24,10 @@ internal class DayLabelDrawer(
     }
 
     private fun drawLabel(day: LocalDate, startPixel: Float, canvas: Canvas) {
-        val dayLabel = sparseArray.get(day.dayOfMonth + day.monthValue + day.year, config.dateTimeInterpreter.interpretDate(day.toCalendar()))
+
+        val key = day.toEpochDay().toInt()
+        val dayLabel = dayLabelCache.get(key, provideDayLabel(day))
+
         val x = startPixel + config.widthPerDay / 2
 
         val textPaint = if (day.isToday) {
@@ -59,4 +62,10 @@ internal class DayLabelDrawer(
                 StaticLayout(dayLabel, textPaint, config.totalDayWidth.toInt(),
                         Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false)
             }
+
+    private fun provideDayLabel(day: LocalDate): String {
+        return config.dateTimeInterpreter.interpretDate(day.toCalendar()).also {
+            dayLabelCache.put(day.toEpochDay().toInt(), it)
+        }
+    }
 }
