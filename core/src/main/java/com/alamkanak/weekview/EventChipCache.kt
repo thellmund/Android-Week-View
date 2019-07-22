@@ -28,12 +28,12 @@ internal class EventChipCache<T> {
 
         normal.forEach {
             val key = it.event.startTime.atStartOfDay
-            normalEventChipsByDate.add(key, it)
+            normalEventChipsByDate.addOrReplace(key, it)
         }
 
         allDay.forEach {
             val key = it.event.startTime.atStartOfDay
-            allDayEventChipsByDate.add(key, it)
+            allDayEventChipsByDate.addOrReplace(key, it)
         }
     }
 
@@ -46,26 +46,5 @@ internal class EventChipCache<T> {
     fun clear() {
         allDayEventChipsByDate.clear()
         normalEventChipsByDate.clear()
-    }
-
-    private fun ArrayMap<Calendar, MutableList<EventChip<T>>>.add(
-        key: Calendar,
-        eventChip: EventChip<T>
-    ) {
-        val results = getOrElse(key) { mutableListOf() }
-        val indexOfExisting = results.indexOfFirst { it.event.id == eventChip.event.id }
-        if (indexOfExisting != -1) {
-            // If an event with the same ID already exists, replace it. The new event will likely be
-            // more up-to-date.
-            results.replace(indexOfExisting, eventChip)
-        } else {
-            results.add(eventChip)
-        }
-        this[key] = results
-    }
-
-    private fun <T> MutableList<T>.replace(index: Int, element: T) {
-        removeAt(index)
-        add(index, element)
     }
 }

@@ -56,8 +56,7 @@ internal class EventChipsProvider<T>(
             }
         }
 
-        val loader = checkNotNull(monthLoader) { "No OnMonthChangeListener found. " +
-            "Provide one via weekView.setOnMonthChangeListener()." }
+        val loader = monthLoader ?: return
 
         if (previousPeriodEvents == null) {
             previousPeriodEvents = loader.load(fetchRange.previous)
@@ -75,14 +74,11 @@ internal class EventChipsProvider<T>(
         createAndCacheEventChips(previousPeriodEvents, currentPeriodEvents, nextPeriodEvents)
     }
 
-    private fun createAndCacheEventChips(
-        previousPeriodEvents: List<WeekViewEvent<T>>,
-        currentPeriodEvents: List<WeekViewEvent<T>>,
-        nextPeriodEvents: List<WeekViewEvent<T>>
-    ) {
-        chipCache += convertEventsToEventChips(previousPeriodEvents)
-        chipCache += convertEventsToEventChips(currentPeriodEvents)
-        chipCache += convertEventsToEventChips(nextPeriodEvents)
+    // TODO: Move to EventChipCache?
+    fun createAndCacheEventChips(vararg eventsLists: List<WeekViewEvent<T>>) {
+        for (events in eventsLists) {
+            chipCache += convertEventsToEventChips(events)
+        }
     }
 
     private fun convertEventsToEventChips(

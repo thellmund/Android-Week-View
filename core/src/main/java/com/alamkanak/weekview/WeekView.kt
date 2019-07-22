@@ -46,6 +46,10 @@ class WeekView<T> @JvmOverloads constructor(
     private val eventChipsProvider = EventChipsProvider(eventCache, eventSplitter, eventChipCache)
     private val eventChipsExpander = EventChipsExpander(configWrapper, eventChipCache)
 
+    private val asyncLoader: AsyncLoader<T> by lazy {
+        AsyncLoader(eventCache, eventChipsProvider)
+    }
+
     private val paint = Paint()
 
     // Be careful when changing the order of the updaters, as the calculation of any updater might
@@ -1237,6 +1241,23 @@ class WeekView<T> @JvmOverloads constructor(
                 return block(startDate, endDate)
             }
         }
+    }
+
+    /**
+     * Submits a list of [WeekViewDisplayable]s to [WeekView] and invalidates the view.
+     */
+    fun submit(items: List<WeekViewDisplayable<T>>) {
+        asyncLoader.submit(items)
+        invalidate()
+    }
+
+    /**
+     * Registers a block that is called whenever [WeekView] needs to load more events.
+     */
+    fun onLoadMore(
+        block: ((startDate: Calendar, endDate: Calendar) -> Unit)?
+    ) {
+        asyncLoader.onLoadMore = block
     }
 
     @Deprecated(

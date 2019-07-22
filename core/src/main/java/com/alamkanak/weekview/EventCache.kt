@@ -49,4 +49,21 @@ internal class EventCache<T> {
         this.nextPeriodEvents = nextPeriodEvents
         this.fetchedRange = fetchedRange
     }
+
+    fun update(
+        period: Period,
+        events: List<WeekViewEvent<T>>
+    ) {
+        // TODO Find a better solution
+        if (fetchedRange == null) {
+            fetchedRange = FetchRange(period.previous, period, period.next)
+        }
+
+        val range = checkNotNull(fetchedRange)
+        when (period) {
+            range.previous -> previousPeriodEvents = events
+            range.current -> currentPeriodEvents = events
+            range.next -> nextPeriodEvents = events
+        }
+    }
 }
