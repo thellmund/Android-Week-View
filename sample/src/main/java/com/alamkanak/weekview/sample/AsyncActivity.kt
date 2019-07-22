@@ -10,8 +10,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewDisplayable
 import com.alamkanak.weekview.WeekViewEvent
+import com.alamkanak.weekview.onLoadMore
 import com.alamkanak.weekview.sample.apiclient.ApiEvent
 import com.alamkanak.weekview.sample.data.FakeEventsApi
+import com.alamkanak.weekview.updateWith
 import java.util.Calendar
 import java.util.Locale
 
@@ -41,6 +43,12 @@ class AsyncActivity : AppCompatActivity() {
         weekView.setOnEventLongPressListener(this::onEventLongPress)
         weekView.setOnMonthChangeListener(this::onMonthChange)
         weekView.setOnEmptyViewLongPressListener(this::onEmptyViewLongPress)
+
+        weekView.onLoadMore { _, _ ->
+            apiService.fetchEvents {
+                weekView.updateWith(it)
+            }
+        }
 
         progressDialog.show()
     }
