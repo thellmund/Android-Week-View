@@ -16,10 +16,12 @@ internal class AsyncLoader<T>(
         startDate: Calendar,
         endDate: Calendar
     ): List<WeekViewDisplayable<T>> {
-        val id = startDate to endDate
-        if (id !in inTransit) {
-            inTransit += id
-            onLoadMore?.invoke(startDate, endDate)
+        onLoadMore?.let { onLoadMore ->
+            val id = startDate to endDate
+            if (id !in inTransit) {
+                inTransit += id
+                onLoadMore(startDate, endDate)
+            }
         }
         return emptyList()
     }
@@ -34,8 +36,15 @@ internal class AsyncLoader<T>(
         dateRange: List<Calendar>
     ): Boolean {
         val events = items.map { it.toWeekViewEvent() }
-        val startDate = events.map { it.startTime.atStartOfDay }.min() ?: return false
-        val endDate = events.map { it.startTime.atEndOfDay }.max() ?: return false
+        val startDate = events.map { it.startTime.atStartOfDay }.min()
+        val endDate = events.map { it.startTime.atEndOfDay }.max()
+
+        if (startDate == null || endDate == null) {
+            // The new items are empty, but it's possible that WeekView is currently displaying
+            // events.
+            val currentEvents = eventCache.getEventsInRange(dateRange)
+            return currentEvents.isNotEmpty()
+        }
 
         val id = startDate to endDate
         if (id in inTransit) {

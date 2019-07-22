@@ -31,6 +31,16 @@ internal class EventCache<T> {
         return results
     }
 
+    fun getEventsInRange(dateRange: List<Calendar>): List<WeekViewEvent<T>> {
+        val events = previousPeriodEvents.orEmpty() +
+            currentPeriodEvents.orEmpty() + nextPeriodEvents.orEmpty()
+        val results = mutableListOf<WeekViewEvent<T>>()
+        for (date in dateRange) {
+            results += events.filter { it.isSameDay(date) }
+        }
+        return results
+    }
+
     fun clear() {
         previousPeriodEvents = null
         currentPeriodEvents = null
