@@ -1247,8 +1247,11 @@ class WeekView<T> @JvmOverloads constructor(
      * Submits a list of [WeekViewDisplayable]s to [WeekView] and invalidates the view.
      */
     fun submit(items: List<WeekViewDisplayable<T>>) {
-        asyncLoader.submit(items)
-        invalidate()
+        val dateRange = drawingContext.dateRangeWithStartPixels.map { it.first }
+        val shouldInvalidate = asyncLoader.submit(items, dateRange)
+        if (shouldInvalidate) {
+            invalidate()
+        }
     }
 
     /**

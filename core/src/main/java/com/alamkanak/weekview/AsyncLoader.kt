@@ -24,10 +24,18 @@ internal class AsyncLoader<T>(
         return emptyList()
     }
 
-    fun submit(items: List<WeekViewDisplayable<T>>) {
+    /**
+     * Caches the list of provided [WeekViewDisplayable]s.
+     *
+     * @return Whether the provided items are from the currently visible date range
+     */
+    fun submit(
+        items: List<WeekViewDisplayable<T>>,
+        dateRange: List<Calendar>
+    ): Boolean {
         val events = items.map { it.toWeekViewEvent() }
-        val startDate = events.map { it.startTime.atStartOfDay }.min() ?: return
-        val endDate = events.map { it.startTime.atEndOfDay }.max() ?: return
+        val startDate = events.map { it.startTime.atStartOfDay }.min() ?: return false
+        val endDate = events.map { it.startTime.atEndOfDay }.max() ?: return false
 
         val id = startDate to endDate
         if (id in inTransit) {
@@ -39,6 +47,8 @@ internal class AsyncLoader<T>(
         val eventsByPeriod = mapToPeriod(events)
         cacheEvents(eventsByPeriod)
         cacheEventChips(eventsByPeriod.values.flatten())
+
+        return dateRange.any { it.isBetween(startDate, endDate, inclusive = true) }
     }
 
     private fun mapToPeriod(

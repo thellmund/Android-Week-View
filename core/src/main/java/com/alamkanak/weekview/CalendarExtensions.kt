@@ -56,6 +56,18 @@ internal fun Calendar.isBefore(other: Calendar) = timeInMillis < other.timeInMil
 
 internal fun Calendar.isAfter(other: Calendar) = timeInMillis > other.timeInMillis
 
+internal fun Calendar.isBetween(
+    lhs: Calendar,
+    rhs: Calendar,
+    inclusive: Boolean = false
+): Boolean {
+    return if (inclusive) {
+        timeInMillis >= lhs.timeInMillis && timeInMillis <= rhs.timeInMillis
+    } else {
+        timeInMillis > lhs.timeInMillis && timeInMillis < rhs.timeInMillis
+    }
+}
+
 internal val Calendar.isBeforeToday: Boolean
     get() = isBefore(today())
 
