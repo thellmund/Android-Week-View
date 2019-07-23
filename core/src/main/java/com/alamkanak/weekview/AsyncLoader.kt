@@ -1,8 +1,14 @@
 package com.alamkanak.weekview
 
-import androidx.collection.ArrayMap
 import java.util.Calendar
 
+/**
+ * This class enables asynchronous loading of [WeekViewEvent]s. While
+ * [OnMonthChangeListener.onMonthChange] requires a result, this class's [onLoadMore] does not.
+ * It only acts as a way to notify any potential data provider that [WeekView] is requesting more
+ * events for a particular period. To update events in [WeekView], this class provides a [submit]
+ * method.
+ */
 internal class AsyncLoader<T>(
     private val eventCache: EventCache<T>,
     private val eventChipsProvider: EventChipsProvider<T>
@@ -10,26 +16,21 @@ internal class AsyncLoader<T>(
 
     var onLoadMore: ((startDate: Calendar, endDate: Calendar) -> Unit)? = null
 
-    private val inTransit = mutableSetOf<Pair<Calendar, Calendar>>()
-
     override fun onMonthChange(
         startDate: Calendar,
         endDate: Calendar
     ): List<WeekViewDisplayable<T>> {
-        onLoadMore?.let { onLoadMore ->
-            val id = startDate to endDate
-            if (id !in inTransit) {
-                inTransit += id
-                onLoadMore(startDate, endDate)
-            }
-        }
+        onLoadMore?.invoke(startDate, endDate)
         return emptyList()
     }
 
     /**
-     * Caches the list of provided [WeekViewDisplayable]s.
+     * Caches the provided [WeekViewDisplayable]s and returns whether the submitted events fall
+     * into the currently displayed date range. If so, [WeekView] can decide to invalidate the view
+     * and thus accommodate the changes.
      *
-     * @return Whether the provided items are from the currently visible date range
+     * @param items The list of new [WeekViewDisplayable]s
+     * @param dateRange The list of currently visible dates
      */
     fun submit(
         items: List<WeekViewDisplayable<T>>,
@@ -40,40 +41,35 @@ internal class AsyncLoader<T>(
         val endDate = events.map { it.startTime.atEndOfDay }.max()
 
         if (startDate == null || endDate == null) {
+            // If these are null, this would indicate that the submitted list of events is empty.
             // The new items are empty, but it's possible that WeekView is currently displaying
             // events.
-            val currentEvents = eventCache.getEventsInRange(dateRange)
+            val currentEvents = eventCache[dateRange]
             return currentEvents.isNotEmpty()
         }
 
-        val id = startDate to endDate
-        if (id in inTransit) {
-            // If the loading of these events was prompted by WeekView.onLoadMore(), then remove
-            // it from inTransit to allow new refreshes for this period in the future.
-            inTransit -= id
-        }
-
-        val eventsByPeriod = mapToPeriod(events)
+        val eventsByPeriod = mapEventsToPeriod(events)
         cacheEvents(eventsByPeriod)
         cacheEventChips(eventsByPeriod.values.flatten())
 
         return dateRange.any { it.isBetween(startDate, endDate, inclusive = true) }
     }
 
-    private fun mapToPeriod(
+    private fun mapEventsToPeriod(
         events: List<WeekViewEvent<T>>
-    ): ArrayMap<Period, MutableList<WeekViewEvent<T>>> {
-        val eventsByPeriod = ArrayMap<Period, MutableList<WeekViewEvent<T>>>()
-        for (event in events) {
-            val period = Period.fromDate(event.startTime)
-            eventsByPeriod.add(period, event)
-        }
-        return eventsByPeriod
-    }
+    ) = events.groupBy { Period.fromDate(it.startTime) }
 
-    private fun cacheEvents(eventsByPeriod: Map<Period, MutableList<WeekViewEvent<T>>>) {
-        for ((period, periodEvents) in eventsByPeriod) {
-            eventCache.update(period, periodEvents)
+    private fun cacheEvents(eventsByPeriod: Map<Period, List<WeekViewEvent<T>>>) {
+        val periods = eventsByPeriod.keys.sorted()
+        eventCache.fetchedRange = when (periods.size) {
+            3 -> FetchRange.fromList(periods)
+            1 -> FetchRange.create(periods.single())
+            else -> throw IllegalStateException("AsyncLoader attempted to cache " +
+                "${periods.size} periods, which should not be possible.")
+        }
+
+        for ((period, events) in eventsByPeriod) {
+            eventCache[period] = events
         }
     }
 

@@ -2,6 +2,11 @@ package com.alamkanak.weekview
 
 import java.util.Calendar
 
+private typealias EventsTriple<T> =
+    Triple<List<WeekViewEvent<T>>?, List<WeekViewEvent<T>>?, List<WeekViewEvent<T>>?>
+private fun <T> EventsTriple<T>.shiftLeft(): EventsTriple<T> = EventsTriple(second, third, null)
+private fun <T> EventsTriple<T>.shiftRight(): EventsTriple<T> = EventsTriple(null, first, second)
+
 internal class EventChipsProvider<T>(
     private val cache: EventCache<T>,
     private val eventSplitter: WeekViewEventSplitter<T>,
@@ -13,65 +18,49 @@ internal class EventChipsProvider<T>(
 
     fun loadEventsIfNecessary(firstVisibleDate: Calendar?) {
         val hasNoEvents = cache.hasEvents.not()
-
         val firstVisibleDay = checkNotNull(firstVisibleDate)
         val fetchPeriods = FetchRange.create(firstVisibleDay)
 
-        if (hasNoEvents || shouldRefreshEvents || !cache.covers(fetchPeriods)) {
-            loadEventsAndCalculateEventChipPositions(fetchPeriods)
+        if (hasNoEvents || shouldRefreshEvents || fetchPeriods !in cache) {
+            loadEvents(fetchPeriods)
             shouldRefreshEvents = false
         }
     }
 
-    private fun loadEventsAndCalculateEventChipPositions(fetchRange: FetchRange) {
+    private fun loadEvents(fetchRange: FetchRange) {
         if (shouldRefreshEvents) {
             cache.clear()
         }
-        loadEvents(fetchRange)
-    }
 
-    private fun loadEvents(fetchRange: FetchRange) {
-        val oldFetchPeriods = cache.fetchedRange ?: fetchRange
+        val oldFetchRange = cache.fetchedRange ?: fetchRange
         val newCurrentPeriod = fetchRange.current
 
-        var previousPeriodEvents: List<WeekViewEvent<T>>? = null
-        var currentPeriodEvents: List<WeekViewEvent<T>>? = null
-        var nextPeriodEvents: List<WeekViewEvent<T>>? = null
+        val periods = fetchRange.periods
+        val events = EventsTriple(
+            cache.previousPeriodEvents,
+            cache.currentPeriodEvents,
+            cache.nextPeriodEvents
+        )
 
-        if (cache.hasEvents) {
-            when (newCurrentPeriod) {
-                oldFetchPeriods.previous -> {
-                    currentPeriodEvents = cache.previousPeriodEvents
-                    nextPeriodEvents = cache.currentPeriodEvents
-                }
-                oldFetchPeriods.current -> {
-                    previousPeriodEvents = cache.previousPeriodEvents
-                    currentPeriodEvents = cache.currentPeriodEvents
-                    nextPeriodEvents = cache.nextPeriodEvents
-                }
-                oldFetchPeriods.next -> {
-                    previousPeriodEvents = cache.currentPeriodEvents
-                    currentPeriodEvents = cache.nextPeriodEvents
-                }
-            }
+        val shiftedEvents = when (newCurrentPeriod) {
+            oldFetchRange.previous -> events.shiftRight()
+            oldFetchRange.next -> events.shiftLeft()
+            else -> events
         }
+
+        val periodsToBeLoaded = periods
+            .zip(shiftedEvents.toList())
+            .filter { it.second == null }
+            .map { it.first }
 
         val loader = monthLoader ?: return
+        cache.fetchedRange = fetchRange
 
-        if (previousPeriodEvents == null) {
-            previousPeriodEvents = loader.load(fetchRange.previous)
+        periodsToBeLoaded.forEach { period ->
+            val results = loader.load(period)
+            createAndCacheEventChips(results)
+            cache[period] = results
         }
-
-        if (currentPeriodEvents == null) {
-            currentPeriodEvents = loader.load(fetchRange.current)
-        }
-
-        if (nextPeriodEvents == null) {
-            nextPeriodEvents = loader.load(fetchRange.next)
-        }
-
-        cache.update(previousPeriodEvents, currentPeriodEvents, nextPeriodEvents, fetchRange)
-        createAndCacheEventChips(previousPeriodEvents, currentPeriodEvents, nextPeriodEvents)
     }
 
     // TODO: Move to EventChipCache?

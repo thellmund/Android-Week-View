@@ -1219,6 +1219,9 @@ class WeekView<T> @JvmOverloads constructor(
     var onMonthChangeListener: OnMonthChangeListener<T>?
         get() = eventChipsProvider.monthLoader?.listener
         set(value) {
+            check(asyncLoader.onLoadMore == null) {
+                "You can't use both onLoadMore() and OnMonthChangeListener."
+            }
             eventChipsProvider.monthLoader = MonthLoader(value)
         }
 
@@ -1244,7 +1247,8 @@ class WeekView<T> @JvmOverloads constructor(
     }
 
     /**
-     * Submits a list of [WeekViewDisplayable]s to [WeekView] and invalidates the view.
+     * Submits a list of [WeekViewDisplayable]s to [WeekView]. If the new events fall into the
+     * currently displayed date range, this method will also redraw [WeekView].
      */
     fun submit(items: List<WeekViewDisplayable<T>>) {
         val dateRange = drawingContext.dateRangeWithStartPixels.map { it.first }
@@ -1255,11 +1259,15 @@ class WeekView<T> @JvmOverloads constructor(
     }
 
     /**
-     * Registers a block that is called whenever [WeekView] needs to load more events.
+     * Registers a block that is called whenever [WeekView] needs to load more events. This is
+     * similar to an [OnMonthChangeListener], but does not require anything to be returned.
      */
     fun onLoadMore(
         block: ((startDate: Calendar, endDate: Calendar) -> Unit)?
     ) {
+        check(onMonthChangeListener == null) {
+            "You can't use both onLoadMore() and OnMonthChangeListener."
+        }
         asyncLoader.onLoadMore = block
     }
 
