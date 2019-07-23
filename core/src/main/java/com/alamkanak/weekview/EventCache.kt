@@ -4,7 +4,7 @@ import java.util.Calendar
 
 internal class EventCache<T> {
 
-    private val allEvents: List<WeekViewEvent<T>>
+    val allEvents: List<WeekViewEvent<T>>
         get() = previousPeriodEvents.orEmpty() +
             currentPeriodEvents.orEmpty() + nextPeriodEvents.orEmpty()
 

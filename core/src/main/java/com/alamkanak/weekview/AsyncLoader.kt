@@ -51,7 +51,6 @@ internal class AsyncLoader<T>(
         val eventsByPeriod = mapEventsToPeriod(events)
         cacheEvents(eventsByPeriod)
         cacheEventChips(eventsByPeriod.values.flatten())
-
         return dateRange.any { it.isBetween(startDate, endDate, inclusive = true) }
     }
 

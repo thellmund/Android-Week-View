@@ -12,8 +12,7 @@ import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.sample.apiclient.ApiEvent
 import com.alamkanak.weekview.sample.data.EventsApi
 import com.alamkanak.weekview.sample.data.FakeEventsApi
-import java.util.Calendar
-import java.util.Locale
+import java.text.SimpleDateFormat
 
 private data class AsyncViewState(
     val events: List<ApiEvent> = emptyList(),
@@ -84,9 +83,10 @@ class AsyncActivity : AppCompatActivity() {
         }
 
         weekView.setOnEmptyViewLongPressListener { time ->
+            val sdf = SimpleDateFormat.getDateTimeInstance()
             Toast.makeText(
                 this,
-                "Empty view long pressed: ${getEventTitle(time)}",
+                "Empty view long pressed: ${sdf.format(time.time)}",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -151,15 +151,6 @@ class AsyncActivity : AppCompatActivity() {
         item.isChecked = item.isChecked.not()
         weekViewType = TYPE_WEEK_VIEW
         weekView.numberOfVisibleDays = 7
-    }
-
-    private fun getEventTitle(time: Calendar): String {
-        val hour = time.get(Calendar.HOUR_OF_DAY)
-        val minute = time.get(Calendar.MINUTE)
-        val month = time.get(Calendar.MONTH) + 1
-        val dayOfMonth = time.get(Calendar.DAY_OF_MONTH)
-        return String.format(
-            Locale.getDefault(), "Event of %02d:%02d %s/%d", hour, minute, month, dayOfMonth)
     }
 
     companion object {

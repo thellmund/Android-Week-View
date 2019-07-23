@@ -31,7 +31,7 @@ internal class EventsLoader<T>(
         if (onMonthChangeListener == null) {
             // No OnMonthChangeListener is set. This is possible if WeekView.onLoadMore() is used
             // instead of an OnMonthChangeListener.
-            return null
+            return cache.allEvents
         }
 
         val hasNoEvents = cache.hasEvents.not()
@@ -42,7 +42,7 @@ internal class EventsLoader<T>(
             shouldRefreshEvents = false
             loadEvents(fetchPeriods)
         } else {
-            null
+            cache.allEvents
         }
     }
 
