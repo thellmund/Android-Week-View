@@ -5,6 +5,10 @@ internal class WeekViewEventSplitter<T>(
 ) {
 
     fun split(event: WeekViewEvent<T>): List<WeekViewEvent<T>> {
+        if (event.startTime >= event.endTime) {
+            return emptyList()
+        }
+
         val isAtStartOfNewPeriod = config.minHour == 0 &&
             event.endTime.isAtStartOfNextDay(event.startTime)
 

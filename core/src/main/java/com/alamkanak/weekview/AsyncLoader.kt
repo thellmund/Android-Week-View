@@ -11,7 +11,7 @@ import java.util.Calendar
  */
 internal class AsyncLoader<T>(
     private val eventCache: EventCache<T>,
-    private val eventChipsProvider: EventChipsProvider<T>
+    private val eventChipsLoader: EventChipsLoader<T>
 ) : OnMonthChangeListener<T> {
 
     var onLoadMore: ((startDate: Calendar, endDate: Calendar) -> Unit)? = null
@@ -74,6 +74,6 @@ internal class AsyncLoader<T>(
     }
 
     private fun cacheEventChips(events: List<WeekViewEvent<T>>) {
-        eventChipsProvider.createAndCacheEventChips(events)
+        eventChipsLoader.createAndCacheEventChips(events)
     }
 }
