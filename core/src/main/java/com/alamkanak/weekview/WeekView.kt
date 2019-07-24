@@ -57,7 +57,7 @@ class WeekView<T> @JvmOverloads constructor(
     private val updaters = listOf(
         MultiLineDayLabelHeightUpdater(configWrapper, cache),
         HeaderRowHeightUpdater(configWrapper, eventCache),
-        AllDayEventsUpdater(this, configWrapper, cache, eventChipCache),
+        AllDayEventsUpdater(this, configWrapper, cache, eventCache, eventChipCache),
         SingleEventsUpdater(this, configWrapper, eventChipCache)
     )
 
@@ -103,7 +103,7 @@ class WeekView<T> @JvmOverloads constructor(
 
     private fun updateDimensions() {
         for (updater in updaters) {
-            if (updater.isRequired) {
+            if (updater.isRequired(drawingContext)) {
                 updater.update(drawingContext)
             }
         }
@@ -1256,7 +1256,7 @@ class WeekView<T> @JvmOverloads constructor(
      * currently displayed date range, this method will also redraw [WeekView].
      */
     fun submit(items: List<WeekViewDisplayable<T>>) {
-        val dateRange = drawingContext.dateRangeWithStartPixels.map { it.first }
+        val dateRange = drawingContext.dateRange
         val shouldInvalidate = asyncLoader.submit(items, dateRange)
         if (shouldInvalidate) {
             invalidate()
