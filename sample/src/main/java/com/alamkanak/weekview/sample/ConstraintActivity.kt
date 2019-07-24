@@ -7,9 +7,9 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.alamkanak.weekview.DateTimeInterpreter
-import com.alamkanak.weekview.OnEmptyViewLongPressListener
+import com.alamkanak.weekview.OnEmptyViewLongClickListener
 import com.alamkanak.weekview.OnEventClickListener
-import com.alamkanak.weekview.OnEventLongPressListener
+import com.alamkanak.weekview.OnEventLongClickListener
 import com.alamkanak.weekview.OnMonthChangeListener
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewDisplayable
@@ -23,7 +23,7 @@ import java.util.Calendar
 import java.util.Locale
 
 class ConstraintActivity : AppCompatActivity(), OnEventClickListener<Event>,
-    OnMonthChangeListener<Event>, OnEventLongPressListener<Event>, OnEmptyViewLongPressListener {
+    OnMonthChangeListener<Event>, OnEventLongClickListener<Event>, OnEmptyViewLongClickListener {
 
     private val weekView: WeekView<Event> by lazy { findViewById<WeekView<Event>>(R.id.weekView) }
     private val database: EventsDatabase by lazy { FakeEventsDatabase(this) }
@@ -34,22 +34,17 @@ class ConstraintActivity : AppCompatActivity(), OnEventClickListener<Event>,
 
         weekView.onEventClickListener = this
         weekView.onMonthChangeListener = this
-        weekView.onEventLongPressListener = this
-        weekView.onEmptyViewLongPressListener = this
+        weekView.onEventLongClickListener = this
+        weekView.onEmptyViewLongClickListener = this
 
         setupSeekBarAction()
         setupDateTimeInterpreter()
     }
 
-    private fun getEventTitle(time: Calendar): String {
-        val hour = time.get(Calendar.HOUR_OF_DAY)
-        val minute = time.get(Calendar.MINUTE)
-        val month = time.get(Calendar.MONTH) + 1
-        val dayOfMonth = time.get(Calendar.DAY_OF_MONTH)
-        return String.format(Locale.getDefault(), "Event of %02d:%02d %s/%d", hour, minute, month, dayOfMonth)
-    }
-
-    override fun onMonthChange(startDate: Calendar, endDate: Calendar): List<WeekViewDisplayable<Event>> {
+    override fun onMonthChange(
+        startDate: Calendar,
+        endDate: Calendar
+    ): List<WeekViewDisplayable<Event>> {
         return database.getEventsInRange(startDate, endDate)
     }
 
@@ -57,12 +52,14 @@ class ConstraintActivity : AppCompatActivity(), OnEventClickListener<Event>,
         Toast.makeText(this, "Clicked " + data.title, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onEventLongPress(data: Event, eventRect: RectF) {
+    override fun onEventLongClick(data: Event, eventRect: RectF) {
         Toast.makeText(this, "Long pressed event: " + data.title, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onEmptyViewLongPress(time: Calendar) {
-        Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show()
+    override fun onEmptyViewLongClick(time: Calendar) {
+        val sdf = SimpleDateFormat.getDateTimeInstance()
+        Toast.makeText(this, "Empty view long pressed: " +
+            sdf.format(time.time), Toast.LENGTH_SHORT).show()
     }
 
     private fun setupSeekBarAction() {

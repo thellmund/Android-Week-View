@@ -78,11 +78,11 @@ class AsyncActivity : AppCompatActivity() {
             Toast.makeText(this, "Removed ${data.name}", Toast.LENGTH_SHORT).show()
         }
 
-        weekView.setOnEventLongPressListener { data, rect ->
+        weekView.setOnEventLongClickListener { data, rect ->
             Toast.makeText(this, "Long pressed event: ${data.name}", Toast.LENGTH_SHORT).show()
         }
 
-        weekView.setOnEmptyViewLongPressListener { time ->
+        weekView.setOnEmptyViewLongClickListener { time ->
             val sdf = SimpleDateFormat.getDateTimeInstance()
             Toast.makeText(
                 this,

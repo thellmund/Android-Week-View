@@ -12,9 +12,9 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.alamkanak.weekview.OnEmptyViewLongPressListener;
+import com.alamkanak.weekview.OnEmptyViewLongClickListener;
 import com.alamkanak.weekview.OnEventClickListener;
-import com.alamkanak.weekview.OnEventLongPressListener;
+import com.alamkanak.weekview.OnEventLongClickListener;
 import com.alamkanak.weekview.OnMonthChangeListener;
 import com.alamkanak.weekview.ScrollListener;
 import com.alamkanak.weekview.WeekView;
@@ -25,6 +25,7 @@ import com.alamkanak.weekview.sample.data.FakeEventsDatabase;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -34,9 +35,9 @@ import static androidx.core.util.Preconditions.checkNotNull;
 
 public class StaticActivity extends AppCompatActivity
         implements OnEventClickListener<Event>, OnMonthChangeListener<Event>,
-        OnEventLongPressListener<Event>, OnEmptyViewLongPressListener {
+        OnEventLongClickListener<Event>, OnEmptyViewLongClickListener {
 
-    private WeekView<Event> mWeekView;
+    WeekView<Event> mWeekView;
     private EventsDatabase mDatabase;
 
     private TextView mDateTV;
@@ -52,8 +53,8 @@ public class StaticActivity extends AppCompatActivity
         mWeekView = findViewById(R.id.weekView);
         mWeekView.setOnEventClickListener(this);
         mWeekView.setOnMonthChangeListener(this);
-        mWeekView.setOnEventLongPressListener(this);
-        mWeekView.setOnEmptyViewLongPressListener(this);
+        mWeekView.setOnEventLongClickListener(this);
+        mWeekView.setOnEmptyViewLongClickListener(this);
 
         ImageView left = findViewById(R.id.left_arrow);
         left.setOnClickListener(new OnClickListener() {
@@ -83,14 +84,6 @@ public class StaticActivity extends AppCompatActivity
         });
     }
 
-    private String getEventTitle(Calendar time) {
-        int hour = time.get(Calendar.HOUR_OF_DAY);
-        int minute = time.get(Calendar.MINUTE);
-        int month = time.get(Calendar.MONTH) + 1;
-        int dayOfMonth = time.get(Calendar.DAY_OF_MONTH);
-        return String.format(Locale.getDefault(), "Event of %02d:%02d %s/%d", hour, minute, month, dayOfMonth);
-    }
-
     @NotNull
     @Override
     public List<WeekViewDisplayable<Event>> onMonthChange(@NotNull Calendar startDate,
@@ -104,16 +97,18 @@ public class StaticActivity extends AppCompatActivity
     }
 
     @Override
-    public void onEventLongPress(Event event, @NotNull RectF eventRect) {
+    public void onEventLongClick(Event event, @NotNull RectF eventRect) {
         Toast.makeText(this, "Long pressed event: " + event.getTitle(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onEmptyViewLongPress(@NotNull Calendar time) {
-        Toast.makeText(this, "Empty view long pressed: " + getEventTitle(time), Toast.LENGTH_SHORT).show();
+    public void onEmptyViewLongClick(@NotNull Calendar time) {
+        DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
+        Toast.makeText(this, "Empty view long pressed: "
+                + sdf.format(time.getTime()), Toast.LENGTH_SHORT).show();
     }
 
-    private void updateDateText() {
+    void updateDateText() {
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
         String formattedFirstDay = "none";
