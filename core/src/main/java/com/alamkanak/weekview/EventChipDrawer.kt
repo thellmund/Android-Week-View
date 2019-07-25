@@ -7,16 +7,17 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.StaticLayout
-import android.text.TextUtils.TruncateAt
-import android.text.TextUtils.ellipsize
 import android.text.style.StyleSpan
 import androidx.core.content.ContextCompat
+import com.alamkanak.weekview.WeekViewEvent.ColorResource
+import com.alamkanak.weekview.WeekViewEvent.TextResource
 
 internal class EventChipDrawer<T>(
     private val context: Context,
     private val config: WeekViewConfigWrapper
 ) {
 
+    private val textFitter = TextFitter<T>(context, config)
     private val textLayoutCache = mutableMapOf<Long, StaticLayout>()
 
     internal fun draw(
@@ -35,8 +36,8 @@ internal class EventChipDrawer<T>(
 
         if (event.style.hasBorder) {
             setBorderPaint(event, paint)
-            val borderWidth = event.style.borderWidth
 
+            val borderWidth = event.style.getBorderWidth(context)
             val adjustedRect = RectF(
                 rect.left + borderWidth / 2f,
                 rect.top + borderWidth / 2f,
@@ -79,14 +80,14 @@ internal class EventChipDrawer<T>(
             return
         }
 
-        val borderWidth = event.style.borderWidth.toFloat()
+        val borderWidth = event.style.getBorderWidth(context)
         val innerWidth = rect.width() - borderWidth * 2
 
         val borderStartX = rect.left + borderWidth
         val borderEndX = borderStartX + innerWidth
 
         if (event.startsOnEarlierDay(originalEvent)) {
-            // Remove top border stroke
+            // Remove top rounded corners by drawing a rectangle
             val borderStartY = rect.top
             val borderEndY = borderStartY + borderWidth
             val newRect = RectF(borderStartX, borderStartY, borderEndX, borderEndY)
@@ -94,7 +95,7 @@ internal class EventChipDrawer<T>(
         }
 
         if (event.endsOnLaterDay(originalEvent)) {
-            // Remove bottom border stroke
+            // Remove bottom rounded corners by drawing a rectangle
             val borderEndY = rect.bottom
             val borderStartY = borderEndY - borderWidth
             val newRect = RectF(borderStartX, borderStartY, borderEndX, borderEndY)
@@ -136,23 +137,21 @@ internal class EventChipDrawer<T>(
         }
 
         val title = when (val resource = event.titleResource) {
-            is WeekViewEvent.TextResource.Id -> context.getString(resource.resId)
-            is WeekViewEvent.TextResource.Value -> resource.text
+            is TextResource.Id -> context.getString(resource.resId)
+            is TextResource.Value -> resource.text
             null -> throw IllegalStateException("Invalid title resource: $resource")
+        }
+
+        val location = when (val resource = event.locationResource) {
+            is TextResource.Id -> context.getString(resource.resId)
+            is TextResource.Value -> resource.text
+            null -> null
         }
 
         val text = SpannableStringBuilder(title)
         text.setSpan(StyleSpan(Typeface.BOLD), 0, text.length, 0)
-
-        val location = when (val resource = event.locationResource) {
-            is WeekViewEvent.TextResource.Id -> context.getString(resource.resId)
-            is WeekViewEvent.TextResource.Value -> resource.text
-            null -> null
-        }
-
         location?.let {
-            text.append(' ')
-            text.append(it)
+            text.appendln().append(it)
         }
 
         val chipHeight = (rect.bottom - rect.top - fullVerticalPadding).toInt()
@@ -162,29 +161,12 @@ internal class EventChipDrawer<T>(
             return
         }
 
-        // Get text dimensions.
         val didAvailableAreaChange =
             eventChip.didAvailableAreaChange(rect, fullHorizontalPadding, fullVerticalPadding)
         val isCached = textLayoutCache.containsKey(event.id)
 
         if (didAvailableAreaChange || !isCached) {
-            val textPaint = event.getTextPaint(context, config)
-            val textLayout = TextLayoutBuilder.build(text, textPaint, chipWidth)
-            val lineHeight = textLayout.lineHeight
-
-            val fitsIntoChip = chipHeight >= lineHeight
-            val isAdaptive = config.adaptiveEventTextSize
-
-            val finalTextLayout = when {
-                // The text fits into the chip, so we just need to ellipsize it
-                fitsIntoChip -> ellipsizeTextToFitChip(eventChip, text, textLayout, chipHeight, chipWidth)
-                // The text doesn't fit into the chip, so we need to gradually reduce its size until
-                // it does
-                isAdaptive -> scaleTextIntoChip(eventChip, text, textLayout, chipHeight, chipWidth)
-                else -> textLayout
-            }
-
-            textLayoutCache[event.id] = finalTextLayout
+            textLayoutCache[event.id] = textFitter.fit(eventChip, text, chipHeight, chipWidth)
             eventChip.updateAvailableArea(chipWidth, chipHeight)
         }
 
@@ -194,77 +176,14 @@ internal class EventChipDrawer<T>(
         }
     }
 
-    private fun ellipsizeTextToFitChip(
-        eventChip: EventChip<T>,
-        text: CharSequence,
-        staticLayout: StaticLayout,
-        availableHeight: Int,
-        availableWidth: Int
-    ): StaticLayout {
-        val event = eventChip.event
-        val rect = checkNotNull(eventChip.rect)
-
-        // The text fits into the chip, so we just need to ellipsize it
-        var textLayout = staticLayout
-
-        val textPaint = event.getTextPaint(context, config)
-        var availableLineCount = availableHeight / textLayout.lineHeight
-
-        val fullHorizontalPadding = config.eventPaddingHorizontal * 2f
-
-        do {
-            // Ellipsize text to fit into event rect.
-            val availableArea = availableLineCount * availableWidth
-            val ellipsized = ellipsize(text, textPaint, availableArea.toFloat(), TruncateAt.END)
-
-            val width = (rect.right - rect.left - fullHorizontalPadding).toInt()
-            textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
-
-            // Repeat until text is short enough.
-            availableLineCount--
-        } while (textLayout.height > availableHeight)
-
-        return textLayout
-    }
-
-    private fun scaleTextIntoChip(
-        eventChip: EventChip<T>,
-        text: CharSequence,
-        staticLayout: StaticLayout,
-        availableHeight: Int,
-        availableWidth: Int
-    ): StaticLayout {
-        val event = eventChip.event
-        val rect = checkNotNull(eventChip.rect)
-
-        // The text doesn't fit into the chip, so we need to gradually reduce its size until it does
-        var textLayout = staticLayout
-        val textPaint = event.getTextPaint(context, config)
-
-        do {
-            textPaint.textSize -= 1f
-
-            val adaptiveLineCount = availableHeight / textLayout.lineHeight
-            val availableArea = adaptiveLineCount * availableWidth
-            val ellipsized = ellipsize(text, textPaint, availableArea.toFloat(), TruncateAt.END)
-
-            val fullHorizontalPadding = config.eventPaddingHorizontal * 2f
-            val width = (rect.right - rect.left - fullHorizontalPadding).toInt()
-
-            textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
-        } while (availableHeight <= textLayout.height)
-
-        return textLayout
-    }
-
     private fun setBackgroundPaint(
         event: WeekViewEvent<T>,
         paint: Paint
     ) {
         val resource = event.style.getBackgroundColorOrDefault(config)
         paint.color = when (resource) {
-            is WeekViewEvent.ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
-            is WeekViewEvent.ColorResource.Value -> resource.color
+            is ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
+            is ColorResource.Value -> resource.color
         }
         paint.isAntiAlias = true
         paint.strokeWidth = 0f
@@ -276,12 +195,12 @@ internal class EventChipDrawer<T>(
         paint: Paint
     ) {
         paint.color = when (val resource = event.style.borderColorResource) {
-            is WeekViewEvent.ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
-            is WeekViewEvent.ColorResource.Value -> resource.color
+            is ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
+            is ColorResource.Value -> resource.color
             null -> 0
         }
         paint.isAntiAlias = true
-        paint.strokeWidth = event.style.borderWidth.toFloat()
+        paint.strokeWidth = event.style.getBorderWidth(context).toFloat()
         paint.style = Paint.Style.STROKE
     }
 }
