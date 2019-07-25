@@ -7,8 +7,6 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.StaticLayout
-import android.text.TextUtils.TruncateAt
-import android.text.TextUtils.ellipsize
 import android.text.style.StyleSpan
 import androidx.core.content.ContextCompat
 
@@ -86,7 +84,7 @@ internal class EventChipDrawer<T>(
         val borderEndX = borderStartX + innerWidth
 
         if (event.startsOnEarlierDay(originalEvent)) {
-            // Remove top border stroke
+            // Remove top rounded corners by drawing a rectangle
             val borderStartY = rect.top
             val borderEndY = borderStartY + borderWidth
             val newRect = RectF(borderStartX, borderStartY, borderEndX, borderEndY)
@@ -94,7 +92,7 @@ internal class EventChipDrawer<T>(
         }
 
         if (event.endsOnLaterDay(originalEvent)) {
-            // Remove bottom border stroke
+            // Remove bottom rounded corners by drawing a rectangle
             val borderEndY = rect.bottom
             val borderStartY = borderEndY - borderWidth
             val newRect = RectF(borderStartX, borderStartY, borderEndX, borderEndY)
@@ -154,29 +152,11 @@ internal class EventChipDrawer<T>(
             return
         }
 
-        // Get text dimensions.
         val didAvailableAreaChange = eventChip.didAvailableAreaChange(rect, config.eventPadding)
         val isCached = textLayoutCache.containsKey(event.id)
 
         if (didAvailableAreaChange || !isCached) {
-            val textPaint = event.getTextPaint(context, config)
-            val textLayout = TextLayoutBuilder.build(text, textPaint, chipWidth)
-            val lineHeight = textLayout.lineHeight
-
-            val fitsIntoChip = chipHeight >= lineHeight
-            val isAdaptive = config.adaptiveEventTextSize
-
-            val finalTextLayout = when {
-                // The text fits into the chip, so we just need to ellipsize it
-                fitsIntoChip ->
-                    ellipsizeTextToFitChip(eventChip, text, textLayout, chipHeight, chipWidth)
-                // The text doesn't fit into the chip, so we need to gradually reduce its size until
-                // it does
-                isAdaptive -> scaleTextIntoChip(eventChip, text, textLayout, chipHeight, chipWidth)
-                else -> textLayout
-            }
-
-            textLayoutCache[event.id] = finalTextLayout
+            textLayoutCache[event.id] = textFitter.fit(eventChip, text, chipHeight, chipWidth)
             eventChip.updateAvailableArea(chipWidth, chipHeight)
         }
 
@@ -186,87 +166,7 @@ internal class EventChipDrawer<T>(
         }
     }
 
-    private fun ellipsizeTextToFitChip(
-        eventChip: EventChip<T>,
-        text: SpannableStringBuilder,
-        staticLayout: StaticLayout,
-        availableHeight: Int,
-        availableWidth: Int
-    ): StaticLayout {
-        val event = eventChip.event
-        val rect = checkNotNull(eventChip.rect)
-
-        // The text fits into the chip, so we just need to ellipsize it
-        var textLayout = staticLayout
-
-        val textPaint = event.getTextPaint(context, config)
-        var availableLineCount = availableHeight / textLayout.lineHeight
-
-        // val modifiedText = titleBuilder.build(event, singleLine = true)
-
-        val modifiedText = when {
-            // Draw location behind title instead of underneath it to save space
-            textLayout.height > availableHeight -> replaceNewLineWithSpace(text)
-            else -> text
-        }
-
-        do {
-            // Ellipsize text to fit into event rect.
-            val availableArea = availableLineCount * availableWidth * 1f
-            val ellipsized = ellipsize(modifiedText, textPaint, availableArea, TruncateAt.END)
-
-            val width = (rect.right - rect.left - (config.eventPadding * 2).toFloat()).toInt()
-            textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
-
-            // Repeat until text is short enough.
-            availableLineCount--
-        } while (textLayout.height > availableHeight)
-
-        return textLayout
-    }
-
-    private fun replaceNewLineWithSpace(
-        text: CharSequence
-    ): CharSequence {
-        val (title, location) = text.split("\n").toPair()
-        val modifiedText = SpannableStringBuilder(title)
-        modifiedText.setSpan(StyleSpan(Typeface.BOLD))
-
-        if (location.isNotEmpty()) {
-            modifiedText.append(" ")
-            modifiedText.append(location)
-        }
-
-        return modifiedText
-    }
-
-    private fun scaleTextIntoChip(
-        eventChip: EventChip<T>,
-        text: CharSequence,
-        staticLayout: StaticLayout,
-        availableHeight: Int,
-        availableWidth: Int
-    ): StaticLayout {
-        val event = eventChip.event
-        val rect = checkNotNull(eventChip.rect)
-
-        // The text doesn't fit into the chip, so we need to gradually reduce its size until it does
-        var textLayout = staticLayout
-        val textPaint = event.getTextPaint(context, config)
-
-        do {
-            textPaint.textSize -= 1f
-
-            val adaptiveLineCount = availableHeight / textLayout.lineHeight
-            val availableArea = adaptiveLineCount * availableWidth
-            val ellipsized = ellipsize(text, textPaint, availableArea.toFloat(), TruncateAt.END)
-
-            val width = (rect.right - rect.left - (config.eventPadding * 2).toFloat()).toInt()
-            textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
-        } while (availableHeight <= textLayout.height)
-
-        return textLayout
-    }
+    private val textFitter = TextFitter<T>(context, config)
 
     private fun setBackgroundPaint(
         event: WeekViewEvent<T>,
@@ -294,10 +194,5 @@ internal class EventChipDrawer<T>(
         paint.isAntiAlias = true
         paint.strokeWidth = event.style.borderWidth.toFloat()
         paint.style = Paint.Style.STROKE
-    }
-
-    private fun <T> List<T>.toPair(): Pair<T, T> {
-        check(size == 2)
-        return first() to last()
     }
 }
