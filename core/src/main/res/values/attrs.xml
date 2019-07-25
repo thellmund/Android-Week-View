@@ -54,7 +54,7 @@
         <attr name="eventTextSize" format="dimension" />
         <attr name="adaptiveEventTextSize" format="boolean" />
         <attr name="eventTextColor" format="color" />
-        <!-- {@deprecated Use foobar instead.} -->
+        <!-- {@deprecated Use eventPaddingHorizontal and eventPaddingVertical instead.} -->
         <attr name="eventPadding" format="dimension" />
         <attr name="eventPaddingHorizontal" format="dimension" />
         <attr name="eventPaddingVertical" format="dimension" />
