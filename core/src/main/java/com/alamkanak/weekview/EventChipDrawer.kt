@@ -135,18 +135,16 @@ internal class EventChipDrawer<T>(
             null -> throw IllegalStateException("Invalid title resource: $resource")
         }
 
-        val text = SpannableStringBuilder(title)
-        text.setSpan(StyleSpan(Typeface.BOLD), 0, text.length, 0)
-
         val location = when (val resource = event.locationResource) {
             is WeekViewEvent.TextResource.Id -> context.getString(resource.resId)
             is WeekViewEvent.TextResource.Value -> resource.text
             null -> null
         }
 
+        val text = SpannableStringBuilder(title)
+        text.setSpan(StyleSpan(Typeface.BOLD), 0, text.length, 0)
         location?.let {
-            text.append(' ')
-            text.append(it)
+            text.appendln().append(it)
         }
 
         val chipHeight = (rect.bottom - rect.top - (config.eventPadding * 2f)).toInt()
@@ -170,7 +168,8 @@ internal class EventChipDrawer<T>(
 
             val finalTextLayout = when {
                 // The text fits into the chip, so we just need to ellipsize it
-                fitsIntoChip -> ellipsizeTextToFitChip(eventChip, text, textLayout, chipHeight, chipWidth)
+                fitsIntoChip ->
+                    ellipsizeTextToFitChip(eventChip, text, textLayout, chipHeight, chipWidth)
                 // The text doesn't fit into the chip, so we need to gradually reduce its size until
                 // it does
                 isAdaptive -> scaleTextIntoChip(eventChip, text, textLayout, chipHeight, chipWidth)
@@ -189,7 +188,7 @@ internal class EventChipDrawer<T>(
 
     private fun ellipsizeTextToFitChip(
         eventChip: EventChip<T>,
-        text: CharSequence,
+        text: SpannableStringBuilder,
         staticLayout: StaticLayout,
         availableHeight: Int,
         availableWidth: Int
@@ -203,10 +202,18 @@ internal class EventChipDrawer<T>(
         val textPaint = event.getTextPaint(context, config)
         var availableLineCount = availableHeight / textLayout.lineHeight
 
+        // val modifiedText = titleBuilder.build(event, singleLine = true)
+
+        val modifiedText = when {
+            // Draw location behind title instead of underneath it to save space
+            textLayout.height > availableHeight -> replaceNewLineWithSpace(text)
+            else -> text
+        }
+
         do {
             // Ellipsize text to fit into event rect.
-            val availableArea = availableLineCount * availableWidth
-            val ellipsized = ellipsize(text, textPaint, availableArea.toFloat(), TruncateAt.END)
+            val availableArea = availableLineCount * availableWidth * 1f
+            val ellipsized = ellipsize(modifiedText, textPaint, availableArea, TruncateAt.END)
 
             val width = (rect.right - rect.left - (config.eventPadding * 2).toFloat()).toInt()
             textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
@@ -216,6 +223,21 @@ internal class EventChipDrawer<T>(
         } while (textLayout.height > availableHeight)
 
         return textLayout
+    }
+
+    private fun replaceNewLineWithSpace(
+        text: CharSequence
+    ): CharSequence {
+        val (title, location) = text.split("\n").toPair()
+        val modifiedText = SpannableStringBuilder(title)
+        modifiedText.setSpan(StyleSpan(Typeface.BOLD))
+
+        if (location.isNotEmpty()) {
+            modifiedText.append(" ")
+            modifiedText.append(location)
+        }
+
+        return modifiedText
     }
 
     private fun scaleTextIntoChip(
@@ -272,5 +294,10 @@ internal class EventChipDrawer<T>(
         paint.isAntiAlias = true
         paint.strokeWidth = event.style.borderWidth.toFloat()
         paint.style = Paint.Style.STROKE
+    }
+
+    private fun <T> List<T>.toPair(): Pair<T, T> {
+        check(size == 2)
+        return first() to last()
     }
 }
