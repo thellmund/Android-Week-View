@@ -110,7 +110,10 @@ internal class EventChipDrawer<T>(
         val rect = checkNotNull(eventChip.rect)
         canvas.apply {
             save()
-            translate(rect.left + config.eventPadding, rect.top + config.eventPadding)
+            translate(
+                rect.left + config.eventPaddingHorizontal,
+                rect.top + config.eventPaddingVertical
+            )
             textLayout.draw(this)
             restore()
         }
@@ -123,8 +126,11 @@ internal class EventChipDrawer<T>(
         val event = eventChip.event
         val rect = checkNotNull(eventChip.rect)
 
-        val negativeWidth = rect.right - rect.left - (config.eventPadding * 2f) < 0
-        val negativeHeight = rect.bottom - rect.top - (config.eventPadding * 2f) < 0
+        val fullHorizontalPadding = config.eventPaddingHorizontal * 2
+        val fullVerticalPadding = config.eventPaddingVertical * 2
+
+        val negativeWidth = rect.right - rect.left - fullHorizontalPadding < 0
+        val negativeHeight = rect.bottom - rect.top - fullVerticalPadding < 0
         if (negativeWidth || negativeHeight) {
             return
         }
@@ -149,15 +155,16 @@ internal class EventChipDrawer<T>(
             text.append(it)
         }
 
-        val chipHeight = (rect.bottom - rect.top - (config.eventPadding * 2f)).toInt()
-        val chipWidth = (rect.right - rect.left - (config.eventPadding * 2f)).toInt()
+        val chipHeight = (rect.bottom - rect.top - fullVerticalPadding).toInt()
+        val chipWidth = (rect.right - rect.left - fullHorizontalPadding).toInt()
 
         if (chipHeight == 0 || chipWidth == 0) {
             return
         }
 
         // Get text dimensions.
-        val didAvailableAreaChange = eventChip.didAvailableAreaChange(rect, config.eventPadding)
+        val didAvailableAreaChange =
+            eventChip.didAvailableAreaChange(rect, fullHorizontalPadding, fullVerticalPadding)
         val isCached = textLayoutCache.containsKey(event.id)
 
         if (didAvailableAreaChange || !isCached) {
@@ -203,12 +210,14 @@ internal class EventChipDrawer<T>(
         val textPaint = event.getTextPaint(context, config)
         var availableLineCount = availableHeight / textLayout.lineHeight
 
+        val fullHorizontalPadding = config.eventPaddingHorizontal * 2f
+
         do {
             // Ellipsize text to fit into event rect.
             val availableArea = availableLineCount * availableWidth
             val ellipsized = ellipsize(text, textPaint, availableArea.toFloat(), TruncateAt.END)
 
-            val width = (rect.right - rect.left - (config.eventPadding * 2).toFloat()).toInt()
+            val width = (rect.right - rect.left - fullHorizontalPadding).toInt()
             textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
 
             // Repeat until text is short enough.
@@ -239,7 +248,9 @@ internal class EventChipDrawer<T>(
             val availableArea = adaptiveLineCount * availableWidth
             val ellipsized = ellipsize(text, textPaint, availableArea.toFloat(), TruncateAt.END)
 
-            val width = (rect.right - rect.left - (config.eventPadding * 2).toFloat()).toInt()
+            val fullHorizontalPadding = config.eventPaddingHorizontal * 2f
+            val width = (rect.right - rect.left - fullHorizontalPadding).toInt()
+
             textLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
         } while (availableHeight <= textLayout.height)
 
