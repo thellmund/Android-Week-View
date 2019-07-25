@@ -11,6 +11,8 @@ import android.text.TextUtils.TruncateAt
 import android.text.TextUtils.ellipsize
 import android.text.style.StyleSpan
 import androidx.core.content.ContextCompat
+import com.alamkanak.weekview.WeekViewEvent.ColorResource
+import com.alamkanak.weekview.WeekViewEvent.TextResource
 
 internal class EventChipDrawer<T>(
     private val context: Context,
@@ -35,8 +37,8 @@ internal class EventChipDrawer<T>(
 
         if (event.style.hasBorder) {
             setBorderPaint(event, paint)
-            val borderWidth = event.style.borderWidth
 
+            val borderWidth = event.style.getBorderWidth(context)
             val adjustedRect = RectF(
                 rect.left + borderWidth / 2f,
                 rect.top + borderWidth / 2f,
@@ -79,7 +81,7 @@ internal class EventChipDrawer<T>(
             return
         }
 
-        val borderWidth = event.style.borderWidth.toFloat()
+        val borderWidth = event.style.getBorderWidth(context)
         val innerWidth = rect.width() - borderWidth * 2
 
         val borderStartX = rect.left + borderWidth
@@ -130,8 +132,8 @@ internal class EventChipDrawer<T>(
         }
 
         val title = when (val resource = event.titleResource) {
-            is WeekViewEvent.TextResource.Id -> context.getString(resource.resId)
-            is WeekViewEvent.TextResource.Value -> resource.text
+            is TextResource.Id -> context.getString(resource.resId)
+            is TextResource.Value -> resource.text
             null -> throw IllegalStateException("Invalid title resource: $resource")
         }
 
@@ -139,8 +141,8 @@ internal class EventChipDrawer<T>(
         text.setSpan(StyleSpan(Typeface.BOLD), 0, text.length, 0)
 
         val location = when (val resource = event.locationResource) {
-            is WeekViewEvent.TextResource.Id -> context.getString(resource.resId)
-            is WeekViewEvent.TextResource.Value -> resource.text
+            is TextResource.Id -> context.getString(resource.resId)
+            is TextResource.Value -> resource.text
             null -> null
         }
 
@@ -252,8 +254,8 @@ internal class EventChipDrawer<T>(
     ) {
         val resource = event.style.getBackgroundColorOrDefault(config)
         paint.color = when (resource) {
-            is WeekViewEvent.ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
-            is WeekViewEvent.ColorResource.Value -> resource.color
+            is ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
+            is ColorResource.Value -> resource.color
         }
         paint.isAntiAlias = true
         paint.strokeWidth = 0f
@@ -265,12 +267,12 @@ internal class EventChipDrawer<T>(
         paint: Paint
     ) {
         paint.color = when (val resource = event.style.borderColorResource) {
-            is WeekViewEvent.ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
-            is WeekViewEvent.ColorResource.Value -> resource.color
+            is ColorResource.Id -> ContextCompat.getColor(context, resource.resId)
+            is ColorResource.Value -> resource.color
             null -> 0
         }
         paint.isAntiAlias = true
-        paint.strokeWidth = event.style.borderWidth.toFloat()
+        paint.strokeWidth = event.style.getBorderWidth(context).toFloat()
         paint.style = Paint.Style.STROKE
     }
 }
