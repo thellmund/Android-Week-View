@@ -108,7 +108,7 @@ internal class TextFitter<T>(
     }
 
     private fun <T> List<T>.toPair(): Pair<T, T> {
-        check(size == 2) { "Error: $this" }
+        check(size == 2)
         return first() to last()
     }
 }
