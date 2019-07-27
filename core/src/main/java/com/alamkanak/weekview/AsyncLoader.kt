@@ -4,23 +4,23 @@ import java.util.Calendar
 
 /**
  * This class enables asynchronous loading of [WeekViewEvent]s. While
- * [OnMonthChangeListener.onMonthChange] requires a result, this class's [onLoadMore] does not.
- * It only acts as a way to notify any potential data provider that [WeekView] is requesting more
- * events for a particular period. To update events in [WeekView], this class provides a [submit]
- * method.
+ * [OnMonthChangeListener.onMonthChange] requires a result, this class's [onLoadMoreListener]
+ * does not. It only acts as a way to notify any potential data provider that [WeekView] is
+ * requesting more events for a particular period. To update events in [WeekView], this class
+ * provides a [submit] method.
  */
 internal class AsyncLoader<T>(
     private val eventCache: EventCache<T>,
     private val eventChipsLoader: EventChipsLoader<T>
 ) : OnMonthChangeListener<T> {
 
-    var onLoadMore: ((startDate: Calendar, endDate: Calendar) -> Unit)? = null
+    var onLoadMoreListener: OnLoadMoreListener? = null
 
     override fun onMonthChange(
         startDate: Calendar,
         endDate: Calendar
     ): List<WeekViewDisplayable<T>> {
-        onLoadMore?.invoke(startDate, endDate)
+        onLoadMoreListener?.onLoadMore(startDate, endDate)
         return emptyList()
     }
 

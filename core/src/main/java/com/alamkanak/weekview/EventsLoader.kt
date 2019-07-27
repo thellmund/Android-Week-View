@@ -29,8 +29,8 @@ internal class EventsLoader<T>(
      */
     fun loadEventsIfNecessary(firstVisibleDate: Calendar?): List<WeekViewEvent<T>>? {
         if (onMonthChangeListener == null) {
-            // No OnMonthChangeListener is set. This is possible if WeekView.onLoadMore() is used
-            // instead of an OnMonthChangeListener.
+            // No OnMonthChangeListener is set. This is possible if WeekView.setOnLoadMoreListener()
+            // is used instead of an OnMonthChangeListener.
             return cache.allEvents
         }
 

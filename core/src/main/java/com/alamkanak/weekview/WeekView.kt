@@ -1224,7 +1224,7 @@ class WeekView<T> @JvmOverloads constructor(
     var onMonthChangeListener: OnMonthChangeListener<T>?
         get() = eventsLoader.onMonthChangeListener
         set(value) {
-            check(value == null || asyncLoader.onLoadMore == null) {
+            check(value == null || asyncLoader.onLoadMoreListener == null) {
                 "You can't use both onLoadMore() and OnMonthChangeListener."
             }
             eventsLoader.onMonthChangeListener = value
@@ -1263,17 +1263,27 @@ class WeekView<T> @JvmOverloads constructor(
         }
     }
 
+    var onLoadMoreListener: OnLoadMoreListener?
+        get() = asyncLoader.onLoadMoreListener
+        set(value) {
+            check(value == null || onMonthChangeListener == null) {
+                "You can't use both onLoadMore() and OnMonthChangeListener."
+            }
+            asyncLoader.onLoadMoreListener = value
+        }
+
     /**
      * Registers a block that is called whenever [WeekView] needs to load more events. This is
      * similar to an [OnMonthChangeListener], but does not require anything to be returned.
      */
-    fun onLoadMore(
-        block: ((startDate: Calendar, endDate: Calendar) -> Unit)?
+    fun setOnLoadMoreListener(
+        block: (startDate: Calendar, endDate: Calendar) -> Unit
     ) {
-        check(block == null || onMonthChangeListener == null) {
-            "You can't use both onLoadMore() and OnMonthChangeListener."
+        onLoadMoreListener = object : OnLoadMoreListener {
+            override fun onLoadMore(startDate: Calendar, endDate: Calendar) {
+                block(startDate, endDate)
+            }
         }
-        asyncLoader.onLoadMore = block
     }
 
     @Deprecated(
