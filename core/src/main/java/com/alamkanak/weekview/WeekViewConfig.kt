@@ -74,7 +74,7 @@ internal class WeekViewConfig(
     var futureWeekendBackgroundColor: Int = 0
 
     // Hour height
-    var hourHeight: Float = 0.toFloat()
+    var hourHeight: Float = 0f
     var minHourHeight: Int = 0
     var maxHourHeight: Int = 0
     var effectiveMinHourHeight: Int = 0
@@ -101,7 +101,7 @@ internal class WeekViewConfig(
     var daySeparatorStrokeWidth: Int = 0
 
     // Scrolling
-    var xScrollingSpeed: Float = 0.toFloat()
+    var xScrollingSpeed: Float = 0f
     var verticalFlingEnabled: Boolean = false
     var horizontalFlingEnabled: Boolean = false
     var horizontalScrollingEnabled: Boolean = false
