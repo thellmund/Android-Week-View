@@ -50,7 +50,10 @@ internal class WeekViewConfig(
     var eventTextSize: Int = 0
     var adaptiveEventTextSize: Boolean = false
     var eventTextColor: Int = 0
-    var eventPadding: Int = 0
+
+    var eventPaddingHorizontal: Int = 0
+    var eventPaddingVertical: Int = 0
+
     var defaultEventColor: Int = 0
     var allDayEventTextSize: Int = 0
 
@@ -71,7 +74,7 @@ internal class WeekViewConfig(
     var futureWeekendBackgroundColor: Int = 0
 
     // Hour height
-    var hourHeight: Float = 0.toFloat()
+    var hourHeight: Float = 0f
     var minHourHeight: Int = 0
     var maxHourHeight: Int = 0
     var effectiveMinHourHeight: Int = 0
@@ -98,7 +101,7 @@ internal class WeekViewConfig(
     var daySeparatorStrokeWidth: Int = 0
 
     // Scrolling
-    var xScrollingSpeed: Float = 0.toFloat()
+    var xScrollingSpeed: Float = 0f
     var verticalFlingEnabled: Boolean = false
     var horizontalFlingEnabled: Boolean = false
     var horizontalScrollingEnabled: Boolean = false
@@ -158,14 +161,19 @@ internal class WeekViewConfig(
             eventTextSize = a.getDimensionPixelSize(R.styleable.WeekView_eventTextSize, Defaults.textSize(context))
             adaptiveEventTextSize = a.getBoolean(R.styleable.WeekView_adaptiveEventTextSize, false)
             eventTextColor = a.getColor(R.styleable.WeekView_eventTextColor, Color.BLACK)
-            eventPadding = a.getDimensionPixelSize(R.styleable.WeekView_eventPadding, 8)
             defaultEventColor = a.getColor(R.styleable.WeekView_defaultEventColor, Defaults.EVENT_COLOR)
             allDayEventTextSize = a.getDimensionPixelSize(R.styleable.WeekView_allDayEventTextSize, eventTextSize)
+
+            // The attribute "eventPadding" is deprecated. However, if "eventPaddingHorizontal" or
+            // "eventPaddingVertical" are not provided, we fall back to it.
+            val eventPadding = a.getDimensionPixelSize(R.styleable.WeekView_eventPadding, 8)
+            eventPaddingHorizontal = a.getDimensionPixelSize(R.styleable.WeekView_eventPaddingHorizontal, eventPadding)
+            eventPaddingVertical = a.getDimensionPixelSize(R.styleable.WeekView_eventPaddingVertical, eventPadding)
 
             // Event margins
             columnGap = a.getDimensionPixelSize(R.styleable.WeekView_columnGap, 10)
             overlappingEventGap = a.getDimensionPixelSize(R.styleable.WeekView_overlappingEventGap, 0)
-            eventMarginVertical = a.getDimensionPixelSize(R.styleable.WeekView_eventMarginVertical, 3)
+            eventMarginVertical = a.getDimensionPixelSize(R.styleable.WeekView_eventMarginVertical, 2)
             eventMarginHorizontal = a.getDimensionPixelSize(R.styleable.WeekView_singleDayHorizontalMargin, 0)
 
             // Colors

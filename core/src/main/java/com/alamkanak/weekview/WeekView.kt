@@ -3,7 +3,6 @@ package com.alamkanak.weekview
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Parcelable
@@ -50,14 +49,12 @@ class WeekView<T> @JvmOverloads constructor(
         AsyncLoader(eventCache, eventChipsLoader)
     }
 
-    private val paint = Paint()
-
     // Be careful when changing the order of the updaters, as the calculation of any updater might
     // depend on results of previous updaters
     private val updaters = listOf(
         MultiLineDayLabelHeightUpdater(configWrapper, cache),
-        HeaderRowHeightUpdater(configWrapper, eventCache),
         AllDayEventsUpdater(this, configWrapper, cache, eventCache, eventChipCache),
+        HeaderRowHeightUpdater(configWrapper, eventCache),
         SingleEventsUpdater(this, configWrapper, eventChipCache)
     )
 
@@ -111,7 +108,7 @@ class WeekView<T> @JvmOverloads constructor(
 
     private fun performDrawing(canvas: Canvas) {
         for (drawer in drawers) {
-            drawer.draw(drawingContext, canvas, paint)
+            drawer.draw(drawingContext, canvas)
         }
     }
 
@@ -547,10 +544,32 @@ class WeekView<T> @JvmOverloads constructor(
     /**
      * Returns the padding within an [EventChip].
      */
+    @Deprecated("Use eventPaddingHorizontal and eventPaddingVertical")
     var eventPadding: Int
-        get() = configWrapper.eventPadding
+        get() = configWrapper.eventPaddingVertical
         set(value) {
-            configWrapper.eventPadding = value
+            configWrapper.eventPaddingHorizontal = value
+            configWrapper.eventPaddingVertical = value
+            invalidate()
+        }
+
+    /**
+     * Returns the horizontal padding within an [EventChip].
+     */
+    var eventPaddingHorizontal: Int
+        get() = configWrapper.eventPaddingHorizontal
+        set(value) {
+            configWrapper.eventPaddingHorizontal = value
+            invalidate()
+        }
+
+    /**
+     * Returns the vertical padding within an [EventChip].
+     */
+    var eventPaddingVertical: Int
+        get() = configWrapper.eventPaddingVertical
+        set(value) {
+            configWrapper.eventPaddingVertical = value
             invalidate()
         }
 
@@ -1103,34 +1122,20 @@ class WeekView<T> @JvmOverloads constructor(
      * @param date The date to show.
      */
     override fun goToDate(date: Calendar) {
-        val minDate = configWrapper.minDate
-        val maxDate = configWrapper.maxDate
-
-        val numberOfVisibleDays = configWrapper.numberOfVisibleDays
-        val showFirstDayOfWeekFirst = configWrapper.showFirstDayOfWeekFirst
-
-        // If a minimum or maximum date is set, don't allow to go beyond them.
-        val modifiedDate = if (minDate != null && date.isBefore(minDate)) {
-            minDate
-        } else if (maxDate != null && date.isAfter(maxDate)) {
-            maxDate.plusDays(1 - numberOfVisibleDays)
-        } else if (numberOfVisibleDays >= 7 && showFirstDayOfWeekFirst) {
-            val diff = configWrapper.computeDifferenceWithFirstDayOfWeek(date)
-            date.minusDays(diff)
-        } else {
-            date
-        }
-
+        val adjustedDate = configWrapper.getDateWithinDateRange(date)
         gestureHandler.forceScrollFinished()
 
-        if (viewState.areDimensionsInvalid) {
-            viewState.scrollToDate = modifiedDate
+        val isWaitingToBeLaidOut = ViewCompat.isLaidOut(this).not()
+        if (viewState.areDimensionsInvalid || isWaitingToBeLaidOut) {
+            // If the view's dimensions have just changed or if it hasn't been laid out yet, we
+            // postpone the action until onDraw() is called the next time.
+            viewState.scrollToDate = adjustedDate
             return
         }
 
         eventsLoader.shouldRefreshEvents = true
 
-        val diff = modifiedDate.daysFromToday
+        val diff = adjustedDate.daysFromToday
         configWrapper.currentOrigin.x = diff.toFloat() * (-1f) * configWrapper.totalDayWidth
         invalidate()
     }
@@ -1311,9 +1316,9 @@ class WeekView<T> @JvmOverloads constructor(
         }
 
     var onEventLongClickListener: OnEventLongClickListener<T>?
-        get() = gestureHandler.onEventLongPressListener
+        get() = gestureHandler.onEventLongClickListener
         set(value) {
-            gestureHandler.onEventLongPressListener = value
+            gestureHandler.onEventLongClickListener = value
         }
 
     @Deprecated(
@@ -1383,9 +1388,9 @@ class WeekView<T> @JvmOverloads constructor(
         }
 
     var onEmptyViewLongClickListener: OnEmptyViewLongClickListener?
-        get() = gestureHandler.onEmptyViewLongPressListener
+        get() = gestureHandler.onEmptyViewLongClickListener
         set(value) {
-            gestureHandler.onEmptyViewLongPressListener = value
+            gestureHandler.onEmptyViewLongClickListener = value
         }
 
     @Deprecated(

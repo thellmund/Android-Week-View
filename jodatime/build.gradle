@@ -6,7 +6,6 @@ version = '4.0.0'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply from: '../ktlint.gradle'
 
 android {
     compileSdkVersion buildConfig.compileSdk
@@ -22,5 +21,10 @@ dependencies {
 
     implementation libraries.kotlin
     implementation libraries.appCompat
-    implementation libraries.jodaTime
+    implementation libraries.jodaTimeAndroid
+
+    testImplementation libraries.jodaTime
+    testImplementation libraries.jUnit
+    testImplementation libraries.mockitoCore
+    testImplementation libraries.mockitoInline
 }
