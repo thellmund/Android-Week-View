@@ -25,7 +25,7 @@ internal class EventsLoader<T>(
      *
      * a) No [OnMonthChangeListener] is registered
      *
-     * b) Events don't need to be refreshed thanks to caching
+     * b) Events don't need to be refreshed due to caching
      */
     fun loadEventsIfNecessary(firstVisibleDate: Calendar?): List<WeekViewEvent<T>>? {
         if (onMonthChangeListener == null) {
