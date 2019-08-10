@@ -29,6 +29,18 @@ internal class EventCache<T> {
         dateRange: List<Calendar>
     ) = allEvents.filter { dateRange.contains(it.startTime.atStartOfDay) }
 
+    operator fun get(
+        period: Period
+    ): List<WeekViewEvent<T>>? {
+        val range = checkNotNull(fetchedRange)
+        return when (period) {
+            range.previous -> previousPeriodEvents
+            range.current -> currentPeriodEvents
+            range.next -> nextPeriodEvents
+            else -> throw IllegalStateException("Requesting events for invalid period $period")
+        }
+    }
+
     operator fun set(
         period: Period,
         events: List<WeekViewEvent<T>>

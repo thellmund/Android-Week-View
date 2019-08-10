@@ -5,22 +5,25 @@ internal class HeaderRowHeightUpdater<T>(
     private val cache: EventCache<T>
 ) : Updater {
 
+    private var previousHorizontalOrigin: Float? = null
     private val previousAllDayEventIds = mutableSetOf<Long>()
 
     override fun isRequired(drawingContext: DrawingContext): Boolean {
+        val didScrollHorizontally = previousHorizontalOrigin != config.currentOrigin.x
         val currentTimeColumnWidth = config.timeTextWidth + config.timeColumnPadding * 2
         val didTimeColumnChange = currentTimeColumnWidth != config.timeColumnWidth
         val allDayEvents = cache[drawingContext.dateRange].filter { it.isAllDay }
         val allDayEventIds = allDayEvents.map { it.id }.toSet()
         val didEventsChange = allDayEventIds != previousAllDayEventIds
 
-        return (didTimeColumnChange || didEventsChange).also {
+        return (didScrollHorizontally || didTimeColumnChange || didEventsChange).also {
             previousAllDayEventIds.clear()
             previousAllDayEventIds += allDayEventIds
         }
     }
 
     override fun update(drawingContext: DrawingContext) {
+        previousHorizontalOrigin = config.currentOrigin.x
         config.timeColumnWidth = config.timeTextWidth + config.timeColumnPadding * 2
         refreshHeaderHeight(drawingContext)
     }

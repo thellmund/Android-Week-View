@@ -51,28 +51,12 @@ internal class EventsLoader<T>(
             cache.clear()
         }
 
-        val oldFetchRange = cache.fetchedRange ?: fetchRange
-        val newCurrentPeriod = fetchRange.current
+        prepareCache(fetchRange)
 
-        val periods = fetchRange.periods
-        val events = EventsTriple(
-            cache.previousPeriodEvents,
-            cache.currentPeriodEvents,
-            cache.nextPeriodEvents
-        )
-
-        val shiftedEvents = when (newCurrentPeriod) {
-            oldFetchRange.previous -> events.shiftRight()
-            oldFetchRange.next -> events.shiftLeft()
-            else -> events
-        }
-
-        val periodsToBeLoaded = periods
-            .zip(shiftedEvents.toList())
+        val periodsToBeLoaded = fetchRange.periods
+            .map { it to cache[it] }
             .filter { it.second == null }
             .map { it.first }
-
-        cache.fetchedRange = fetchRange
 
         val results = mutableListOf<WeekViewEvent<T>>()
         periodsToBeLoaded.forEach { period ->
@@ -81,6 +65,34 @@ internal class EventsLoader<T>(
             results += periodEvents
         }
         return results
+    }
+
+    private fun prepareCache(fetchRange: FetchRange) {
+        val oldFetchRange = cache.fetchedRange ?: fetchRange
+        val newCurrentPeriod = fetchRange.current
+
+        val previousEvents = when (newCurrentPeriod) {
+            oldFetchRange.previous -> null
+            oldFetchRange.next -> cache.currentPeriodEvents
+            else -> cache.previousPeriodEvents
+        }
+
+        val currentEvents = when (newCurrentPeriod) {
+            oldFetchRange.previous -> cache.previousPeriodEvents
+            oldFetchRange.next -> cache.nextPeriodEvents
+            else -> cache.currentPeriodEvents
+        }
+
+        val nextEvents = when (newCurrentPeriod) {
+            oldFetchRange.previous -> cache.currentPeriodEvents
+            oldFetchRange.next -> null
+            else -> cache.nextPeriodEvents
+        }
+
+        cache.previousPeriodEvents = previousEvents
+        cache.currentPeriodEvents = currentEvents
+        cache.nextPeriodEvents = nextEvents
+        cache.fetchedRange = fetchRange
     }
 
     private fun loadEvents(period: Period): List<WeekViewEvent<T>> {
