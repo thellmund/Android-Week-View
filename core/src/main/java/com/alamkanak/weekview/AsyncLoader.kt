@@ -45,12 +45,14 @@ internal class AsyncLoader<T>(
             // The new items are empty, but it's possible that WeekView is currently displaying
             // events.
             val currentEvents = eventCache[dateRange]
+            eventCache.clear()
             return currentEvents.isNotEmpty()
         }
 
         val eventsByPeriod = mapEventsToPeriod(events)
-        cacheEvents(eventsByPeriod)
-        cacheEventChips(eventsByPeriod.values.flatten())
+        updateEventsCache(eventsByPeriod)
+        cacheEventChips(events)
+
         return dateRange.any { it.isBetween(startDate, endDate, inclusive = true) }
     }
 
@@ -58,7 +60,9 @@ internal class AsyncLoader<T>(
         events: List<WeekViewEvent<T>>
     ) = events.groupBy { Period.fromDate(it.startTime) }
 
-    private fun cacheEvents(eventsByPeriod: Map<Period, List<WeekViewEvent<T>>>) {
+    private fun updateEventsCache(eventsByPeriod: Map<Period, List<WeekViewEvent<T>>>) {
+        eventCache.clear()
+
         val periods = eventsByPeriod.keys.sorted()
         eventCache.fetchedRange = when (periods.size) {
             3 -> FetchRange.fromList(periods)
