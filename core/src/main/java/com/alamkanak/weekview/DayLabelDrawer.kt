@@ -13,11 +13,16 @@ internal class DayLabelDrawer<T>(
         drawingContext: DrawingContext,
         canvas: Canvas
     ) {
-        drawingContext
-            .dateRangeWithStartPixels
-            .forEach { (date, startPixel) ->
-                drawLabel(date, startPixel, canvas)
+        val left = config.timeColumnWidth
+        val top = 0f
+        val right = canvas.width.toFloat()
+        val bottom = config.getTotalHeaderHeight()
+
+        canvas.drawInRect(left, top, right, bottom) {
+            drawingContext.dateRangeWithStartPixels.forEach { (date, startPixel) ->
+                drawLabel(date, startPixel, this)
             }
+        }
     }
 
     private fun drawLabel(day: Calendar, startPixel: Float, canvas: Canvas) {
