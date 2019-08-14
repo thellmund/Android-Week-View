@@ -116,7 +116,10 @@ internal fun now() = Calendar.getInstance()
 internal fun Calendar.isSameDate(other: Calendar): Boolean = toEpochDays() == other.toEpochDays()
 
 internal fun firstDayOfYear(): Calendar {
-    return today().apply { set(Calendar.DAY_OF_YEAR, 1) }
+    return today().apply {
+        set(Calendar.MONTH, Calendar.JANUARY)
+        set(Calendar.DAY_OF_MONTH, 1)
+    }
 }
 
 internal fun getDateRange(start: Int, end: Int): List<Calendar> {
