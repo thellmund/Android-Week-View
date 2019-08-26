@@ -50,6 +50,14 @@ internal class AsyncLoader<T>(
         }
 
         val eventsByPeriod = mapEventsToPeriod(events)
+
+        if (onLoadMoreListener == null) {
+            // If no OnLoadMoreListener is set, the consumer of the library is not using paged event
+            // loading. Therefore, we clear the event cache before adding the new events. Otherwise,
+            // we would simply add the submitted events to the events already in the cache.
+            eventCache.clear()
+        }
+
         updateEventsCache(eventsByPeriod)
         cacheEventChips(events)
 
@@ -61,8 +69,6 @@ internal class AsyncLoader<T>(
     ) = events.groupBy { Period.fromDate(it.startTime) }
 
     private fun updateEventsCache(eventsByPeriod: Map<Period, List<WeekViewEvent<T>>>) {
-        eventCache.clear()
-
         val periods = eventsByPeriod.keys.sorted()
         eventCache.fetchedRange = when (periods.size) {
             3 -> FetchRange.fromList(periods)
