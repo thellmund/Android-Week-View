@@ -9,13 +9,14 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.accessibility.AccessibilityManager
 import androidx.core.view.ViewCompat
 import com.alamkanak.weekview.Constants.UNINITIALIZED
 import java.util.Calendar
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-class WeekView<T> @JvmOverloads constructor(
+class WeekView<T : Any> @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -35,10 +36,12 @@ class WeekView<T> @JvmOverloads constructor(
     private val eventChipCache = EventChipCache<T>()
 
     private val viewState = WeekViewViewState(configWrapper, this)
-    private val gestureHandler =
-        WeekViewGestureHandler(this, configWrapper, eventChipCache, gestureListener)
-
     private val drawingContext = DrawingContext(configWrapper)
+
+    private val gestureHandler = WeekViewGestureHandler(this, configWrapper, eventChipCache, gestureListener)
+
+    private var accessibilityTouchHelper = WeekViewAccessibilityTouchHelper(
+        this, configWrapper, drawingContext, gestureHandler, eventChipCache)
 
     private val eventChipsLoader = EventChipsLoader(configWrapper, eventChipCache)
     private val eventChipsExpander = EventChipsExpander(configWrapper, eventChipCache)
@@ -59,6 +62,18 @@ class WeekView<T> @JvmOverloads constructor(
         HeaderRowHeightUpdater(configWrapper, eventsCacheWrapper),
         SingleEventsUpdater(this, configWrapper, eventChipCache)
     )
+
+    init {
+        val accessibilityManager =
+            context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+
+        val isAccessibilityEnabled = accessibilityManager.isEnabled
+        val isExploreByTouchEnabled = accessibilityManager.isTouchExplorationEnabled
+
+        if (isAccessibilityEnabled && isExploreByTouchEnabled) {
+            ViewCompat.setAccessibilityDelegate(this, accessibilityTouchHelper)
+        }
+    }
 
     // Be careful when changing the order of the drawers, as that might cause
     // views to incorrectly draw over each other
@@ -1477,5 +1492,12 @@ class WeekView<T> @JvmOverloads constructor(
         drawers
             .filterIsInstance(CachingDrawer::class.java)
             .forEach { it.clear() }
+    }
+
+    override fun dispatchHoverEvent(event: MotionEvent): Boolean {
+        if (accessibilityTouchHelper.dispatchHoverEvent(event)) {
+            return true
+        }
+        return super.dispatchHoverEvent(event)
     }
 }
