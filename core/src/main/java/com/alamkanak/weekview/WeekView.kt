@@ -63,6 +63,8 @@ class WeekView<T : Any> @JvmOverloads constructor(
         SingleEventsUpdater(this, configWrapper, eventChipCache)
     )
 
+    private var isAccessibilityHelperActive = false
+
     init {
         val accessibilityManager =
             context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -70,7 +72,8 @@ class WeekView<T : Any> @JvmOverloads constructor(
         val isAccessibilityEnabled = accessibilityManager.isEnabled
         val isExploreByTouchEnabled = accessibilityManager.isTouchExplorationEnabled
 
-        if (isAccessibilityEnabled && isExploreByTouchEnabled) {
+        isAccessibilityHelperActive = isAccessibilityEnabled && isExploreByTouchEnabled
+        if (isAccessibilityHelperActive) {
             ViewCompat.setAccessibilityDelegate(this, accessibilityTouchHelper)
         }
     }
@@ -131,6 +134,10 @@ class WeekView<T : Any> @JvmOverloads constructor(
     private fun performDrawing(canvas: Canvas) {
         for (drawer in drawers) {
             drawer.draw(drawingContext, canvas)
+        }
+
+        if (isAccessibilityHelperActive) {
+            accessibilityTouchHelper.invalidateRoot()
         }
     }
 
