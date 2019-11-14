@@ -19,9 +19,10 @@ internal class AllDayEventsUpdater<T>(
     private val chipCache: EventChipCache<T>
 ) : Updater {
 
+    private val emojiCompat = EmojiCompat.get()
+
     private val context = view.context
     private val rectCalculator = EventChipRectCalculator<T>(config)
-    private val emojiCompat = EmojiCompat.get()
 
     private var previousHorizontalOrigin: Float? = null
     private var dummyTextLayout: StaticLayout? = null
