@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
+import kotlin.jvm.functions.Function1;
 
 import java.util.Calendar;
 import java.util.List;
@@ -1352,4 +1353,7 @@ public final class WeekView<T> extends View
 
     }
 
+    public void setDateFormat(Function1<Calendar,String> lambda){
+        dayLabelDrawer.setDateFormat(lambda);
+    }
 }

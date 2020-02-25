@@ -6,10 +6,14 @@ import android.os.Build.VERSION_CODES.M
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import java.text.DateFormat
 import java.util.*
+
+private var format: (Calendar)->String = {c:Calendar -> DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(c.time) }
 
 internal class DayLabelDrawer(
         private val config: WeekViewConfig
+
 ) {
 
     private val drawingConfig: WeekViewDrawingConfig = config.drawingConfig
@@ -23,7 +27,7 @@ internal class DayLabelDrawer(
     }
 
     private fun drawLabel(day: Calendar, startPixel: Float, canvas: Canvas) {
-        val dayLabel = drawingConfig.dateTimeInterpreter.interpretDate(day)
+        val dayLabel = format(day)
 
         val x = startPixel + drawingConfig.widthPerDay / 2
 
@@ -59,4 +63,8 @@ internal class DayLabelDrawer(
                 StaticLayout(dayLabel, textPaint, config.totalDayWidth.toInt(),
                         Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false)
             }
+
+     fun setDateFormat(formatlambda :(Calendar)->String){
+         format = formatlambda
+    }
 }
