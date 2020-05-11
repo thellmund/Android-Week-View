@@ -15,7 +15,7 @@ internal class TimeColumnDrawer(
     }
 
     private fun cacheTimeLabels() = with(config) {
-        for (hour in startHour until hoursPerDay step timeColumnHoursInterval) {
+        for (hour in minHour..maxHour step timeColumnHoursInterval) {
             timeLabelCache.put(hour, dateTimeInterpreter.interpretTime(hour + minHour))
         }
     }
@@ -33,7 +33,7 @@ internal class TimeColumnDrawer(
         val hourStep = timeColumnHoursInterval
 
         for (hour in startHour until hoursPerDay step hourStep) {
-            val heightOfHour = (hourHeight * hour)
+            val heightOfHour = hourHeight * (hour - minHour)
             topMargin = headerHeight + currentOrigin.y + heightOfHour
 
             val isOutsideVisibleArea = topMargin > bottom
