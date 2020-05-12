@@ -1192,7 +1192,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
             return
         }
 
-        if (hour !in configWrapper.timeRange) {
+        if (hour !in configWrapper.minHour..configWrapper.maxHour) {
             throw IllegalArgumentException(
                 "The provided hour ($hour) is outside of the set time range " +
                     "(${configWrapper.minHour} – ${configWrapper.maxHour})"

@@ -251,9 +251,6 @@ internal class WeekViewConfigWrapper(
             config.maxHour = value
         }
 
-    val timeRange: IntRange
-        get() = minHour..maxHour
-
     var xScrollingSpeed: Float
         get() = config.xScrollingSpeed
         set(value) {
@@ -438,8 +435,13 @@ internal class WeekViewConfigWrapper(
     val minutesPerDay: Int
         get() = (hoursPerDay * Constants.MINUTES_PER_HOUR).toInt()
 
-    val startHour: Int
-        get() = if (showMidnightHour && showTimeColumnHourSeparator) minHour else timeColumnHoursInterval
+    val timeRange: IntRange
+        get() {
+            val includeMidnightHour = showTimeColumnHourSeparator && showMidnightHour
+            val padding = if (includeMidnightHour) 0 else timeColumnHoursInterval
+            val startHour = minHour + padding
+            return startHour until maxHour
+        }
 
     var eventCornerRadius: Int
         get() = config.eventCornerRadius
@@ -538,7 +540,7 @@ internal class WeekViewConfigWrapper(
         }
 
         if (showCurrentTimeFirst) {
-            computeDifferenceWithCurrentTime(view)
+            scrollToCurrentTime(view)
         }
 
         // Overwrites the origin when today is out of date range
@@ -546,9 +548,8 @@ internal class WeekViewConfigWrapper(
         currentOrigin.x = max(currentOrigin.x, minX)
     }
 
-    private fun computeDifferenceWithCurrentTime(view: WeekView<*>) {
+    private fun scrollToCurrentTime(view: WeekView<*>) {
         val desired = now()
-
         if (desired.hour > minHour) {
             // Add some padding above the current time (and thus: the now line)
             desired -= Hours(1)
