@@ -43,6 +43,9 @@ internal val Calendar.dayOfWeek: Int
 internal val Calendar.dayOfMonth: Int
     get() = get(Calendar.DAY_OF_MONTH)
 
+internal val Calendar.weekOfYear: Int
+    get() = get(Calendar.WEEK_OF_YEAR)
+
 internal val Calendar.month: Int
     get() = get(Calendar.MONTH)
 
