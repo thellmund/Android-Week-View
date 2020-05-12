@@ -194,8 +194,10 @@ internal fun firstDayOfYear(): Calendar {
     }
 }
 
-internal fun getDateRange(start: Int, end: Int): List<Calendar> {
-    return (start..end).map { today() + Days(it - 1) }
+internal fun WeekViewConfigWrapper.createDateRange(start: Int, end: Int): List<Calendar> {
+    val firstDate = today()
+    firstDate.firstDayOfWeek = firstDayOfWeek
+    return (start..end).map { firstDate + Days(it - 1) }
 }
 
 internal val Calendar.isWeekend: Boolean

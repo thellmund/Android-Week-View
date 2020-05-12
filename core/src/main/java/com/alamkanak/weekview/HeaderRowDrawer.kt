@@ -29,8 +29,7 @@ internal class HeaderRowDrawer<T : Any>(
     }
 
     private fun Canvas.drawWeekNumber(drawingContext: DrawingContext) {
-        val decisiveDate = drawingContext.dateRange.first()
-        val weekNumber = decisiveDate.weekOfYear.toString()
+        val weekNumber = drawingContext.dateRange.first().weekOfYear.toString()
 
         val bounds = config.weekNumberBounds
         val textPaint = config.weekNumberTextPaint
