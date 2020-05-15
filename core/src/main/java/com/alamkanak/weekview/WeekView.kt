@@ -55,9 +55,10 @@ class WeekView<T : Any> @JvmOverloads constructor(
     private val eventChipsLoader = EventChipsLoader<T>(configWrapper)
 
     internal val eventsCacheWrapper = EventsCacheWrapper<T>()
-    internal val eventsLoaderWrapper = EventsLoaderWrapper(eventsCacheWrapper)
+    internal val eventsLoaderWrapper = EventsLoaderWrapper(context, eventsCacheWrapper)
 
     private val eventsDiffer = EventsDiffer(
+        context,
         eventsCacheWrapper,
         eventChipsLoader,
         eventChipCache,

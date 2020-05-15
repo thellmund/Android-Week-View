@@ -8,7 +8,6 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.text.TextUtils.TruncateAt.END
 import android.text.style.StyleSpan
-import com.alamkanak.weekview.WeekViewEvent.TextResource
 import kotlin.math.roundToInt
 
 internal class AllDayEventsUpdater<T : Any>(
@@ -96,21 +95,13 @@ internal class AllDayEventsUpdater<T : Any>(
             return dummyTextLayout
         }
 
-        val title = when (val resource = event.titleResource) {
-            is TextResource.Id -> context.getString(resource.resId)
-            is TextResource.Value -> resource.text
-            null -> ""
-        }
+        val title = event.title
 
         val modifiedTitle = emojiTextProcessor.process(title)
         val text = SpannableStringBuilder(modifiedTitle)
         text.setSpan(StyleSpan(Typeface.BOLD))
 
-        val location = when (val resource = event.locationResource) {
-            is TextResource.Id -> context.getString(resource.resId)
-            is TextResource.Value -> resource.text
-            null -> null
-        }
+        val location = event.location
 
         if (location != null) {
             val modifiedLocation = emojiTextProcessor.process(location)
@@ -119,7 +110,7 @@ internal class AllDayEventsUpdater<T : Any>(
 
         val availableWidth = width.toInt()
 
-        val textPaint = event.getTextPaint(context, config)
+        val textPaint = event.getTextPaint(config)
         val textLayout = TextLayoutBuilder.build(text, textPaint, availableWidth)
         val lineHeight = textLayout.height / textLayout.lineCount
 
@@ -134,10 +125,10 @@ internal class AllDayEventsUpdater<T : Any>(
      * Creates a dummy text layout that is only used to determine the height of all-day events.
      */
     private fun createDummyTextLayout(
-        event: WeekViewEvent<T>
+        event: ResolvedWeekViewEvent<T>
     ): StaticLayout {
         if (dummyTextLayout == null) {
-            val textPaint = event.getTextPaint(context, config)
+            val textPaint = event.getTextPaint(config)
             dummyTextLayout = TextLayoutBuilder.build("", textPaint, width = 0)
         }
         return checkNotNull(dummyTextLayout)
@@ -148,7 +139,7 @@ internal class AllDayEventsUpdater<T : Any>(
         availableWidth: Int,
         existingTextLayout: StaticLayout
     ): StaticLayout {
-        val textPaint = event.getTextPaint(context, config)
+        val textPaint = event.getTextPaint(config)
         val bounds = checkNotNull(bounds)
         val width = bounds.width().roundToInt() - (config.eventPaddingHorizontal * 2)
 

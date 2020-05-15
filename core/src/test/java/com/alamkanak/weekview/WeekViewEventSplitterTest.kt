@@ -1,6 +1,7 @@
 package com.alamkanak.weekview
 
 import com.alamkanak.weekview.model.Event
+import com.alamkanak.weekview.util.createResolvedWeekViewEvent
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.mockito.Mockito.`when`
@@ -10,7 +11,7 @@ import org.mockito.MockitoAnnotations
 class WeekViewEventSplitterTest {
 
     private val config = mock(WeekViewConfigWrapper::class.java)
-    private val underTest = WeekViewEventSplitter<Event>(config)
+    private val underTest = WeekViewEventSplitter<Unit>(config)
 
     init {
         MockitoAnnotations.initMocks(this)
@@ -22,7 +23,7 @@ class WeekViewEventSplitterTest {
     fun `single-day event is not split`() {
         val startTime = today().withHour(11)
         val endTime = startTime + Hours(2)
-        val event = Event(startTime, endTime).toWeekViewEvent()
+        val event = createResolvedWeekViewEvent(startTime, endTime)
 
         val results = underTest.split(event)
         val expected = listOf(event)
@@ -35,7 +36,7 @@ class WeekViewEventSplitterTest {
         val startTime = today().withHour(11)
         val endTime = (startTime + Days(1)).withHour(2)
 
-        val event = Event(startTime, endTime).toWeekViewEvent()
+        val event = createResolvedWeekViewEvent(startTime, endTime)
         val results = underTest.split(event)
 
         val expected = listOf(
@@ -54,7 +55,7 @@ class WeekViewEventSplitterTest {
         val startTime = today().withHour(11)
         val endTime = (startTime + Days(2)).withHour(2)
 
-        val event = Event(startTime, endTime).toWeekViewEvent()
+        val event = createResolvedWeekViewEvent(startTime, endTime)
         val results = underTest.split(event)
 
         val intermediateDate = startTime + Days(1)
