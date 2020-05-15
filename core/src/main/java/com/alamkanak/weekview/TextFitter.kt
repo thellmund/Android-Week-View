@@ -1,6 +1,5 @@
 package com.alamkanak.weekview
 
-import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.StaticLayout
@@ -9,7 +8,6 @@ import android.text.TextUtils.TruncateAt
 import android.text.style.StyleSpan
 
 internal class TextFitter<T>(
-    private val context: Context,
     private val config: WeekViewConfigWrapper
 ) {
 
@@ -22,7 +20,7 @@ internal class TextFitter<T>(
     ): StaticLayout {
         val text = createText(title, location, isMultiLine = true)
         val textPaint = eventChip.event.getTextPaint(config)
-        val textLayout = TextLayoutBuilder.build(text, textPaint, chipWidth)
+        val textLayout = text.toTextLayout(textPaint, chipWidth)
 
         val fitsIntoChip = chipHeight >= textLayout.height
         if (fitsIntoChip) {
@@ -30,7 +28,7 @@ internal class TextFitter<T>(
         }
 
         val modifiedText = createText(title, location, isMultiLine = false)
-        val modifiedTextLayout = TextLayoutBuilder.build(text, textPaint, chipWidth)
+        val modifiedTextLayout = text.toTextLayout(textPaint, chipWidth)
 
         val fitsIntoChipNow = chipHeight >= modifiedTextLayout.height
         val isAdaptive = config.adaptiveEventTextSize
@@ -86,7 +84,7 @@ internal class TextFitter<T>(
             // Ellipsize text to fit into event rect
             val availableArea = availableLineCount * availableWidth * 1f
             val ellipsized = TextUtils.ellipsize(text, textPaint, availableArea, TruncateAt.END)
-            newTextLayout = TextLayoutBuilder.build(ellipsized, textPaint, width)
+            newTextLayout = ellipsized.toTextLayout(textPaint, width)
             availableLineCount--
         } while (newTextLayout.height > availableHeight && availableLineCount > 0)
 
@@ -111,7 +109,7 @@ internal class TextFitter<T>(
             // The text doesn't fit into the chip, so we need to gradually
             // reduce its size until it does
             textPaint.textSize -= 1
-            textLayout = TextLayoutBuilder.build(text, textPaint, width)
+            textLayout = text.toTextLayout(textPaint, width)
         } while (availableHeight < textLayout.height)
 
         return textLayout

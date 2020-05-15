@@ -1,11 +1,12 @@
 package com.alamkanak.weekview
 
-import android.os.Build.VERSION.SDK_INT
+import android.os.Build
 import android.text.Layout
 import android.text.SpannableStringBuilder
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.style.StyleSpan
+import androidx.emoji.text.EmojiCompat
 
 internal val StaticLayout.lineHeight: Int
     get() = height / lineCount
@@ -14,6 +15,11 @@ internal fun SpannableStringBuilder.setSpan(
     styleSpan: StyleSpan
 ) = setSpan(styleSpan, 0, length, 0)
 
+private val emojiCompat: EmojiCompat?
+    get() = try { EmojiCompat.get() } catch (e: IllegalStateException) { null }
+
+fun CharSequence.emojify(): CharSequence = emojiCompat?.process(this) ?: this
+
 internal fun CharSequence.toTextLayout(
     textPaint: TextPaint,
     width: Int,
@@ -21,7 +27,7 @@ internal fun CharSequence.toTextLayout(
     spacingMultiplier: Float = 1f,
     spacingExtra: Float = 0f,
     includePad: Boolean = false
-) = if (SDK_INT >= 23) {
+) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     StaticLayout.Builder
         .obtain(this, 0, length, textPaint, width)
         .setAlignment(alignment)

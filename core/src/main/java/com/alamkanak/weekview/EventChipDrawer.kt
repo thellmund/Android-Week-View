@@ -1,6 +1,5 @@
 package com.alamkanak.weekview
 
-import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
@@ -10,12 +9,10 @@ import android.text.StaticLayout
 import android.text.style.StyleSpan
 
 internal class EventChipDrawer<T>(
-    private val context: Context,
-    private val config: WeekViewConfigWrapper,
-    private val emojiTextProcessor: EmojiTextProcessor = EmojiTextProcessor()
+    private val config: WeekViewConfigWrapper
 ) {
 
-    private val textFitter = TextFitter<T>(context, config)
+    private val textFitter = TextFitter<T>(config)
     private val textLayoutCache = mutableMapOf<Long, StaticLayout>()
 
     private val backgroundPaint = Paint()
@@ -150,16 +147,13 @@ internal class EventChipDrawer<T>(
             return
         }
 
-        val title = event.title
-
-        val modifiedTitle = emojiTextProcessor.process(title)
-        val text = SpannableStringBuilder(modifiedTitle)
+        val title = event.title.emojify()
+        val text = SpannableStringBuilder(title)
         text.setSpan(StyleSpan(Typeface.BOLD))
 
-        val location = event.location
-        val modifiedLocation = location?.let { emojiTextProcessor.process(it) }
-        if (modifiedLocation != null) {
-            text.appendln().append(modifiedLocation)
+        val location = event.location?.emojify()
+        if (location != null) {
+            text.appendln().append(location)
         }
 
         val chipHeight = (rect.bottom - rect.top - fullVerticalPadding).toInt()
@@ -176,8 +170,8 @@ internal class EventChipDrawer<T>(
         if (didAvailableAreaChange || !isCached) {
             textLayoutCache[event.id] = textFitter.fit(
                 eventChip = eventChip,
-                title = modifiedTitle,
-                location = modifiedLocation,
+                title = title,
+                location = location,
                 chipHeight = chipHeight,
                 chipWidth = chipWidth
             )

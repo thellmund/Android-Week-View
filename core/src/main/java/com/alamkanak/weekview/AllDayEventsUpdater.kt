@@ -14,11 +14,9 @@ internal class AllDayEventsUpdater<T : Any>(
     private val view: WeekView<T>,
     private val config: WeekViewConfigWrapper,
     private val cache: WeekViewCache<T>,
-    private val chipsCache: EventChipsCache<T>,
-    private val emojiTextProcessor: EmojiTextProcessor = EmojiTextProcessor()
+    private val chipsCache: EventChipsCache<T>
 ) : Updater {
 
-    private val context = view.context
     private val rectCalculator = EventChipRectCalculator<T>(config)
 
     private var previousHorizontalOrigin: Float? = null
@@ -95,23 +93,19 @@ internal class AllDayEventsUpdater<T : Any>(
             return dummyTextLayout
         }
 
-        val title = event.title
-
-        val modifiedTitle = emojiTextProcessor.process(title)
-        val text = SpannableStringBuilder(modifiedTitle)
+        val title = event.title.emojify()
+        val text = SpannableStringBuilder(title)
         text.setSpan(StyleSpan(Typeface.BOLD))
 
-        val location = event.location
-
+        val location = event.location?.emojify()
         if (location != null) {
-            val modifiedLocation = emojiTextProcessor.process(location)
-            text.append(' ').append(modifiedLocation)
+            text.append(' ').append(location)
         }
 
         val availableWidth = width.toInt()
 
         val textPaint = event.getTextPaint(config)
-        val textLayout = TextLayoutBuilder.build(text, textPaint, availableWidth)
+        val textLayout = text.toTextLayout(textPaint, availableWidth)
         val lineHeight = textLayout.height / textLayout.lineCount
 
         // For an all day event, we display just one line
@@ -129,7 +123,7 @@ internal class AllDayEventsUpdater<T : Any>(
     ): StaticLayout {
         if (dummyTextLayout == null) {
             val textPaint = event.getTextPaint(config)
-            dummyTextLayout = TextLayoutBuilder.build("", textPaint, width = 0)
+            dummyTextLayout = "".toTextLayout(textPaint, width = 0)
         }
         return checkNotNull(dummyTextLayout)
     }
@@ -151,7 +145,7 @@ internal class AllDayEventsUpdater<T : Any>(
             return existingTextLayout
         }
 
-        return TextLayoutBuilder.build(ellipsized, textPaint, width)
+        return ellipsized.toTextLayout(textPaint, width)
     }
 
     private val RectF.isValidEventBounds: Boolean
