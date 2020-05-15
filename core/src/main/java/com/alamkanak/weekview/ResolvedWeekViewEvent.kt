@@ -1,8 +1,6 @@
 package com.alamkanak.weekview
 
 import android.content.Context
-import android.graphics.Paint
-import android.text.TextPaint
 import java.util.Calendar
 import kotlin.math.roundToInt
 
@@ -12,16 +10,18 @@ internal fun <T> WeekViewDisplayable<T>.toResolvedWeekViewEvent(
 
 internal fun <T> WeekViewEvent<T>.resolve(
     context: Context
-) = ResolvedWeekViewEvent(
-    id = id,
-    title = titleResource.resolve(context),
-    startTime = startTime,
-    endTime = endTime,
-    location = locationResource?.resolve(context),
-    isAllDay = isAllDay,
-    style = style.resolve(context),
-    data = data
-)
+): ResolvedWeekViewEvent<T> {
+    return ResolvedWeekViewEvent(
+        id = id,
+        title = titleResource.resolve(context, shouldSetBold = true),
+        startTime = startTime,
+        endTime = endTime,
+        location = locationResource?.resolve(context, shouldSetBold = false),
+        isAllDay = isAllDay,
+        style = style.resolve(context),
+        data = data
+    )
+}
 
 internal fun WeekViewEvent.Style.resolve(
     context: Context
@@ -49,17 +49,15 @@ internal data class ResolvedWeekViewEvent<T>(
         val borderColor: Int,
         val borderWidth: Int,
         val textColor: Int,
+        @Deprecated("No longer used.")
         val isTextStrikeThrough: Boolean
     )
 
-    internal val isNotAllDay: Boolean
-        get() = isAllDay.not()
+    internal val isNotAllDay: Boolean = isAllDay.not()
 
-    internal val durationInMinutes: Int
-        get() = ((endTime.timeInMillis - startTime.timeInMillis).toFloat() / 60_000).roundToInt()
+    internal val durationInMinutes: Int = ((endTime.timeInMillis - startTime.timeInMillis).toFloat() / 60_000).roundToInt()
 
-    internal val isMultiDay: Boolean
-        get() = startTime.isSameDate(endTime).not()
+    internal val isMultiDay: Boolean = startTime.isSameDate(endTime).not()
 
     internal fun isWithin(
         minHour: Int,
@@ -94,20 +92,4 @@ internal data class ResolvedWeekViewEvent<T>(
     internal fun endsOnLaterDay(
         originalEvent: ResolvedWeekViewEvent<T>
     ): Boolean = endTime.isNotEqual(originalEvent.endTime)
-
-    internal fun getTextPaint(config: WeekViewConfigWrapper): TextPaint {
-        val textPaint = if (isAllDay) {
-            config.allDayEventTextPaint
-        } else {
-            config.eventTextPaint
-        }
-
-        textPaint.color = style.textColor
-
-        if (style.isTextStrikeThrough) {
-            textPaint.flags = textPaint.flags or Paint.STRIKE_THRU_TEXT_FLAG
-        }
-
-        return textPaint
-    }
 }

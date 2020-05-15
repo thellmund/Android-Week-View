@@ -4,7 +4,7 @@ import com.alamkanak.weekview.model.Event
 import com.alamkanak.weekview.util.createResolvedWeekViewEvent
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.`when` as whenever
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 
@@ -15,8 +15,8 @@ class WeekViewEventSplitterTest {
 
     init {
         MockitoAnnotations.initMocks(this)
-        `when`(config.minHour).thenReturn(0)
-        `when`(config.maxHour).thenReturn(24)
+        whenever(config.minHour).thenReturn(0)
+        whenever(config.maxHour).thenReturn(24)
     }
 
     @Test

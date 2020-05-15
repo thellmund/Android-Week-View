@@ -1,15 +1,15 @@
 package com.alamkanak.weekview
 
-import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.StaticLayout
 import android.text.TextUtils
 import android.text.TextUtils.TruncateAt
-import android.text.style.StyleSpan
 
 internal class TextFitter<T>(
     private val config: WeekViewConfigWrapper
 ) {
+
+    private val spannableStringBuilder = SpannableStringBuilder()
 
     fun fit(
         eventChip: EventChip<T>,
@@ -18,8 +18,8 @@ internal class TextFitter<T>(
         chipHeight: Int,
         chipWidth: Int
     ): StaticLayout {
-        val text = createText(title, location, isMultiLine = true)
-        val textPaint = eventChip.event.getTextPaint(config)
+        val text = combineTitleAndLocation(title, location, isMultiLine = true)
+        val textPaint = config.getTextPaint(eventChip.event)
         val textLayout = text.toTextLayout(textPaint, chipWidth)
 
         val fitsIntoChip = chipHeight >= textLayout.height
@@ -27,13 +27,11 @@ internal class TextFitter<T>(
             return ellipsize(eventChip, textLayout, text, chipHeight, chipWidth)
         }
 
-        val modifiedText = createText(title, location, isMultiLine = false)
+        val modifiedText = combineTitleAndLocation(title, location, isMultiLine = false)
         val modifiedTextLayout = text.toTextLayout(textPaint, chipWidth)
 
         val fitsIntoChipNow = chipHeight >= modifiedTextLayout.height
         val isAdaptive = config.adaptiveEventTextSize
-
-        // TODO: Refactor adaptiveTextSize and ellipsize behavior
 
         return when {
             fitsIntoChipNow || !isAdaptive -> {
@@ -44,28 +42,27 @@ internal class TextFitter<T>(
         }
     }
 
-    private fun createText(
+    private fun combineTitleAndLocation(
         title: CharSequence,
         location: CharSequence?,
         isMultiLine: Boolean
-    ): SpannableStringBuilder {
-        val text = SpannableStringBuilder(title)
-        text.setSpan(StyleSpan(Typeface.BOLD))
-        location?.let {
-            if (isMultiLine) {
-                text.appendln()
-            } else {
-                text.append(" ")
-            }
-            text.append(it)
+    ): CharSequence = when (location) {
+        null -> title
+        else -> {
+            val separator = if (isMultiLine) "\n" else " "
+            spannableStringBuilder.clear()
+            spannableStringBuilder
+                .append(title)
+                .append(separator)
+                .append(location)
+                .build()
         }
-        return text
     }
 
     private fun ellipsize(
         eventChip: EventChip<T>,
         textLayout: StaticLayout,
-        text: SpannableStringBuilder,
+        text: CharSequence,
         availableHeight: Int,
         availableWidth: Int
     ): StaticLayout {
@@ -74,7 +71,7 @@ internal class TextFitter<T>(
 
         // The text fits into the chip, so we just need to ellipsize it
         var newTextLayout = textLayout
-        val textPaint = event.getTextPaint(config)
+        val textPaint = config.getTextPaint(event)
 
         var availableLineCount = availableHeight / newTextLayout.lineHeight
         val fullHorizontalPadding = config.eventPaddingHorizontal * 2f
@@ -93,13 +90,13 @@ internal class TextFitter<T>(
 
     private fun scaleToFit(
         eventChip: EventChip<T>,
-        text: SpannableStringBuilder,
+        text: CharSequence,
         availableHeight: Int
     ): StaticLayout {
         val event = eventChip.event
         val rect = checkNotNull(eventChip.bounds)
 
-        val textPaint = event.getTextPaint(config)
+        val textPaint = config.getTextPaint(event)
         val fullHorizontalPadding = config.eventPaddingHorizontal * 2f
         val width = (rect.right - rect.left - fullHorizontalPadding).toInt()
 

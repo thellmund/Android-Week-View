@@ -21,8 +21,6 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
     private val eventChipsCache: EventChipsCache<T>
 ) : ExploreByTouchHelper(view) {
 
-    private val context = view.context
-
     private val dateFormatter = SimpleDateFormat.getDateInstance(LONG)
     private val dateTimeFormatter = SimpleDateFormat.getDateTimeInstance(LONG, SHORT)
 

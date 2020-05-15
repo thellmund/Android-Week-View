@@ -136,13 +136,13 @@ internal class EventChipDrawer<T>(
         canvas: Canvas
     ) {
         val event = eventChip.event
-        val rect = checkNotNull(eventChip.bounds)
+        val bounds = checkNotNull(eventChip.bounds)
 
         val fullHorizontalPadding = config.eventPaddingHorizontal * 2
         val fullVerticalPadding = config.eventPaddingVertical * 2
 
-        val negativeWidth = rect.right - rect.left - fullHorizontalPadding < 0
-        val negativeHeight = rect.bottom - rect.top - fullVerticalPadding < 0
+        val negativeWidth = bounds.right - bounds.left - fullHorizontalPadding < 0
+        val negativeHeight = bounds.bottom - bounds.top - fullVerticalPadding < 0
         if (negativeWidth || negativeHeight) {
             return
         }
@@ -156,16 +156,19 @@ internal class EventChipDrawer<T>(
             text.appendln().append(location)
         }
 
-        val chipHeight = (rect.bottom - rect.top - fullVerticalPadding).toInt()
-        val chipWidth = (rect.right - rect.left - fullHorizontalPadding).toInt()
+        val chipHeight = (bounds.bottom - bounds.top - fullVerticalPadding).toInt()
+        val chipWidth = (bounds.right - bounds.left - fullHorizontalPadding).toInt()
 
         if (chipHeight == 0 || chipWidth == 0) {
             return
         }
 
-        val didAvailableAreaChange =
-            eventChip.didAvailableAreaChange(rect, fullHorizontalPadding, fullVerticalPadding)
-        val isCached = textLayoutCache.containsKey(event.id)
+        val didAvailableAreaChange = eventChip.didAvailableAreaChange(
+            area = bounds,
+            horizontalPadding = fullHorizontalPadding,
+            verticalPadding = fullVerticalPadding
+        )
+        val isCached = event.id in textLayoutCache
 
         if (didAvailableAreaChange || !isCached) {
             textLayoutCache[event.id] = textFitter.fit(

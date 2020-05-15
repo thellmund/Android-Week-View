@@ -1,13 +1,8 @@
 package com.alamkanak.weekview
 
 import android.graphics.RectF
-import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.StaticLayout
-import android.text.TextPaint
-import android.text.TextUtils
-import android.text.TextUtils.TruncateAt.END
-import android.text.style.StyleSpan
 import kotlin.math.roundToInt
 
 internal class AllDayEventsUpdater<T : Any>(
@@ -17,7 +12,8 @@ internal class AllDayEventsUpdater<T : Any>(
     private val chipsCache: EventChipsCache<T>
 ) : Updater {
 
-    private val rectCalculator = EventChipRectCalculator<T>(config)
+    private val boundsCalculator = EventChipBoundsCalculator<T>(config)
+    private val spannableStringBuilder = SpannableStringBuilder()
 
     private var previousHorizontalOrigin: Float? = null
     private var dummyTextLayout: StaticLayout? = null
@@ -58,13 +54,13 @@ internal class AllDayEventsUpdater<T : Any>(
         eventChip: EventChip<T>,
         startPixel: Float
     ) {
-        val chipRect = rectCalculator.calculateAllDayEvent(eventChip, startPixel)
+        val chipRect = boundsCalculator.calculateAllDayEvent(eventChip, startPixel)
         eventChip.bounds = if (chipRect.isValidEventBounds) chipRect else null
 
         if (chipRect.isValidEventBounds) {
             val textLayout = calculateChipTextLayout(eventChip)
-            textLayout?.let { layout ->
-                cache.allDayEventLayouts[eventChip] = layout
+            if (textLayout != null) {
+                cache.allDayEventLayouts[eventChip] = textLayout
             }
         }
     }
@@ -93,18 +89,24 @@ internal class AllDayEventsUpdater<T : Any>(
             return dummyTextLayout
         }
 
+        spannableStringBuilder.clear()
         val title = event.title.emojify()
-        val text = SpannableStringBuilder(title)
-        text.setSpan(StyleSpan(Typeface.BOLD))
+        spannableStringBuilder.append(title)
+
+        // val title = event.title.emojify()
+        // val text = SpannableStringBuilder(title)
+        // text.setSpan(StyleSpan(Typeface.BOLD))
 
         val location = event.location?.emojify()
         if (location != null) {
-            text.append(' ').append(location)
+            spannableStringBuilder.append(' ')
+            spannableStringBuilder.append(location)
         }
 
+        val text = spannableStringBuilder.build()
         val availableWidth = width.toInt()
 
-        val textPaint = event.getTextPaint(config)
+        val textPaint = config.getTextPaint(event)
         val textLayout = text.toTextLayout(textPaint, availableWidth)
         val lineHeight = textLayout.height / textLayout.lineCount
 
@@ -122,7 +124,7 @@ internal class AllDayEventsUpdater<T : Any>(
         event: ResolvedWeekViewEvent<T>
     ): StaticLayout {
         if (dummyTextLayout == null) {
-            val textPaint = event.getTextPaint(config)
+            val textPaint = config.getTextPaint(event)
             dummyTextLayout = "".toTextLayout(textPaint, width = 0)
         }
         return checkNotNull(dummyTextLayout)
@@ -133,7 +135,7 @@ internal class AllDayEventsUpdater<T : Any>(
         availableWidth: Int,
         existingTextLayout: StaticLayout
     ): StaticLayout {
-        val textPaint = event.getTextPaint(config)
+        val textPaint = config.getTextPaint(event)
         val bounds = checkNotNull(bounds)
         val width = bounds.width().roundToInt() - (config.eventPaddingHorizontal * 2)
 
@@ -154,18 +156,4 @@ internal class AllDayEventsUpdater<T : Any>(
             top < view.height &&
             right > config.timeColumnWidth &&
             bottom > 0)
-
-    private operator fun RectF.component1() = left
-
-    private operator fun RectF.component2() = top
-
-    private operator fun RectF.component3() = right
-
-    private operator fun RectF.component4() = bottom
-
-    private fun CharSequence.ellipsized(
-        textPaint: TextPaint,
-        availableArea: Int,
-        truncateAt: TextUtils.TruncateAt = END
-    ): CharSequence = TextUtils.ellipsize(this, textPaint, availableArea.toFloat(), truncateAt)
 }

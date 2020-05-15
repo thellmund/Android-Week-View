@@ -1,6 +1,8 @@
 package com.alamkanak.weekview
 
 import android.content.Context
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DimenRes
@@ -35,9 +37,17 @@ data class WeekViewEvent<T> internal constructor(
         data class Value(val text: CharSequence) : TextResource()
         data class Id(@StringRes val resId: Int) : TextResource()
 
-        fun resolve(context: Context): CharSequence = when (this) {
-            is Id -> context.getString(resId)
-            is Value -> text
+        fun resolve(context: Context, shouldSetBold: Boolean): CharSequence = when (this) {
+            is Id -> {
+                val text = context.getString(resId)
+                if (shouldSetBold) text.bold() else text
+            }
+            is Value -> when (text) {
+                // We don't change the existing style of SpannableStrings.
+                is SpannableString -> text
+                is SpannableStringBuilder -> text.build()
+                else -> if (shouldSetBold) text.bold() else text
+            }
         }
     }
 
@@ -55,9 +65,11 @@ data class WeekViewEvent<T> internal constructor(
 
         internal var backgroundColorResource: ColorResource? = null
         internal var textColorResource: ColorResource? = null
-        internal var isTextStrikeThrough: Boolean = false
         internal var borderWidthResource: DimenResource? = null
         internal var borderColorResource: ColorResource? = null
+
+        @Deprecated("No longer used.")
+        internal var isTextStrikeThrough: Boolean = false
 
         class Builder {
 
@@ -88,6 +100,7 @@ data class WeekViewEvent<T> internal constructor(
             }
 
             @PublicApi
+            @Deprecated("Use a SpannableString for the title or location instead.")
             fun setTextStrikeThrough(strikeThrough: Boolean): Builder {
                 style.isTextStrikeThrough = strikeThrough
                 return this
