@@ -7,8 +7,7 @@ import androidx.collection.ArrayMap
 internal class WeekViewCache<T> {
 
     val allDayEventLayouts = ArrayMap<EventChip<T>, StaticLayout>()
-    val dayLabelCache = SparseArray<String>()
-    val multiLineDayLabelCache = SparseArray<StaticLayout>()
+    val dayLabelLayouts = SparseArray<StaticLayout>()
 
     fun clearAllDayEventLayouts() {
         allDayEventLayouts.clear()
