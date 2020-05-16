@@ -4,7 +4,7 @@ import android.text.StaticLayout
 import android.util.SparseArray
 import java.util.Calendar
 
-internal class DayLabelsUpdater<T>(
+internal class HeaderRowUpdater<T>(
     private val config: WeekViewConfigWrapper,
     private val cache: WeekViewCache<T>,
     private val eventsCacheWrapper: EventsCacheWrapper<T>
@@ -32,15 +32,26 @@ internal class DayLabelsUpdater<T>(
     }
 
     override fun update(drawingContext: DrawingContext) {
-        cache.dayLabelLayouts.clear()
+        val dateLabels = updateDateLabels(drawingContext)
+        updateHeaderHeight(drawingContext, dateLabels)
+    }
 
+    private fun updateDateLabels(drawingContext: DrawingContext): List<StaticLayout> {
         val textLayouts = drawingContext.dateRange.map { date ->
             date.toEpochDays() to calculateStaticLayoutForDate(date)
-        }
+        }.toMap()
 
-        cache.dayLabelLayouts += textLayouts.toMap()
+        cache.dateLabelLayouts.clear()
+        cache.dateLabelLayouts += textLayouts
 
-        val maximumLayoutHeight = textLayouts.map { it.second.height.toFloat() }.max() ?: 0f
+        return textLayouts.values.toList()
+    }
+
+    private fun updateHeaderHeight(
+        drawingContext: DrawingContext,
+        dateLabels: List<StaticLayout>
+    ) {
+        val maximumLayoutHeight = dateLabels.map { it.height.toFloat() }.max() ?: 0f
         config.headerTextHeight = maximumLayoutHeight
         drawingContext.refreshHeaderHeight()
     }

@@ -70,7 +70,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
     // Be careful when changing the order of the updaters, as the calculation of any updater might
     // depend on results of previous updaters
     private val updaters = listOf(
-        DayLabelsUpdater(configWrapper, cache, eventsCacheWrapper),
+        HeaderRowUpdater(configWrapper, cache, eventsCacheWrapper),
         AllDayEventsUpdater(this, configWrapper, cache, eventChipCache),
         SingleEventsUpdater(this, configWrapper, eventChipCache)
     )

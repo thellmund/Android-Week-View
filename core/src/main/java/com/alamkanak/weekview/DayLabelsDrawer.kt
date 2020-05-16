@@ -26,7 +26,7 @@ internal class DayLabelsDrawer<T>(
 
     private fun drawLabel(day: Calendar, startPixel: Float, canvas: Canvas) {
         val key = day.toEpochDays()
-        val textLayout = cache.dayLabelLayouts[key]
+        val textLayout = cache.dateLabelLayouts[key]
 
         canvas.withTranslation(
             x = startPixel + config.widthPerDay / 2,
