@@ -26,10 +26,10 @@ internal fun <T> WeekViewEvent<T>.resolve(
 internal fun WeekViewEvent.Style.resolve(
     context: Context
 ) = ResolvedWeekViewEvent.Style(
-    backgroundColor = backgroundColorResource?.resolve(context) ?: 0, // TODO Default event color
-    borderColor = borderColorResource?.resolve(context) ?: 0, // TODO Default border color
-    borderWidth = borderWidthResource?.resolve(context) ?: 0,
-    textColor = textColorResource?.resolve(context) ?: 0, // TODO
+    backgroundColor = backgroundColorResource?.resolve(context),
+    borderColor = borderColorResource?.resolve(context),
+    borderWidth = borderWidthResource?.resolve(context),
+    textColor = textColorResource?.resolve(context),
     isTextStrikeThrough = isTextStrikeThrough
 )
 
@@ -45,12 +45,12 @@ internal data class ResolvedWeekViewEvent<T>(
 ) {
 
     data class Style(
-        val backgroundColor: Int,
-        val borderColor: Int,
-        val borderWidth: Int,
-        val textColor: Int,
+        val backgroundColor: Int? = null,
+        val borderColor: Int? = null,
+        val borderWidth: Int? = null,
+        val textColor: Int? = null,
         @Deprecated("No longer used.")
-        val isTextStrikeThrough: Boolean
+        val isTextStrikeThrough: Boolean = false
     )
 
     internal val isNotAllDay: Boolean = isAllDay.not()

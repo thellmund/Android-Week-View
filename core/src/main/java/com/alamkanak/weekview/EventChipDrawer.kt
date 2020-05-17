@@ -28,19 +28,21 @@ internal class EventChipDrawer<T>(
         val cornerRadius = config.eventCornerRadius.toFloat()
         updateBackgroundPaint(event, backgroundPaint)
 
-        val rect = checkNotNull(eventChip.bounds)
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, backgroundPaint)
+        val bounds = checkNotNull(eventChip.bounds)
+        canvas.drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
 
-        if (event.style.borderWidth != 0) {
+        if (event.style.borderWidth != null) {
             updateBorderPaint(event, borderPaint)
 
-            val borderWidth = event.style.borderWidth
-            val adjustedRect = RectF(
-                rect.left + borderWidth / 2f,
-                rect.top + borderWidth / 2f,
-                rect.right - borderWidth / 2f,
-                rect.bottom - borderWidth / 2f)
-            canvas.drawRoundRect(adjustedRect, cornerRadius, cornerRadius, borderPaint)
+            val borderBounds = bounds.insetBy(event.style.borderWidth / 2f)
+
+//            val borderWidth = event.style.borderWidth
+//            val adjustedRect = RectF(
+//                rect.left + borderWidth / 2f,
+//                rect.top + borderWidth / 2f,
+//                rect.right - borderWidth / 2f,
+//                rect.bottom - borderWidth / 2f)
+            canvas.drawRoundRect(borderBounds, cornerRadius, cornerRadius, borderPaint)
         }
 
         if (event.isNotAllDay) {
@@ -76,7 +78,7 @@ internal class EventChipDrawer<T>(
             canvas.drawRect(bottomRect, backgroundPaint)
         }
 
-        if (event.style.borderWidth != 0) {
+        if (event.style.borderWidth != null) {
             drawStroke(eventChip, canvas)
         }
     }
@@ -89,7 +91,7 @@ internal class EventChipDrawer<T>(
         val originalEvent = eventChip.originalEvent
         val rect = checkNotNull(eventChip.bounds)
 
-        val borderWidth = event.style.borderWidth
+        val borderWidth = event.style.borderWidth ?: 0
         val innerWidth = rect.width() - borderWidth * 2
 
         val borderStartX = rect.left + borderWidth
@@ -191,7 +193,7 @@ internal class EventChipDrawer<T>(
         event: ResolvedWeekViewEvent<T>,
         paint: Paint
     ) {
-        paint.color = event.style.backgroundColor
+        paint.color = event.style.backgroundColor ?: config.defaultEventColor
         paint.isAntiAlias = true
         paint.strokeWidth = 0f
         paint.style = Paint.Style.FILL
@@ -201,9 +203,9 @@ internal class EventChipDrawer<T>(
         event: ResolvedWeekViewEvent<T>,
         paint: Paint
     ) {
-        paint.color = event.style.backgroundColor
+        paint.color = event.style.borderColor ?: config.defaultEventColor
         paint.isAntiAlias = true
-        paint.strokeWidth = event.style.borderWidth.toFloat()
+        paint.strokeWidth = event.style.borderWidth?.toFloat() ?: 0f
         paint.style = Paint.Style.STROKE
     }
 }

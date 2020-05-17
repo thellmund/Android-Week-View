@@ -63,6 +63,8 @@ internal fun CharSequence.ellipsized(
 
 internal fun WeekViewConfigWrapper.getTextPaint(event: ResolvedWeekViewEvent<*>): TextPaint {
     val textPaint = if (event.isAllDay) allDayEventTextPaint else eventTextPaint
-    textPaint.color = event.style.textColor
+    if (event.style.textColor != null) {
+        textPaint.color = event.style.textColor
+    }
     return textPaint
 }
