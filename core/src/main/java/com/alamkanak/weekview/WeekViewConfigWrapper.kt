@@ -214,12 +214,20 @@ internal class WeekViewConfigWrapper(
     var maxDate: Calendar? = null
 
     var dateFormatter: DateFormatter = { date ->
-        defaultDateFormatter(numberOfDays = numberOfVisibleDays).format(date.time)
+        if (config.dateFormat.isNotBlank()) {
+            customDateFormatter(config.dateFormat).format(date.time)
+        } else {
+            defaultDateFormatter(numberOfDays = numberOfVisibleDays).format(date.time)
+        }
     }
 
     private var _timeFormatter: TimeFormatter = { hour ->
         val date = now().withTime(hour = hour, minutes = 0)
-        defaultTimeFormatter().format(date.time)
+        if (config.timeFormat.isNotBlank()) {
+            customTimeFormatter(config.timeFormat).format(date.time)
+        } else {
+            defaultTimeFormatter().format(date.time)
+        }
     }
 
     var timeFormatter: TimeFormatter
@@ -315,6 +323,18 @@ internal class WeekViewConfigWrapper(
         get() = config.maxHour
         set(value) {
             config.maxHour = value
+        }
+
+    var timeFormat: String
+        get() = config.timeFormat
+        set(value) {
+            config.timeFormat = value
+        }
+
+    var dateFormat: String
+        get() = config.dateFormat
+        set(value) {
+            config.dateFormat = value
         }
 
     @Deprecated("No longer used")

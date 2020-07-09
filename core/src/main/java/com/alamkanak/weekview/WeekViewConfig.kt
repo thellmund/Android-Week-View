@@ -127,6 +127,12 @@ internal class WeekViewConfig(
     var minHour: Int = 0
     var maxHour: Int = 0
 
+    // Time format
+    var timeFormat: String = ""
+
+    // Date format
+    var dateFormat: String = ""
+
     // Font
     var typeface: Typeface = Typeface.DEFAULT
 
@@ -170,6 +176,12 @@ internal class WeekViewConfig(
             // Time range
             minHour = getInt(R.styleable.WeekView_minHour, 0)
             maxHour = getInt(R.styleable.WeekView_maxHour, 24)
+
+            // Time format
+            timeFormat = getString(R.styleable.WeekView_timeFormat) ?: ""
+
+            // Date format
+            dateFormat = getString(R.styleable.WeekView_dateFormat) ?: ""
 
             // Header row
             headerRowTextColor = getColor(R.styleable.WeekView_headerRowTextColor, Color.BLACK)

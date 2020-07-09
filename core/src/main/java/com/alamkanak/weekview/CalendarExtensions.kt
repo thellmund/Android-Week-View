@@ -258,7 +258,11 @@ internal fun defaultDateFormatter(
     else -> SimpleDateFormat("EEEEE M/dd", Locale.getDefault()) // first character
 }
 
+internal fun customDateFormatter(pattern: String): SimpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
+
 internal fun defaultTimeFormatter(): SimpleDateFormat = SimpleDateFormat("hh a", Locale.getDefault())
+
+internal fun customTimeFormatter(pattern: String): SimpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
 
 internal fun Calendar.format(
     format: Int = java.text.DateFormat.MEDIUM

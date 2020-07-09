@@ -46,6 +46,12 @@
         <attr name="minHour" format="integer" />
         <attr name="maxHour" format="integer" />
 
+        <!-- Time format -->
+        <attr name="timeFormat" format="string" />
+
+        <!-- Date format -->
+        <attr name="dateFormat" format="string" />
+
         <!-- Header row -->
         <attr name="headerRowTextColor" format="color" />
         <attr name="headerRowBackgroundColor" format="color" />

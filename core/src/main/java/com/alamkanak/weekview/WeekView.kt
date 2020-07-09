@@ -12,7 +12,9 @@ import android.view.View
 import android.view.accessibility.AccessibilityManager
 import androidx.core.view.ViewCompat
 import com.alamkanak.weekview.Constants.UNINITIALIZED
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -1045,6 +1047,60 @@ class WeekView<T : Any> @JvmOverloads constructor(
             }
 
             configWrapper.maxHour = value
+            invalidate()
+        }
+
+    /*
+     ***********************************************************************************************
+     *
+     *   Time format
+     *
+     ***********************************************************************************************
+     */
+
+    /**
+     * Returns the time format pattern of time column that [WeekView] will display.
+     */
+    @PublicApi
+    var timeFormat: String
+        get() = configWrapper.timeFormat
+        set(value) {
+            val checkFormat = SimpleDateFormat(value, Locale.getDefault())
+            try {
+                checkFormat.format(Calendar.getInstance().time)
+            } catch (e1: NullPointerException) {
+                throw IllegalArgumentException("timeFormat should be not null")
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException("illegal timeFormat")
+            }
+            configWrapper.timeFormat = value
+            invalidate()
+        }
+
+    /*
+     ***********************************************************************************************
+     *
+     *   Date format
+     *
+     ***********************************************************************************************
+     */
+
+    /**
+     * Returns the date format pattern of header row that [WeekView] will display.
+     */
+    @PublicApi
+    var dateFormat: String
+        get() = configWrapper.dateFormat
+        set(value) {
+            val checkFormat = SimpleDateFormat(value, Locale.getDefault())
+            try {
+                checkFormat.format(Calendar.getInstance().time)
+            } catch (e1: NullPointerException) {
+                throw IllegalArgumentException("dateFormat should be not null")
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException("illegal dateFormat")
+            }
+            configWrapper.dateFormat = value
             invalidate()
         }
 
