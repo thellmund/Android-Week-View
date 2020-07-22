@@ -12,7 +12,9 @@ internal class EventChipsCache<T> {
     private val normalEventChipsByDate = ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip<T>>>()
     private val allDayEventChipsByDate = ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip<T>>>()
 
-    fun allEventChipsInDateRange(dateRange: List<Calendar>): List<EventChip<T>> {
+    fun allEventChipsInDateRange(
+        dateRange: List<Calendar>
+    ): List<EventChip<T>> {
         val results = mutableListOf<EventChip<T>>()
         for (date in dateRange) {
             results += allDayEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
@@ -61,7 +63,10 @@ internal class EventChipsCache<T> {
         normalEventChipsByDate.clear()
     }
 
-    private fun <T> ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip<T>>>.addOrReplace(key: Long, eventChip: EventChip<T>) {
+    private fun <T> ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip<T>>>.addOrReplace(
+        key: Long,
+        eventChip: EventChip<T>
+    ) {
         val results = getOrElse(key) { LinkedBlockingQueue() }
         results.removeIf { it.event.id == eventChip.event.id }
         results.add(eventChip)
