@@ -12,6 +12,7 @@ import com.alamkanak.weekview.sample.util.observe
 import com.alamkanak.weekview.sample.util.setupWithWeekView
 import com.alamkanak.weekview.sample.util.showToast
 import com.alamkanak.weekview.sample.util.toCalendar
+import com.alamkanak.weekview.threetenabp.setDateFormatter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -20,6 +21,7 @@ import kotlinx.android.synthetic.main.view_toolbar.toolbar
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneId
+import org.threeten.bp.format.DateTimeFormatter
 
 private class ViewModel(
     private val database: EventsDatabase
@@ -33,8 +35,8 @@ private class ViewModel(
 
 class BasicActivity : AppCompatActivity() {
 
-    private val weekdayFormatter = SimpleDateFormat("EEE", Locale.getDefault())
-    private val dateFormatter = SimpleDateFormat("MM/dd", Locale.getDefault())
+    private val weekdayFormatter = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
+    private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd", Locale.getDefault())
 
     private val viewModel: ViewModel by lazy {
         ViewModel(EventsDatabase(this))
@@ -52,9 +54,9 @@ class BasicActivity : AppCompatActivity() {
         )
         weekView.adapter = adapter
 
-        weekView.setDateFormatter { date ->
-            val weekdayLabel = weekdayFormatter.format(date.time)
-            val dateLabel = dateFormatter.format(date.time)
+        weekView.setDateFormatter { date: LocalDate ->
+            val weekdayLabel = weekdayFormatter.format(date)
+            val dateLabel = dateFormatter.format(date)
             weekdayLabel + "\n" + dateLabel
         }
 

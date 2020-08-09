@@ -1,23 +1,23 @@
-package com.alamkanak.weekview.threetenabp
+package com.alamkanak.weekview.jodatime
 
 import com.alamkanak.weekview.WeekView
 import java.util.Calendar
-import org.threeten.bp.DayOfWeek
-import org.threeten.bp.LocalDate
+import org.joda.time.DateTimeConstants
+import org.joda.time.LocalDate
 
-class WeekViewAdapter(
+class WeekViewJodaTimeAdapter(
     private val weekView: WeekView
 ) {
 
-    val firstDayOfWeek: DayOfWeek
+    val firstDayOfWeek: Int
         get() = when (val day = weekView.firstDayOfWeek) {
-            Calendar.MONDAY -> DayOfWeek.MONDAY
-            Calendar.TUESDAY -> DayOfWeek.TUESDAY
-            Calendar.WEDNESDAY -> DayOfWeek.WEDNESDAY
-            Calendar.THURSDAY -> DayOfWeek.THURSDAY
-            Calendar.FRIDAY -> DayOfWeek.FRIDAY
-            Calendar.SATURDAY -> DayOfWeek.SATURDAY
-            Calendar.SUNDAY -> DayOfWeek.SUNDAY
+            Calendar.MONDAY -> DateTimeConstants.MONDAY
+            Calendar.TUESDAY -> DateTimeConstants.TUESDAY
+            Calendar.WEDNESDAY -> DateTimeConstants.WEDNESDAY
+            Calendar.THURSDAY -> DateTimeConstants.THURSDAY
+            Calendar.FRIDAY -> DateTimeConstants.FRIDAY
+            Calendar.SATURDAY -> DateTimeConstants.SATURDAY
+            Calendar.SUNDAY -> DateTimeConstants.SUNDAY
             else -> throw IllegalArgumentException("Unknown day of week: $day")
         }
 

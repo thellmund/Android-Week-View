@@ -1273,12 +1273,12 @@ class WeekView @JvmOverloads constructor(
         }
 
     @PublicApi
-    fun setDateFormatter(formatter: (Calendar) -> String) {
+    fun setDateFormatter(formatter: DateFormatter) {
         viewState.dateFormatter = formatter
     }
 
     @PublicApi
-    fun setTimeFormatter(formatter: (Int) -> String) {
+    fun setTimeFormatter(formatter: TimeFormatter) {
         viewState.timeFormatter = formatter
     }
 

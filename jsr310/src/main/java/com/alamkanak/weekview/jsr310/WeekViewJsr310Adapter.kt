@@ -1,23 +1,23 @@
-package com.alamkanak.weekview.jodatime
+package com.alamkanak.weekview.jsr310
 
 import com.alamkanak.weekview.WeekView
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.util.Calendar
-import org.joda.time.DateTimeConstants
-import org.joda.time.LocalDate
 
-class WeekViewAdapter(
+class WeekViewJsr310Adapter(
     private val weekView: WeekView
 ) {
 
-    val firstDayOfWeek: Int
+    val firstDayOfWeek: DayOfWeek
         get() = when (val day = weekView.firstDayOfWeek) {
-            Calendar.MONDAY -> DateTimeConstants.MONDAY
-            Calendar.TUESDAY -> DateTimeConstants.TUESDAY
-            Calendar.WEDNESDAY -> DateTimeConstants.WEDNESDAY
-            Calendar.THURSDAY -> DateTimeConstants.THURSDAY
-            Calendar.FRIDAY -> DateTimeConstants.FRIDAY
-            Calendar.SATURDAY -> DateTimeConstants.SATURDAY
-            Calendar.SUNDAY -> DateTimeConstants.SUNDAY
+            Calendar.MONDAY -> DayOfWeek.MONDAY
+            Calendar.TUESDAY -> DayOfWeek.TUESDAY
+            Calendar.WEDNESDAY -> DayOfWeek.WEDNESDAY
+            Calendar.THURSDAY -> DayOfWeek.THURSDAY
+            Calendar.FRIDAY -> DayOfWeek.FRIDAY
+            Calendar.SATURDAY -> DayOfWeek.SATURDAY
+            Calendar.SUNDAY -> DayOfWeek.SUNDAY
             else -> throw IllegalArgumentException("Unknown day of week: $day")
         }
 

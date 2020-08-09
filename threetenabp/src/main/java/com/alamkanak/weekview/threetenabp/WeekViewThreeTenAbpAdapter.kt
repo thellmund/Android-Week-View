@@ -1,11 +1,11 @@
-package com.alamkanak.weekview.jsr310
+package com.alamkanak.weekview.threetenabp
 
 import com.alamkanak.weekview.WeekView
-import java.time.DayOfWeek
-import java.time.LocalDate
 import java.util.Calendar
+import org.threeten.bp.DayOfWeek
+import org.threeten.bp.LocalDate
 
-class WeekViewAdapter(
+class WeekViewThreeTenAbpAdapter(
     private val weekView: WeekView
 ) {
 
