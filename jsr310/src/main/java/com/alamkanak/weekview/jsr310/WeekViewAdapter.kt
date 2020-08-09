@@ -5,8 +5,8 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Calendar
 
-class WeekViewAdapter<T : Any>(
-    private val weekView: WeekView<T>
+class WeekViewAdapter(
+    private val weekView: WeekView
 ) {
 
     val firstDayOfWeek: DayOfWeek

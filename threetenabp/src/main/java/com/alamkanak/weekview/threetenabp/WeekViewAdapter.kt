@@ -5,8 +5,8 @@ import java.util.Calendar
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 
-class WeekViewAdapter<T : Any>(
-    private val weekView: WeekView<T>
+class WeekViewAdapter(
+    private val weekView: WeekView
 ) {
 
     val firstDayOfWeek: DayOfWeek

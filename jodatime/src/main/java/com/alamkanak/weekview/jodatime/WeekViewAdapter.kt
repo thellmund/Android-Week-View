@@ -5,8 +5,8 @@ import java.util.Calendar
 import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDate
 
-class WeekViewAdapter<T : Any>(
-    private val weekView: WeekView<T>
+class WeekViewAdapter(
+    private val weekView: WeekView
 ) {
 
     val firstDayOfWeek: Int
