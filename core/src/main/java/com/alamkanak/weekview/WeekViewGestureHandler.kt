@@ -1,10 +1,10 @@
 package com.alamkanak.weekview
 
+import android.content.Context
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_UP
-import android.view.View
 import android.view.ViewConfiguration
 import com.alamkanak.weekview.Direction.Left
 import com.alamkanak.weekview.Direction.None
@@ -26,12 +26,11 @@ private enum class Direction {
         get() = this == Vertical
 }
 
-internal class WeekViewGestureHandler<T : Any>(
-    private val view: WeekView<*>,
-    private val config: WeekViewConfigWrapper,
-    private val viewState: WeekViewViewState,
-    private val eventChipsCache: EventChipsCache<T>,
-    private val touchHandler: WeekViewTouchHandler<T>,
+internal class WeekViewGestureHandler(
+    context: Context,
+    private val viewState: ViewState,
+    private val eventChipsCache: EventChipsCache,
+    private val touchHandler: WeekViewTouchHandler,
     private val onInvalidation: () -> Unit
 ) : GestureDetector.SimpleOnGestureListener() {
 
@@ -40,12 +39,10 @@ internal class WeekViewGestureHandler<T : Any>(
     private var currentScrollDirection = None
     private var currentFlingDirection = None
 
-    private val scaleDetector = ScaleGestureDetector(view.context, config, scroller, onInvalidation)
-    private val gestureDetector = GestureDetector(view.context, this)
+    private val scaleDetector = ScaleGestureDetector(context, viewState, scroller, onInvalidation)
+    private val gestureDetector = GestureDetector(context, this)
 
-    private val scaledTouchSlop = view.scaledTouchSlop
-
-    var scrollListener: ScrollListener? = null
+    private val scaledTouchSlop = context.scaledTouchSlop
 
     override fun onDown(
         e: MotionEvent
@@ -63,7 +60,7 @@ internal class WeekViewGestureHandler<T : Any>(
         val absDistanceX = abs(distanceX)
         val absDistanceY = abs(distanceY)
 
-        val canScrollHorizontally = config.horizontalScrollingEnabled
+        val canScrollHorizontally = viewState.horizontalScrollingEnabled
 
         when (currentScrollDirection) {
             None -> {
@@ -92,15 +89,15 @@ internal class WeekViewGestureHandler<T : Any>(
         // Calculate the new origin after scroll.
         when (currentScrollDirection) {
             Left, Right -> {
-                config.currentOrigin.x -= distanceX
-                config.currentOrigin.x = config.currentOrigin.x.limit(
-                    minValue = config.minX,
-                    maxValue = config.maxX
+                viewState.currentOrigin.x -= distanceX
+                viewState.currentOrigin.x = viewState.currentOrigin.x.limit(
+                    minValue = viewState.minX,
+                    maxValue = viewState.maxX
                 )
                 onInvalidation()
             }
             Vertical -> {
-                config.currentOrigin.y -= distanceY
+                viewState.currentOrigin.y -= distanceY
                 onInvalidation()
             }
             None -> Unit
@@ -115,7 +112,7 @@ internal class WeekViewGestureHandler<T : Any>(
         velocityX: Float,
         velocityY: Float
     ): Boolean {
-        if (currentFlingDirection.isHorizontal && !config.horizontalScrollingEnabled) {
+        if (currentFlingDirection.isHorizontal && !viewState.horizontalScrollingEnabled) {
             return true
         }
 
@@ -136,22 +133,22 @@ internal class WeekViewGestureHandler<T : Any>(
 
     private fun onFlingHorizontal() {
         val destinationDate = when (currentFlingDirection) {
-            Left -> preFlingFirstVisibleDate + Days(config.numberOfVisibleDays)
-            Right -> preFlingFirstVisibleDate - Days(config.numberOfVisibleDays)
+            Left -> preFlingFirstVisibleDate + Days(viewState.numberOfVisibleDays)
+            Right -> preFlingFirstVisibleDate - Days(viewState.numberOfVisibleDays)
             else -> throw IllegalStateException()
         }
 
-        val destinationOffset = config.getXOriginForDate(destinationDate)
+        val destinationOffset = viewState.getXOriginForDate(destinationDate)
         val adjustedDestinationOffset = destinationOffset.limit(
-            minValue = config.minX,
-            maxValue = config.maxX
+            minValue = viewState.minX,
+            maxValue = viewState.maxX
         )
 
         scroller.animate(
-            fromValue = config.currentOrigin.x,
+            fromValue = viewState.currentOrigin.x,
             toValue = adjustedDestinationOffset,
             onUpdate = {
-                config.currentOrigin.x = it
+                viewState.currentOrigin.x = it
                 onInvalidation()
             }
         )
@@ -160,21 +157,21 @@ internal class WeekViewGestureHandler<T : Any>(
     private fun onFlingVertical(
         originalVelocityY: Float
     ) {
-        val dayHeight = config.hourHeight * config.hoursPerDay
-        val viewHeight = view.height
+        val dayHeight = viewState.hourHeight * viewState.hoursPerDay
+        val viewHeight = viewState.viewHeight
 
-        val minY = (dayHeight + config.getTotalHeaderHeight() - viewHeight) * -1
+        val minY = (dayHeight + viewState.headerHeight - viewHeight) * -1
         val maxY = 0f
 
-        val currentOffset = config.currentOrigin.y
+        val currentOffset = viewState.currentOrigin.y
         val destinationOffset = currentOffset + (originalVelocityY * 0.18).roundToInt()
         val adjustedDestinationOffset = destinationOffset.limit(minValue = minY, maxValue = maxY)
 
         scroller.animate(
-            fromValue = config.currentOrigin.y,
+            fromValue = viewState.currentOrigin.y,
             toValue = adjustedDestinationOffset,
             onUpdate = {
-                config.currentOrigin.y = it
+                viewState.currentOrigin.y = it
                 onInvalidation()
             }
         )
@@ -192,7 +189,7 @@ internal class WeekViewGestureHandler<T : Any>(
         touchHandler.handleLongClick(e.x, e.y)
     }
 
-    internal fun findHitEvent(x: Float, y: Float): EventChip<T>? {
+    internal fun findHitEvent(x: Float, y: Float): EventChip? {
         val candidates = eventChipsCache.allEventChips.filter { it.isHit(x, y) }
         return when {
             candidates.isEmpty() -> null
@@ -204,20 +201,20 @@ internal class WeekViewGestureHandler<T : Any>(
     }
 
     private fun goToNearestOrigin() {
-        val dayWidth = config.totalDayWidth
-        val daysFromOrigin = config.currentOrigin.x / dayWidth.toDouble()
+        val dayWidth = viewState.totalDayWidth
+        val daysFromOrigin = viewState.currentOrigin.x / dayWidth.toDouble()
         val adjustedDaysFromOrigin = daysFromOrigin.roundToInt()
 
-        val nearestOrigin = config.currentOrigin.x - adjustedDaysFromOrigin * dayWidth
+        val nearestOrigin = viewState.currentOrigin.x - adjustedDaysFromOrigin * dayWidth
         if (nearestOrigin != 0f) {
-            val currentOffset = config.currentOrigin.x
+            val currentOffset = viewState.currentOrigin.x
             val destinationOffset = adjustedDaysFromOrigin * dayWidth
 
             scroller.animate(
                 fromValue = currentOffset,
                 toValue = destinationOffset,
                 onUpdate = {
-                    config.currentOrigin.x = it
+                    viewState.currentOrigin.x = it
                     onInvalidation()
                 }
             )
@@ -232,8 +229,10 @@ internal class WeekViewGestureHandler<T : Any>(
         scaleDetector.onTouchEvent(event)
         val handled = gestureDetector.onTouchEvent(event)
 
-        if (event.action == ACTION_UP && currentScrollDirection != None && currentFlingDirection == None) {
-            goToNearestOrigin()
+        if (event.action == ACTION_UP && currentFlingDirection == None) {
+            if (currentScrollDirection.isHorizontal) {
+                goToNearestOrigin()
+            }
             currentScrollDirection = None
         } else if (event.action == ACTION_DOWN) {
             preFlingFirstVisibleDate = viewState.firstVisibleDate.copy()
@@ -248,8 +247,8 @@ internal class WeekViewGestureHandler<T : Any>(
         currentScrollDirection = currentFlingDirection
     }
 
-    private val View.scaledTouchSlop: Int
-        get() = ViewConfiguration.get(context).scaledTouchSlop
-
-    private fun Float.limit(minValue: Float, maxValue: Float): Float = min(max(this, minValue), maxValue)
+    private val Context.scaledTouchSlop: Int
+        get() = ViewConfiguration.get(this).scaledTouchSlop
 }
+
+internal fun Float.limit(minValue: Float, maxValue: Float): Float = min(max(this, minValue), maxValue)

@@ -12,22 +12,34 @@ import android.graphics.RectF
  * The original [ResolvedWeekViewEvent] is accessible via [originalEvent]. The
  * [ResolvedWeekViewEvent] that corresponds to the drawn rectangle is accessible via [event].
  */
-internal data class EventChip<T>(
+internal data class EventChip(
     /**
      * The [ResolvedWeekViewEvent] corresponding to the drawn rectangle. It might differ from
      * [originalEvent], which may be a multi-day event.
      */
-    val event: ResolvedWeekViewEvent<T>,
+    val event: ResolvedWeekViewEvent<*>,
     /**
      * The original [ResolvedWeekViewEvent], which may be a multi-day event.
      */
-    val originalEvent: ResolvedWeekViewEvent<T>
+    val originalEvent: ResolvedWeekViewEvent<*>
 ) {
+
+    /**
+     * A unique ID of this [EventChip].
+     */
+    val id: String
+        get() = "$eventId-${this.event.startTime.timeInMillis}"
+
+    /**
+     * The ID of the [ResolvedWeekViewEvent] that this [EventChip] represents.
+     */
+    val eventId: Long
+        get() = originalEvent.id
 
     /**
      * The rectangle in which the [ResolvedWeekViewEvent] will be drawn.
      */
-    var bounds: RectF? = null
+    var bounds: RectF = RectF()
 
     /**
      * The relative start position of the [EventChip].
@@ -58,8 +70,8 @@ internal data class EventChip<T>(
         horizontalPadding: Int,
         verticalPadding: Int
     ): Boolean {
-        val availableWidth = (area.right - area.left - horizontalPadding).toInt()
-        val availableHeight = (area.bottom - area.top - verticalPadding).toInt()
+        val availableWidth = (area.width() - horizontalPadding).toInt()
+        val availableHeight = (area.height() - verticalPadding).toInt()
         return availableWidth != availableWidthCache || availableHeight != availableHeightCache
     }
 
@@ -69,14 +81,12 @@ internal data class EventChip<T>(
     }
 
     fun clearCache() {
-        bounds = null
+        bounds.setEmpty()
         availableWidthCache = 0
         availableHeightCache = 0
     }
 
     fun isHit(x: Float, y: Float): Boolean {
-        return bounds?.let {
-            x > it.left && x < it.right && y > it.top && y < it.bottom
-        } ?: false
+        return x > bounds.left && x < bounds.right && y > bounds.top && y < bounds.bottom
     }
 }

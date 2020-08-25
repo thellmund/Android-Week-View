@@ -4,33 +4,27 @@ import android.graphics.Canvas
 import android.text.StaticLayout
 import android.util.SparseArray
 
-internal class TimeColumnDrawer(
-    private val view: WeekView<*>,
-    private val config: WeekViewConfigWrapper
-) : CachingDrawer {
+internal class TimeColumnRenderer(
+    private val viewState: ViewState
+) : Renderer, TimeFormatterDependent {
 
-    private val timeLabelLayoutsCache = SparseArray<StaticLayout>()
-
-    private val displayedHours: IntProgression
-        get() = config.timeRange step config.timeColumnHoursInterval
+    private val timeLabelLayouts = SparseArray<StaticLayout>()
 
     init {
-        cacheTimeLabels()
+        updateTimeLabels()
     }
 
-    private fun cacheTimeLabels() = with(config) {
-        for (hour in displayedHours) {
-            val textLayout = timeFormatter(hour).toTextLayout(timeTextPaint, width = Int.MAX_VALUE)
-            timeLabelLayoutsCache.put(hour, textLayout)
-        }
+    override fun onSizeChanged(width: Int, height: Int) {
+        updateTimeLabels()
     }
 
-    override fun draw(
-        drawingContext: DrawingContext,
-        canvas: Canvas
-    ) = with(config) {
+    override fun onTimeFormatterChanged(formatter: TimeFormatter) {
+        updateTimeLabels()
+    }
+
+    override fun render(canvas: Canvas) = with(viewState) {
         var topMargin = headerHeight
-        val bottom = view.height.toFloat()
+        val bottom = viewState.viewHeight.toFloat()
 
         canvas.drawRect(0f, topMargin, timeColumnWidth, bottom, timeColumnBackgroundPaint)
 
@@ -45,7 +39,6 @@ internal class TimeColumnDrawer(
                 continue
             }
 
-            val x = timeTextWidth + timeColumnPadding
             var y = topMargin - timeTextHeight / 2
 
             // If the hour separator is shown in the time column, move the time label below it
@@ -53,9 +46,11 @@ internal class TimeColumnDrawer(
                 y += timeTextHeight / 2 + hourSeparatorPaint.strokeWidth + timeColumnPadding
             }
 
-            val textLayout = timeLabelLayoutsCache[hour]
+            val label = timeLabelLayouts[hour]
+            val x = timeColumnWidth - timeColumnPadding
+
             canvas.withTranslation(x, y) {
-                textLayout.draw(this)
+                label.draw(this)
             }
 
             if (showTimeColumnHourSeparator && hour > 0) {
@@ -79,10 +74,21 @@ internal class TimeColumnDrawer(
         }
     }
 
-    override fun clear() {
-        timeLabelLayoutsCache.clear()
-        cacheTimeLabels()
+    private fun updateTimeLabels() = with(viewState) {
+        var maxLineLength = 0f
+        var maxLineHeight = 0
+
+        timeLabelLayouts.clear()
+        for (hour in displayedHours) {
+            val textLayout = timeFormatter(hour).toTextLayout(timeTextPaint, width = Int.MAX_VALUE)
+            maxLineLength = textLayout.maxLineLength
+            maxLineHeight = textLayout.height
+            timeLabelLayouts.put(hour, textLayout)
+        }
+
+        updateTimeColumnBounds(
+            lineLength = maxLineLength,
+            lineHeight = maxLineHeight.toFloat()
+        )
     }
 }
-
-private operator fun <E> SparseArray<E>.contains(key: Int): Boolean = indexOfKey(key) >= 0

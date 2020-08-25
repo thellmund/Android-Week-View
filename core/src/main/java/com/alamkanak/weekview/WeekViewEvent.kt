@@ -11,14 +11,14 @@ import androidx.core.content.ContextCompat
 import java.util.Calendar
 
 data class WeekViewEvent<T> internal constructor(
-    val id: Long = 0L,
+    internal val id: Long = 0L,
     internal val titleResource: TextResource,
-    val startTime: Calendar = now(),
-    val endTime: Calendar = now(),
+    internal val startTime: Calendar = now(),
+    internal val endTime: Calendar = now(),
     internal val locationResource: TextResource? = null,
-    val isAllDay: Boolean = false,
-    val style: Style = Style(),
-    val data: T
+    internal val isAllDay: Boolean = false,
+    internal val style: Style = Style(),
+    internal val data: T
 ) : WeekViewDisplayable<T> {
 
     override fun toWeekViewEvent(): WeekViewEvent<T> = this
@@ -37,16 +37,16 @@ data class WeekViewEvent<T> internal constructor(
         data class Value(val text: CharSequence) : TextResource()
         data class Id(@StringRes val resId: Int) : TextResource()
 
-        fun resolve(context: Context, shouldSetBold: Boolean): CharSequence = when (this) {
+        fun resolve(context: Context, semibold: Boolean): CharSequence = when (this) {
             is Id -> {
                 val text = context.getString(resId)
-                if (shouldSetBold) text.bold() else text
+                if (semibold) text.semibold() else SpannableString(text)
             }
             is Value -> when (text) {
                 // We don't change the existing style of SpannableStrings.
                 is SpannableString -> text
                 is SpannableStringBuilder -> text.build()
-                else -> if (shouldSetBold) text.bold() else text
+                else -> if (semibold) text.semibold() else SpannableString(text)
             }
         }
     }

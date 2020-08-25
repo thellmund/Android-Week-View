@@ -3,209 +3,152 @@ package com.alamkanak.weekview
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
-import android.graphics.Typeface
-import android.text.SpannableStringBuilder
 import android.text.StaticLayout
-import android.text.style.StyleSpan
 
-internal class EventChipDrawer<T>(
-    private val config: WeekViewConfigWrapper
+internal class EventChipDrawer(
+    private val viewState: ViewState
 ) {
-
-    private val textFitter = TextFitter<T>(config)
-    private val textLayoutCache = mutableMapOf<Long, StaticLayout>()
 
     private val backgroundPaint = Paint()
     private val borderPaint = Paint()
 
     internal fun draw(
-        eventChip: EventChip<T>,
+        eventChip: EventChip,
         canvas: Canvas,
-        textLayout: StaticLayout? = null
+        textLayout: StaticLayout
     ) {
-        val event = eventChip.event
+        canvas.drawInBounds(eventChip.bounds) {
+            val event = eventChip.event
 
-        val cornerRadius = config.eventCornerRadius.toFloat()
-        updateBackgroundPaint(event, backgroundPaint)
+            val cornerRadius = viewState.eventCornerRadius.toFloat()
+            updateBackgroundPaint(event, backgroundPaint)
 
-        val bounds = checkNotNull(eventChip.bounds)
-        canvas.drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
+            val bounds = eventChip.bounds
+            drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
 
-        if (event.style.borderWidth != null) {
-            updateBorderPaint(event, borderPaint)
+            if (event.style.borderWidth != null) {
+                updateBorderPaint(event, borderPaint)
+                val borderBounds = bounds.insetBy(event.style.borderWidth / 2f)
+                drawRoundRect(borderBounds, cornerRadius, cornerRadius, borderPaint)
+            }
 
-            val borderBounds = bounds.insetBy(event.style.borderWidth / 2f)
+            if (event.isNotAllDay) {
+                drawCornersForMultiDayEvents(eventChip, cornerRadius)
+            }
 
-//            val borderWidth = event.style.borderWidth
-//            val adjustedRect = RectF(
-//                rect.left + borderWidth / 2f,
-//                rect.top + borderWidth / 2f,
-//                rect.right - borderWidth / 2f,
-//                rect.bottom - borderWidth / 2f)
-            canvas.drawRoundRect(borderBounds, cornerRadius, cornerRadius, borderPaint)
-        }
-
-        if (event.isNotAllDay) {
-            drawCornersForMultiDayEvents(eventChip, cornerRadius, canvas)
-        }
-
-        if (textLayout != null) {
-            // The text height has already been calculated
-            drawEventTitle(eventChip, textLayout, canvas)
-        } else {
-            calculateTextHeightAndDrawTitle(eventChip, canvas)
+            drawEventTitle(eventChip, textLayout)
         }
     }
 
-    private fun drawCornersForMultiDayEvents(
-        eventChip: EventChip<T>,
-        cornerRadius: Float,
-        canvas: Canvas
+    private fun Canvas.drawCornersForMultiDayEvents(
+        eventChip: EventChip,
+        cornerRadius: Float
     ) {
         val event = eventChip.event
         val originalEvent = eventChip.originalEvent
-        val rect = checkNotNull(eventChip.bounds)
+        val bounds = eventChip.bounds
 
         updateBackgroundPaint(event, backgroundPaint)
 
         if (event.startsOnEarlierDay(originalEvent)) {
-            val topRect = RectF(rect.left, rect.top, rect.right, rect.top + cornerRadius)
-            canvas.drawRect(topRect, backgroundPaint)
+            val topRect = RectF(bounds)
+            topRect.bottom = topRect.top + cornerRadius
+            drawRect(topRect, backgroundPaint)
         }
 
         if (event.endsOnLaterDay(originalEvent)) {
-            val bottomRect = RectF(rect.left, rect.bottom - cornerRadius, rect.right, rect.bottom)
-            canvas.drawRect(bottomRect, backgroundPaint)
+            val bottomRect = RectF(bounds)
+            bottomRect.top = bottomRect.bottom - cornerRadius
+            drawRect(bottomRect, backgroundPaint)
         }
 
         if (event.style.borderWidth != null) {
-            drawStroke(eventChip, canvas)
+            drawMultiDayBorderStroke(eventChip, cornerRadius)
         }
     }
 
-    private fun drawStroke(
-        eventChip: EventChip<T>,
-        canvas: Canvas
+    private fun Canvas.drawMultiDayBorderStroke(
+        eventChip: EventChip,
+        cornerRadius: Float
     ) {
         val event = eventChip.event
         val originalEvent = eventChip.originalEvent
-        val rect = checkNotNull(eventChip.bounds)
+        val bounds = eventChip.bounds
 
         val borderWidth = event.style.borderWidth ?: 0
-        val innerWidth = rect.width() - borderWidth * 2
-
-        val borderStartX = rect.left + borderWidth
-        val borderEndX = borderStartX + innerWidth
+        val borderStart = bounds.left + borderWidth / 2
+        val borderEnd = bounds.right - borderWidth / 2
 
         updateBorderPaint(event, backgroundPaint)
 
         if (event.startsOnEarlierDay(originalEvent)) {
-            // Remove top rounded corners by drawing a rectangle
-            val borderStartY = rect.top
-            val borderEndY = borderStartY + borderWidth
-            val newRect = RectF(borderStartX, borderStartY, borderEndX, borderEndY)
-            canvas.drawRect(newRect, backgroundPaint)
+            drawVerticalLine(
+                horizontalOffset = borderStart,
+                startY = bounds.top,
+                endY = bounds.top + cornerRadius,
+                paint = backgroundPaint
+            )
+
+            drawVerticalLine(
+                horizontalOffset = borderEnd,
+                startY = bounds.top,
+                endY = bounds.top + cornerRadius,
+                paint = backgroundPaint
+            )
         }
 
         if (event.endsOnLaterDay(originalEvent)) {
-            // Remove bottom rounded corners by drawing a rectangle
-            val borderEndY = rect.bottom
-            val borderStartY = borderEndY - borderWidth
-            val newRect = RectF(borderStartX, borderStartY, borderEndX, borderEndY)
-            canvas.drawRect(newRect, backgroundPaint)
+            drawVerticalLine(
+                horizontalOffset = borderStart,
+                startY = bounds.bottom - cornerRadius,
+                endY = bounds.bottom,
+                paint = backgroundPaint
+            )
+
+            drawVerticalLine(
+                horizontalOffset = borderEnd,
+                startY = bounds.bottom - cornerRadius,
+                endY = bounds.bottom,
+                paint = backgroundPaint
+            )
         }
     }
 
-    private fun drawEventTitle(
-        eventChip: EventChip<T>,
-        textLayout: StaticLayout,
-        canvas: Canvas
+    private fun Canvas.drawEventTitle(
+        eventChip: EventChip,
+        textLayout: StaticLayout
     ) {
-        val rect = checkNotNull(eventChip.bounds)
-        canvas.apply {
-            save()
-            translate(
-                rect.left + config.eventPaddingHorizontal,
-                rect.top + config.eventPaddingVertical
-            )
-            textLayout.draw(this)
-            restore()
-        }
-    }
+        val bounds = eventChip.bounds
+        val horizontalOffset = bounds.left + viewState.eventPaddingHorizontal
 
-    private fun calculateTextHeightAndDrawTitle(
-        eventChip: EventChip<T>,
-        canvas: Canvas
-    ) {
-        val event = eventChip.event
-        val bounds = checkNotNull(eventChip.bounds)
-
-        val fullHorizontalPadding = config.eventPaddingHorizontal * 2
-        val fullVerticalPadding = config.eventPaddingVertical * 2
-
-        val negativeWidth = bounds.right - bounds.left - fullHorizontalPadding < 0
-        val negativeHeight = bounds.bottom - bounds.top - fullVerticalPadding < 0
-        if (negativeWidth || negativeHeight) {
-            return
+        val verticalOffset = if (eventChip.event.isAllDay) {
+            (bounds.height() - textLayout.height) / 2f
+        } else {
+            viewState.eventPaddingVertical.toFloat()
         }
 
-        val title = event.title.emojify()
-        val text = SpannableStringBuilder(title)
-        text.setSpan(StyleSpan(Typeface.BOLD))
-
-        val location = event.location?.emojify()
-        if (location != null) {
-            text.appendln().append(location)
-        }
-
-        val chipHeight = (bounds.bottom - bounds.top - fullVerticalPadding).toInt()
-        val chipWidth = (bounds.right - bounds.left - fullHorizontalPadding).toInt()
-
-        if (chipHeight == 0 || chipWidth == 0) {
-            return
-        }
-
-        val didAvailableAreaChange = eventChip.didAvailableAreaChange(
-            area = bounds,
-            horizontalPadding = fullHorizontalPadding,
-            verticalPadding = fullVerticalPadding
-        )
-        val isCached = event.id in textLayoutCache
-
-        if (didAvailableAreaChange || !isCached) {
-            textLayoutCache[event.id] = textFitter.fit(
-                eventChip = eventChip,
-                title = title,
-                location = location,
-                chipHeight = chipHeight,
-                chipWidth = chipWidth
-            )
-            eventChip.updateAvailableArea(chipWidth, chipHeight)
-        }
-
-        val textLayout = textLayoutCache[event.id] ?: return
-        if (textLayout.height <= chipHeight) {
-            drawEventTitle(eventChip, textLayout, canvas)
+        withTranslation(x = horizontalOffset, y = bounds.top + verticalOffset) {
+            draw(textLayout)
         }
     }
 
     private fun updateBackgroundPaint(
-        event: ResolvedWeekViewEvent<T>,
+        event: ResolvedWeekViewEvent<*>,
         paint: Paint
-    ) {
-        paint.color = event.style.backgroundColor ?: config.defaultEventColor
-        paint.isAntiAlias = true
-        paint.strokeWidth = 0f
-        paint.style = Paint.Style.FILL
+    ) = with(paint) {
+        color = event.style.backgroundColor ?: viewState.defaultEventColor
+        isAntiAlias = true
+        strokeWidth = 0f
+        style = Paint.Style.FILL
     }
 
     private fun updateBorderPaint(
-        event: ResolvedWeekViewEvent<T>,
+        event: ResolvedWeekViewEvent<*>,
         paint: Paint
-    ) {
-        paint.color = event.style.borderColor ?: config.defaultEventColor
-        paint.isAntiAlias = true
-        paint.strokeWidth = event.style.borderWidth?.toFloat() ?: 0f
-        paint.style = Paint.Style.STROKE
+    ) = with(paint) {
+        color = event.style.borderColor ?: viewState.defaultEventColor
+        isAntiAlias = true
+        strokeWidth = event.style.borderWidth?.toFloat() ?: 0f
+        style = Paint.Style.STROKE
     }
 }

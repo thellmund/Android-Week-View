@@ -2,37 +2,36 @@ package com.alamkanak.weekview
 
 import android.graphics.RectF
 
-internal class EventChipBoundsCalculator<T>(
-    private val config: WeekViewConfigWrapper
+internal class EventChipBoundsCalculator(
+    private val viewState: ViewState
 ) {
 
     fun calculateSingleEvent(
-        eventChip: EventChip<T>,
+        eventChip: EventChip,
         startPixel: Float
     ): RectF {
-        val widthPerDay = config.widthPerDay
-        val singleVerticalMargin = config.eventMarginVertical / 2
+        val widthPerDay = viewState.widthPerDay
 
         val minutesFromStart = eventChip.minutesFromStartHour
-        val top = calculateDistanceFromTop(minutesFromStart) + singleVerticalMargin
+        val top = calculateDistanceFromTop(minutesFromStart)
 
         val bottomMinutesFromStart = minutesFromStart + eventChip.event.durationInMinutes
-        val bottom = calculateDistanceFromTop(bottomMinutesFromStart) - singleVerticalMargin
+        val bottom = calculateDistanceFromTop(bottomMinutesFromStart) - viewState.eventMarginVertical
 
         var left = startPixel + eventChip.relativeStart * widthPerDay
         var right = left + eventChip.relativeWidth * widthPerDay
 
         if (left > startPixel) {
-            left += config.overlappingEventGap / 2
+            left += viewState.overlappingEventGap / 2
         }
 
         if (right < startPixel + widthPerDay) {
-            right -= config.overlappingEventGap / 2
+            right -= viewState.overlappingEventGap / 2
         }
 
         val hasNoOverlaps = (right == startPixel + widthPerDay)
-        if (config.isSingleDay && hasNoOverlaps) {
-            right -= config.eventMarginHorizontal * 2
+        if (viewState.isSingleDay && hasNoOverlaps) {
+            right -= viewState.eventMarginHorizontal * 2
         }
 
         return RectF(left, top, right, bottom)
@@ -40,36 +39,38 @@ internal class EventChipBoundsCalculator<T>(
 
     private fun calculateDistanceFromTop(
         minutesFromStart: Int
-    ): Float = with(config) {
+    ): Float = with(viewState) {
         val portionOfDay = minutesFromStart.toFloat() / minutesPerDay
         val pixelsFromTop = hourHeight * hoursPerDay * portionOfDay
         return pixelsFromTop + currentOrigin.y + headerHeight
     }
 
     fun calculateAllDayEvent(
-        eventChip: EventChip<T>,
+        eventChip: EventChip,
         startPixel: Float
     ): RectF {
-        val top = config.headerTextHeight + config.headerRowPadding * 1.5f
-        val height = config.allDayEventTextPaint.textSize + config.eventPaddingVertical * 2
+        val padding = viewState.headerRowPadding
+
+        val top = padding + viewState.dateLabelHeight + padding
+        val height = viewState.allDayEventTextPaint.textSize + viewState.eventPaddingVertical * 2
         val bottom = top + height
 
-        val widthPerDay = config.widthPerDay
+        val widthPerDay = viewState.widthPerDay
 
         var left = startPixel + eventChip.relativeStart * widthPerDay
         var right = left + eventChip.relativeWidth * widthPerDay
 
         if (left > startPixel) {
-            left += config.overlappingEventGap / 2f
+            left += viewState.overlappingEventGap / 2f
         }
 
         if (right < startPixel + widthPerDay) {
-            right -= config.overlappingEventGap / 2f
+            right -= viewState.overlappingEventGap / 2f
         }
 
         val hasNoOverlaps = (right == startPixel + widthPerDay)
-        if (config.isSingleDay && hasNoOverlaps) {
-            right -= config.eventMarginHorizontal * 2
+        if (viewState.isSingleDay && hasNoOverlaps) {
+            right -= viewState.eventMarginHorizontal * 2
         }
 
         return RectF(left, top, right, bottom)

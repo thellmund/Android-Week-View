@@ -3,7 +3,6 @@ package com.alamkanak.weekview
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import java.util.Calendar
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -20,10 +19,9 @@ class MainExecutor : Executor {
  */
 internal class EventsDiffer<T>(
     private val context: Context,
-    private val eventsCacheWrapper: EventsCacheWrapper<T>,
-    private val eventChipsLoader: EventChipsLoader<T>,
-    private val eventChipsCache: EventChipsCache<T>,
-    private val drawingContext: DrawingContext
+    private val eventsCache: EventsCache<T>,
+    private val eventChipsFactory: EventChipsFactory,
+    private val eventChipsCache: EventChipsCache
 ) {
 
     private val backgroundExecutor = Executors.newSingleThreadExecutor()
@@ -37,53 +35,40 @@ internal class EventsDiffer<T>(
      */
     fun submit(
         items: List<WeekViewDisplayable<T>>,
-        onFinished: (Boolean) -> Unit
+        viewState: ViewState,
+        onFinished: () -> Unit
     ) {
-        backgroundExecutor.execute {
-            val dateRange = drawingContext.dateRange
-            // It's possible that weekView.submit() is called before the date range has been
-            // initialized. Therefor, waiting until the date range is actually set may be required.
-            while (dateRange.isEmpty()) {
-                Thread.sleep(100L)
-                continue
-            }
-
-            val result = submitItems(items, dateRange)
+        backgroundExecutor.execute { submitItems(items, viewState)
             mainThreadExecutor.execute {
-                onFinished(result)
+                onFinished()
             }
         }
     }
 
     private fun submitItems(
         items: List<WeekViewDisplayable<T>>,
-        dateRange: List<Calendar>
-    ): Boolean {
+        viewState: ViewState
+    ) {
         val events = items.map { it.toResolvedWeekViewEvent(context) }
         val startDate = events.map { it.startTime.atStartOfDay }.min()
         val endDate = events.map { it.endTime.atEndOfDay }.max()
-
-        val eventsCache = eventsCacheWrapper.get()
 
         if (startDate == null || endDate == null) {
             // If these are null, this would indicate that the submitted list of events is empty.
             // The new items are empty, but it's possible that WeekView is currently displaying
             // events.
-            val currentEvents = eventsCache[dateRange]
             eventsCache.clear()
-            return currentEvents.isNotEmpty()
+            return
         }
 
-        when (eventsCache) {
-            is SimpleEventsCache -> eventsCache.update(events)
-            is PagedEventsCache -> eventsCache.update(mapEventsToPeriod(events))
+        eventsCache.update(events)
+
+        if (eventsCache is SimpleEventsCache) {
+            // When using SimpleEventsCache, we completely replace all event chips that are
+            // currently cached.
+            eventChipsCache.clear()
         }
 
-        eventChipsCache += eventChipsLoader.createEventChips(events)
-        return dateRange.any { it.isBetween(startDate, endDate, inclusive = true) }
+        eventChipsCache += eventChipsFactory.createEventChips(events, viewState)
     }
-
-    private fun mapEventsToPeriod(
-        events: List<ResolvedWeekViewEvent<T>>
-    ) = events.groupBy { Period.fromDate(it.startTime) }
 }

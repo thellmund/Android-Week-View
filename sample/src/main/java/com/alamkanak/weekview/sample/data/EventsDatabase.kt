@@ -1,18 +1,13 @@
 package com.alamkanak.weekview.sample.data
 
 import android.content.Context
-import android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-import android.text.SpannableStringBuilder
-import android.text.style.StrikethroughSpan
 import androidx.core.content.ContextCompat
 import com.alamkanak.weekview.WeekViewDisplayable
 import com.alamkanak.weekview.sample.R
 import com.alamkanak.weekview.sample.data.model.Event
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.Calendar
 
-public class EventsDatabase(context: Context) {
+class EventsDatabase(context: Context) {
 
     private val color1 = ContextCompat.getColor(context, R.color.event_color_01)
     private val color2 = ContextCompat.getColor(context, R.color.event_color_02)
@@ -22,6 +17,19 @@ public class EventsDatabase(context: Context) {
     fun getEventsInRange(
         startDate: Calendar,
         endDate: Calendar
+    ): List<WeekViewDisplayable<Event>> {
+        val monthStartDates = mutableListOf<Calendar>()
+        while (startDate < endDate) {
+            val monthStartDate = Calendar.getInstance()
+            monthStartDate.timeInMillis = startDate.timeInMillis
+            monthStartDates.add(monthStartDate)
+            startDate.add(Calendar.MONTH, 1)
+        }
+        return monthStartDates.flatMap(this::simulateEventsForRange)
+    }
+
+    private fun simulateEventsForRange(
+        startDate: Calendar
     ): List<WeekViewDisplayable<Event>> {
         val year = startDate.get(Calendar.YEAR)
         val month = startDate.get(Calendar.MONTH)
@@ -62,17 +70,6 @@ public class EventsDatabase(context: Context) {
             duration = 60,
             color = color4,
             isCanceled = true
-        )
-
-        events += newEvent(
-            id = idOffset + 3,
-            year = year,
-            month = month,
-            dayOfMonth = 28,
-            hour = 9,
-            minute = 30,
-            duration = 60,
-            color = color2
         )
 
         events += newEvent(
@@ -208,31 +205,15 @@ public class EventsDatabase(context: Context) {
         val endTime = startTime.clone() as Calendar
         endTime.add(Calendar.MINUTE, duration)
 
-        val title = buildEventTitle(startTime)
-
-        val spannableTitle = SpannableStringBuilder(title).apply {
-//            setSpan(BackgroundColorSpan(Color.RED), 0, title.length, SPAN_EXCLUSIVE_EXCLUSIVE)
-//            setSpan(StyleSpan(Typeface.BOLD_ITALIC), 0, title.length, SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(StrikethroughSpan(), 0, title.length, SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-
         return Event(
             id = id,
-            title = spannableTitle,
+            title = "Event $id",
             startTime = startTime,
             endTime = endTime,
-            location = "Location $id",
+            location = "Location 123",
             color = color,
             isAllDay = isAllDay,
             isCanceled = isCanceled
         )
-    }
-
-    private fun buildEventTitle(time: Calendar): String {
-        val sdf = SimpleDateFormat.getDateInstance(DateFormat.MEDIUM)
-        val formattedDate = sdf.format(time.time)
-        val hour = time.get(Calendar.HOUR_OF_DAY)
-        val minute = time.get(Calendar.MINUTE)
-        return String.format("🦄 Event of %02d:%02d %s", hour, minute, formattedDate)
     }
 }
