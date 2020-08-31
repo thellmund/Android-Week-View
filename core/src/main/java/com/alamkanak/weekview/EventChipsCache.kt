@@ -2,15 +2,15 @@ package com.alamkanak.weekview
 
 import java.util.Calendar
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.CopyOnWriteArrayList
 
 internal class EventChipsCache {
 
     val allEventChips: List<EventChip>
         get() = normalEventChipsByDate.values.flatten() + allDayEventChipsByDate.values.flatten()
 
-    private val normalEventChipsByDate = ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip>>()
-    private val allDayEventChipsByDate = ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip>>()
+    private val normalEventChipsByDate = ConcurrentHashMap<Long, CopyOnWriteArrayList<EventChip>>()
+    private val allDayEventChipsByDate = ConcurrentHashMap<Long, CopyOnWriteArrayList<EventChip>>()
 
     fun allEventChipsInDateRange(
         dateRange: List<Calendar>
@@ -25,11 +25,11 @@ internal class EventChipsCache {
 
     fun normalEventChipsByDate(
         date: Calendar
-    ): Collection<EventChip> = normalEventChipsByDate[date.atStartOfDay.timeInMillis] ?: mutableListOf()
+    ): List<EventChip> = normalEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
 
     fun allDayEventChipsByDate(
         date: Calendar
-    ): Collection<EventChip> = allDayEventChipsByDate[date.atStartOfDay.timeInMillis] ?: mutableListOf()
+    ): List<EventChip> = allDayEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
 
     fun allDayEventChipsInDateRange(
         dateRange: List<Calendar>
@@ -63,14 +63,20 @@ internal class EventChipsCache {
         normalEventChipsByDate.clear()
     }
 
-    private fun ConcurrentHashMap<Long, LinkedBlockingQueue<EventChip>>.addOrReplace(
+    private fun ConcurrentHashMap<Long, CopyOnWriteArrayList<EventChip>>.addOrReplace(
         key: Long,
         eventChip: EventChip
     ) {
-        val results = getOrElse(key) { LinkedBlockingQueue() }
-        results.removeIf { it.event.id == eventChip.event.id }
-        results.add(eventChip)
-
+        val results = getOrElse(key) { CopyOnWriteArrayList() }
+        val indexOfExisting = results.indexOfFirst { it.event.id == eventChip.event.id }
+        if (indexOfExisting != -1) {
+            // If an event with the same ID already exists, replace it. The new event will likely be
+            // more up-to-date.
+            results.removeAt(indexOfExisting)
+            results.add(indexOfExisting, eventChip)
+        } else {
+            results.add(eventChip)
+        }
         this[key] = results
     }
 }
