@@ -2,11 +2,14 @@ package com.alamkanak.weekview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.os.Build.VERSION.SDK_INT
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.accessibility.AccessibilityManager
@@ -64,6 +67,13 @@ class WeekView @JvmOverloads constructor(
         }
 
         setLayerType(LAYER_TYPE_SOFTWARE, null)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        if (SDK_INT >= 17) {
+            viewState.isLtr = newConfig.layoutDirection == LAYOUT_DIRECTION_LTR
+        }
+        super.onConfigurationChanged(newConfig)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -134,15 +144,37 @@ class WeekView @JvmOverloads constructor(
 
     private fun notifyScrollListeners() {
         val oldFirstVisibleDay = viewState.firstVisibleDate
+        Log.d("TILL", "Old first visible date: ${oldFirstVisibleDay.format()}")
+
         val daysScrolled = viewState.currentOrigin.x / viewState.dayWidth
         val delta = daysScrolled.roundToInt() * (-1)
 
-        val firstVisibleDate = today() + Days(delta)
+        val firstVisibleDate = if (viewState.isLtr) {
+            today() + Days(delta)
+        } else {
+            today() - Days(delta)
+        }
+
         val visibleDays = viewState.numberOfVisibleDays
+
+//        val dateRange = if (viewState.isLtr) {
+//            firstVisibleDate.rangeWithDays(visibleDays)
+//        } else {
+//            firstVisibleDate.negativeRangeWithDays(visibleDays)
+//        }
 
         val dateRange = firstVisibleDate.rangeWithDays(visibleDays)
         val adjustedDateRange = dateRange.limitTo(viewState.minDate, viewState.maxDate)
+
         viewState.firstVisibleDate = adjustedDateRange.first()
+
+//        if (viewState.isLtr) {
+//            viewState.firstVisibleDate = adjustedDateRange.first()
+//        } else {
+//            viewState.firstVisibleDate = adjustedDateRange.last()
+//        }
+
+        Log.d("TILL", "New first visible date: ${viewState.firstVisibleDate.format()}")
 
         val hasFirstVisibleDayChanged = oldFirstVisibleDay.toEpochDays() != firstVisibleDate.toEpochDays()
         if (hasFirstVisibleDayChanged && !scroller.isRunning) {

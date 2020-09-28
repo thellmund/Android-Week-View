@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.util.Log
 import android.util.SparseArray
 import androidx.collection.ArrayMap
 import androidx.core.content.ContextCompat
@@ -80,6 +81,9 @@ private class HeaderUpdater(
     private val animator = ValueAnimator()
 
     override fun update() {
+        val text = viewState.dateRange.joinToString(", ") { it.format() }
+        Log.d("TILL", "Date in date range: $text")
+
         val missingDates = viewState.dateRange.filterNot { labelLayouts.hasKey(it.toEpochDays()) }
         for (date in missingDates) {
             val key = date.toEpochDays()
@@ -225,10 +229,20 @@ private class AllDayEventsUpdater(
     }
 
     private val RectF.isValid: Boolean
+        get() = if (viewState.isLtr) isValidInLtr else isValidInRtl
+
+    private val RectF.isValidInLtr: Boolean
         get() = (left < right &&
             left < viewState.viewWidth &&
             top < viewState.viewHeight &&
             right > viewState.timeColumnWidth &&
+            bottom > 0)
+
+    private val RectF.isValidInRtl: Boolean
+        get() = (left < right &&
+            left < viewState.viewWidth &&
+            top < viewState.viewHeight &&
+            right < viewState.viewWidth &&
             bottom > 0)
 }
 

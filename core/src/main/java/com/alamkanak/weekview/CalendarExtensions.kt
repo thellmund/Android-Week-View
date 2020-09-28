@@ -228,6 +228,8 @@ internal fun DateRange.limitTo(minDate: Calendar?, maxDate: Calendar?): List<Cal
 
 internal fun Calendar.rangeWithDays(days: Int) = (0 until days).map { this + Days(it) }
 
+internal fun Calendar.negativeRangeWithDays(days: Int) = (0 until days).map { this - Days(it) }
+
 internal val Calendar.isWeekend: Boolean
     get() = dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY
 

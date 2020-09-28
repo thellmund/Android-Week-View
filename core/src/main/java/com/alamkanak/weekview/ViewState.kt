@@ -5,6 +5,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.TextPaint
+import android.util.Log
 import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.max
@@ -18,6 +19,8 @@ internal class ViewState {
     // View
     var viewWidth: Int = 0
     var viewHeight: Int = 0
+
+    var isLtr: Boolean = true // TODO ViewCompat.getLayoutDirection(host) == ViewCompat.LAYOUT_DIRECTION_LTR
 
     // Calendar state
     var firstVisibleDate: Calendar = today()
@@ -93,9 +96,12 @@ internal class ViewState {
     var timeColumnWidth: Float = 0f
     var timeColumnTextHeight: Float = 0f
 
-    val timeColumnTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.RIGHT
-    }
+    private val _timeColumnTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+
+    val timeColumnTextPaint: TextPaint
+        get() = _timeColumnTextPaint.apply {
+            textAlign = if (isLtr) Paint.Align.RIGHT else Paint.Align.LEFT
+        }
 
     val headerTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
@@ -124,7 +130,8 @@ internal class ViewState {
     val showAllDayEventsToggleArrow: Boolean
         get() = arrangeAllDayEventsVertically && maxNumberOfAllDayEvents > 2
 
-    // Dates in the past have origin.x > 0, dates in the future have origin.x < 0
+    // In LTR: Dates in the past have origin.x > 0, dates in the future have origin.x < 0
+    // In RTL: Dates in the past have origin.x < 0, dates in the future have origin.x > 0
     var currentOrigin = PointF(0f, 0f)
 
     val headerBackgroundPaint = Paint()
@@ -210,19 +217,27 @@ internal class ViewState {
 
     val headerBounds: RectF
         get() = _headerBounds.apply {
-            left = timeColumnWidth
+            left = if (isLtr) timeColumnWidth else 0f
             top = 0f
-            right = viewWidth.toFloat()
+            right = if (isLtr) viewWidth.toFloat() else (viewWidth - timeColumnWidth)
             bottom = headerHeight
         }
 
     private val _calendarGridBounds: RectF = RectF()
 
+//    val calendarGridBounds: RectF
+//        get() = _calendarGridBounds.apply {
+//            left = timeColumnWidth
+//            top = headerHeight
+//            right = viewWidth.toFloat()
+//            bottom = viewHeight.toFloat()
+//        }
+
     val calendarGridBounds: RectF
         get() = _calendarGridBounds.apply {
-            left = timeColumnWidth
+            left = if (isLtr) timeColumnWidth else 0f
             top = headerHeight
-            right = viewWidth.toFloat()
+            right = if (isLtr) viewWidth.toFloat() else viewWidth.toFloat() - timeColumnWidth
             bottom = viewHeight.toFloat()
         }
 
@@ -230,9 +245,9 @@ internal class ViewState {
 
     val weekNumberBounds: RectF
         get() = _weekNumberBounds.apply {
-            left = 0f
+            left = if (isLtr) 0f else (viewWidth - timeColumnWidth)
             top = 0f
-            right = timeColumnWidth
+            right = if (isLtr) timeColumnWidth else viewWidth.toFloat()
             bottom = headerPadding + dateLabelHeight + headerPadding
         }
 
@@ -240,9 +255,9 @@ internal class ViewState {
 
     val toggleAllDayEventsAreaBounds: RectF
         get() = _toggleAllDayEventsAreaBounds.apply {
-            left = 0f
+            left = if (isLtr) 0f else (viewWidth - timeColumnWidth)
             top = weekNumberBounds.bottom
-            right = timeColumnWidth
+            right = if (isLtr) timeColumnWidth else viewWidth.toFloat()
             bottom = headerHeight
         }
 
@@ -270,7 +285,7 @@ internal class ViewState {
         get() = timeRange step timeColumnHoursInterval
 
     fun getXOriginForDate(date: Calendar): Float {
-        return date.daysFromToday * dayWidth * -1f
+        return if (isLtr) (date.daysFromToday * dayWidth * -1f) else (date.daysFromToday * dayWidth)
     }
 
     private fun scrollToFirstDayOfWeek() {
@@ -456,9 +471,18 @@ internal class ViewState {
 
     private fun updateDateRange() {
         val originX = currentOrigin.x
-
         val daysFromOrigin = ceil(originX / dayWidth).toInt() * (-1)
-        startPixel = timeColumnWidth + originX + dayWidth * daysFromOrigin
+
+        Log.d("TILL", "Days from origin: $daysFromOrigin")
+
+        // startPixel = timeColumnWidth + originX + dayWidth * daysFromOrigin
+
+        // TODO
+        startPixel = if (isLtr) {
+            timeColumnWidth + originX + dayWidth * daysFromOrigin
+        } else {
+            originX + dayWidth * daysFromOrigin
+        }
 
         // If the user is scrolling, a new view becomes partially visible, so we must add an
         // additional date to the date range
@@ -466,8 +490,22 @@ internal class ViewState {
         val visibleDays = if (isNotScrolling) numberOfVisibleDays else numberOfVisibleDays + 1
 
         dateRange.clear()
-        val startDate = today() + Days(daysFromOrigin)
-        val newDateRange = startDate.rangeWithDays(visibleDays)
+
+        val startDate = if (isLtr) {
+            today() + Days(daysFromOrigin)
+        } else {
+            today() + Days(numberOfVisibleDays - 1 - daysFromOrigin)
+        }
+
+        Log.d("TILL", "Days to add: ${ if (isLtr) daysFromOrigin else daysFromOrigin + numberOfVisibleDays - 1}")
+        // Log.d("TILL", "Start date: ${startDate.format()}")
+
+        val newDateRange = if (isLtr) {
+            startDate.rangeWithDays(visibleDays)
+        } else {
+            startDate.negativeRangeWithDays(visibleDays)
+        }
+
         dateRange += newDateRange.limitTo(minDate, maxDate)
 
         startPixels.clear()

@@ -7,6 +7,7 @@ import android.text.StaticLayout
 import androidx.collection.ArrayMap
 import java.util.Calendar
 import kotlin.math.max
+import kotlin.math.min
 
 internal class CalendarRenderer(
     viewState: ViewState,
@@ -103,7 +104,11 @@ private class SingleEventsUpdater(
         get() {
             val hasCorrectWidth = left < right && left < viewState.viewWidth
             val hasCorrectHeight = top < viewState.viewHeight
-            val isNotHiddenByChrome = right > viewState.timeColumnWidth && bottom > viewState.headerHeight
+            val isNotHiddenByChrome = if (viewState.isLtr) {
+                right > viewState.timeColumnWidth && bottom > viewState.headerHeight
+            } else {
+                left < viewState.calendarGridBounds.right && bottom > viewState.headerHeight
+            }
             return hasCorrectWidth && hasCorrectHeight && isNotHiddenByChrome
         }
 }
@@ -133,12 +138,23 @@ private class DayBackgroundDrawer(
         canvas: Canvas
     ) {
         val endPixel = startPixel + viewState.dayWidth
-        val isCompletelyHiddenByTimeColumn = endPixel <= viewState.timeColumnWidth
+
+        val isCompletelyHiddenByTimeColumn = if (viewState.isLtr) {
+            endPixel <= viewState.timeColumnWidth
+        } else {
+            startPixel >= viewState.calendarGridBounds.right
+        }
+
         if (isCompletelyHiddenByTimeColumn) {
             return
         }
 
-        val actualStartPixel = max(startPixel, viewState.timeColumnWidth)
+        val actualStartPixel = if (viewState.isLtr) {
+            max(startPixel, viewState.timeColumnWidth)
+        } else {
+            startPixel
+        }
+
         val height = viewState.viewHeight.toFloat()
 
         // If not specified, this will use the normal day background.
@@ -192,7 +208,13 @@ private class BackgroundGridDrawer(
 
     private fun Canvas.drawDaySeparators() {
         for (startPixel in viewState.startPixels) {
-            if (viewState.showTimeColumnSeparator && startPixel == viewState.timeColumnWidth) {
+            val skipSeparator = if (viewState.isLtr) {
+                viewState.showTimeColumnSeparator && startPixel == viewState.timeColumnWidth
+            } else {
+                false
+            }
+
+            if (skipSeparator) {
                 continue
             }
 
@@ -214,10 +236,11 @@ private class BackgroundGridDrawer(
     private fun Canvas.drawHourLine(hour: Int) {
         val heightOfHour = (viewState.hourHeight * (hour - viewState.minHour))
         val verticalOffset = viewState.headerHeight + viewState.currentOrigin.y + heightOfHour
+        val horizontalOffset = if (viewState.isLtr) viewState.timeColumnWidth else 0f
 
         drawHorizontalLine(
             verticalOffset = verticalOffset,
-            startX = viewState.timeColumnWidth,
+            startX = horizontalOffset,
             endX = viewState.viewWidth.toFloat(),
             paint = viewState.hourSeparatorPaint
         )
@@ -275,16 +298,31 @@ private class NowLineDrawer(
         val portionOfDayInPixels = portionOfDay * viewState.hourHeight
         val verticalOffset = top + portionOfDayInPixels
 
-        val startX = max(startPixel, viewState.timeColumnWidth)
-        val endX = startPixel + viewState.dayWidth
+        val startX = if (viewState.isLtr) {
+            max(startPixel, viewState.timeColumnWidth)
+        } else {
+            startPixel
+        }
+
+        val endX = if (viewState.isLtr) {
+            startPixel + viewState.dayWidth
+        } else {
+            min(startPixel + viewState.dayWidth, viewState.calendarGridBounds.right)
+            // startPixel + viewState.dayWidth
+        }
+
         drawLine(startX, verticalOffset, endX, verticalOffset, viewState.nowLinePaint)
 
         if (viewState.showNowLineDot) {
-            drawDot(startPixel, verticalOffset)
+            if (viewState.isLtr) {
+                drawDotInLtr(startPixel, verticalOffset)
+            } else {
+                drawDotInRtl(startPixel, verticalOffset)
+            }
         }
     }
 
-    private fun Canvas.drawDot(startPixel: Float, lineStartY: Float) {
+    private fun Canvas.drawDotInLtr(startPixel: Float, lineStartY: Float) {
         val dotRadius = viewState.nowDotPaint.strokeWidth
         val actualStartPixel = max(startPixel, viewState.timeColumnWidth)
 
@@ -296,5 +334,18 @@ private class NowLineDrawer(
 
         val adjustedRadius = currentlyDisplayedPortion * dotRadius
         drawCircle(actualStartPixel, lineStartY, adjustedRadius, viewState.nowDotPaint)
+    }
+
+    private fun Canvas.drawDotInRtl(startPixel: Float, lineStartY: Float) {
+        val dotRadius = viewState.nowDotPaint.strokeWidth
+
+        val fullLineWidth = viewState.dayWidth
+        val actualEndPixel = min(startPixel + fullLineWidth, viewState.calendarGridBounds.right)
+
+        val currentlyDisplayedWidth = actualEndPixel - startPixel
+        val currentlyDisplayedPortion = currentlyDisplayedWidth / fullLineWidth
+
+        val adjustedRadius = currentlyDisplayedPortion * dotRadius
+        drawCircle(actualEndPixel, lineStartY, adjustedRadius, viewState.nowDotPaint)
     }
 }
