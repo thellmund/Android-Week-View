@@ -225,21 +225,12 @@ private class AllDayEventsUpdater(
     }
 
     private val RectF.isValid: Boolean
-        get() = if (viewState.isLtr) isValidInLtr else isValidInRtl
-
-    private val RectF.isValidInLtr: Boolean
-        get() = (left < right &&
-            left < viewState.viewWidth &&
-            top < viewState.viewHeight &&
-            right > viewState.timeColumnWidth &&
-            bottom > 0)
-
-    private val RectF.isValidInRtl: Boolean
-        get() = (left < right &&
-            left < viewState.viewWidth &&
-            top < viewState.viewHeight &&
-            right < viewState.viewWidth &&
-            bottom > 0)
+        get() {
+            val hasNonZeroWidth = left < right
+            val calendarArea = viewState.calendarGridBounds
+            val isVisibleHorizontally = right > calendarArea.left && left < calendarArea.right
+            return hasNonZeroWidth && isVisibleHorizontally
+        }
 }
 
 internal class AllDayEventsDrawer(

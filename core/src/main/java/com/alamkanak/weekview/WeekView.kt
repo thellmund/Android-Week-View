@@ -6,7 +6,6 @@ import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.RectF
 import android.graphics.Typeface
-import android.os.Build.VERSION.SDK_INT
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -69,9 +68,7 @@ class WeekView @JvmOverloads constructor(
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        if (SDK_INT >= 17) {
-            viewState.isLtr = newConfig.layoutDirection == LAYOUT_DIRECTION_LTR
-        }
+        viewState.onConfigurationChanged(newConfig)
         super.onConfigurationChanged(newConfig)
     }
 

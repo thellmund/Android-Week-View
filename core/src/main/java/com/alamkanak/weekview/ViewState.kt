@@ -1,10 +1,13 @@
 package com.alamkanak.weekview
 
+import android.content.res.Configuration
 import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.os.Build
 import android.text.TextPaint
+import android.view.View
 import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.max
@@ -19,7 +22,7 @@ internal class ViewState {
     var viewWidth: Int = 0
     var viewHeight: Int = 0
 
-    var isLtr: Boolean = true // TODO ViewCompat.getLayoutDirection(host) == ViewCompat.LAYOUT_DIRECTION_LTR
+    var isLtr: Boolean = true
 
     // Calendar state
     var firstVisibleDate: Calendar = today()
@@ -515,6 +518,12 @@ internal class ViewState {
 
         if (showCompleteDay) {
             updateHourHeight(height)
+        }
+    }
+
+    fun onConfigurationChanged(newConfig: Configuration) {
+        if (Build.VERSION.SDK_INT >= 17) {
+            isLtr = newConfig.layoutDirection == View.LAYOUT_DIRECTION_LTR
         }
     }
 }

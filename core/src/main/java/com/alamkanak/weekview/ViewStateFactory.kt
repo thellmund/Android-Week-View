@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.Color
 import android.graphics.Typeface
-import android.os.Build.VERSION.SDK_INT
+import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.View
 import androidx.annotation.AttrRes
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.ViewCompat.LAYOUT_DIRECTION_LTR
 import kotlin.math.roundToInt
 
 internal object ViewStateFactory {
@@ -18,8 +18,8 @@ internal object ViewStateFactory {
         val a = context.theme.obtainStyledAttributes(attrs, R.styleable.WeekView, 0, 0)
         val viewState = ViewState()
 
-        if (SDK_INT >= 17) {
-            viewState.isLtr = context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_LTR
+        if (Build.VERSION.SDK_INT >= 17) {
+            viewState.isLtr = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_LTR
         }
 
         val customTypeface = a.getCustomTypeface()
