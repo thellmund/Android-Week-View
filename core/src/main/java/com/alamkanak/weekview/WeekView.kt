@@ -9,7 +9,6 @@ import android.graphics.Typeface
 import android.os.Build.VERSION.SDK_INT
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.accessibility.AccessibilityManager
@@ -144,7 +143,6 @@ class WeekView @JvmOverloads constructor(
 
     private fun notifyScrollListeners() {
         val oldFirstVisibleDay = viewState.firstVisibleDate
-        Log.d("TILL", "Old first visible date: ${oldFirstVisibleDay.format()}")
 
         val daysScrolled = viewState.currentOrigin.x / viewState.dayWidth
         val delta = daysScrolled.roundToInt() * (-1)
@@ -155,15 +153,7 @@ class WeekView @JvmOverloads constructor(
             today() - Days(delta)
         }
 
-        val visibleDays = viewState.numberOfVisibleDays
-
-//        val dateRange = if (viewState.isLtr) {
-//            firstVisibleDate.rangeWithDays(visibleDays)
-//        } else {
-//            firstVisibleDate.negativeRangeWithDays(visibleDays)
-//        }
-
-        val dateRange = firstVisibleDate.rangeWithDays(visibleDays)
+        val dateRange = firstVisibleDate.rangeWithDays(viewState.numberOfVisibleDays)
         val adjustedDateRange = dateRange.limitTo(viewState.minDate, viewState.maxDate)
 
         viewState.firstVisibleDate = adjustedDateRange.first()
@@ -173,8 +163,6 @@ class WeekView @JvmOverloads constructor(
 //        } else {
 //            viewState.firstVisibleDate = adjustedDateRange.last()
 //        }
-
-        Log.d("TILL", "New first visible date: ${viewState.firstVisibleDate.format()}")
 
         val hasFirstVisibleDayChanged = oldFirstVisibleDay.toEpochDays() != firstVisibleDate.toEpochDays()
         if (hasFirstVisibleDayChanged && !scroller.isRunning) {

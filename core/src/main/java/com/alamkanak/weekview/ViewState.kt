@@ -5,7 +5,6 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.TextPaint
-import android.util.Log
 import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.max
@@ -473,8 +472,6 @@ internal class ViewState {
         val originX = currentOrigin.x
         val daysFromOrigin = ceil(originX / dayWidth).toInt() * (-1)
 
-        Log.d("TILL", "Days from origin: $daysFromOrigin")
-
         // startPixel = timeColumnWidth + originX + dayWidth * daysFromOrigin
 
         // TODO
@@ -496,9 +493,6 @@ internal class ViewState {
         } else {
             today() + Days(numberOfVisibleDays - 1 - daysFromOrigin)
         }
-
-        Log.d("TILL", "Days to add: ${ if (isLtr) daysFromOrigin else daysFromOrigin + numberOfVisibleDays - 1}")
-        // Log.d("TILL", "Start date: ${startDate.format()}")
 
         val newDateRange = if (isLtr) {
             startDate.rangeWithDays(visibleDays)
