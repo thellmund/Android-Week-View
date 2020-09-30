@@ -176,7 +176,7 @@ class EventsDatabase(context: Context) {
 
         // All-day event
         events += newEvent(
-            id = idOffset + 123456789,
+            id = idOffset + 12,
             year = year,
             month = month,
             dayOfMonth = 28,
@@ -189,7 +189,7 @@ class EventsDatabase(context: Context) {
 
         // All-day event until 00:00 next day
         events += newEvent(
-            id = idOffset + 12,
+            id = idOffset + 13,
             year = year,
             month = month,
             dayOfMonth = 14,

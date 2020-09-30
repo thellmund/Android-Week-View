@@ -118,6 +118,11 @@ internal class ViewState {
 
     var maxNumberOfAllDayEvents: Int = 0
 
+    var allDayEventsExpanded: Boolean = false
+
+    val showAllDayEventsToggleArrow: Boolean
+        get() = maxNumberOfAllDayEvents > 2
+
     // Dates in the past have origin.x > 0, dates in the future have origin.x < 0
     var currentOrigin = PointF(0f, 0f)
 
@@ -226,6 +231,16 @@ internal class ViewState {
         get() = _weekNumberBounds.apply {
             left = 0f
             top = 0f
+            right = timeColumnWidth
+            bottom = headerPadding + dateLabelHeight + headerPadding
+        }
+
+    private val _toggleAllDayEventsAreaBounds: RectF = RectF()
+
+    val toggleAllDayEventsAreaBounds: RectF
+        get() = _toggleAllDayEventsAreaBounds.apply {
+            left = 0f
+            top = weekNumberBounds.bottom
             right = timeColumnWidth
             bottom = headerHeight
         }
@@ -373,8 +388,14 @@ internal class ViewState {
         var newHeight = headerPadding + dateLabelHeight + headerPadding
 
         if (maxNumberOfAllDayEvents > 0) {
-            val heightOfChips = maxNumberOfAllDayEvents * currentAllDayEventHeight
-            val heightOfSpacing = (maxNumberOfAllDayEvents - 1) * eventMarginVertical
+            val numberOfRows = if (allDayEventsExpanded) {
+                maxNumberOfAllDayEvents
+            } else {
+                min(maxNumberOfAllDayEvents, 2)
+            }
+
+            val heightOfChips = numberOfRows * currentAllDayEventHeight
+            val heightOfSpacing = (numberOfRows - 1) * eventMarginVertical
             newHeight += heightOfChips + heightOfSpacing
 
             // Add padding below the event chips
