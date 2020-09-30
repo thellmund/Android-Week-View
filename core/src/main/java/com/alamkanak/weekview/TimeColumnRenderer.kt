@@ -87,7 +87,7 @@ internal class TimeColumnRenderer(
             val lineX = if (isLtr) {
                 timeColumnWidth - timeColumnSeparatorPaint.strokeWidth
             } else {
-                viewWidth - timeColumnWidth - timeColumnSeparatorPaint.strokeWidth
+                viewWidth - timeColumnWidth
             }
             canvas.drawLine(lineX, headerHeight, lineX, bottom, timeColumnSeparatorPaint)
         }
