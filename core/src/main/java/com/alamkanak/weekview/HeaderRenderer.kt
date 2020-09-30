@@ -246,36 +246,56 @@ internal class AllDayEventsDrawer(
             val events = allDayEventLayouts
                 .filter { it.key.event.startTime.isSameDate(date) }
                 .toList()
-                .sortedBy { it.first.bounds.top }
 
-            if (viewState.allDayEventsExpanded || events.size <= 2) {
-                // Draw them all!
-                for ((eventChip, textLayout) in events) {
-                    eventChipDrawer.draw(eventChip, canvas, textLayout)
-                }
+            if (viewState.arrangeAllDayEventsVertically) {
+                renderEventsVertically(events.sortedBy { it.first.bounds.top })
             } else {
-                val (eventChip, textLayout) = events[0]
-                eventChipDrawer.draw(eventChip, canvas, textLayout)
-
-                val needsExpandInfo = events.size >= 2
-                if (needsExpandInfo) {
-                    // Draw +X text
-                    val text = "+${events.size - 1}"
-                    val textPaint = expandInfoTextPaint.apply {
-                        textSize = viewState.allDayEventTextPaint.textSize
-                        color = viewState.headerTextPaint.color
-                    }
-
-                    val x = eventChip.bounds.left + viewState.eventPaddingHorizontal.toFloat()
-                    val y = eventChip.bounds.bottom +
-                        viewState.eventMarginVertical +
-                        viewState.eventPaddingVertical +
-                        textPaint.textSize
-
-                    canvas.drawText(text, x, y, textPaint)
-                }
+                renderEventsHorizontally(events)
             }
         }
+    }
+
+    private fun Canvas.renderEventsHorizontally(events: List<Pair<EventChip, StaticLayout>>) {
+        for ((eventChip, textLayout) in events) {
+            eventChipDrawer.draw(eventChip, canvas = this, textLayout)
+        }
+    }
+
+    private fun Canvas.renderEventsVertically(events: List<Pair<EventChip, StaticLayout>>) {
+        if (viewState.allDayEventsExpanded || events.size <= 2) {
+            // Draw them all!
+            for ((eventChip, textLayout) in events) {
+                eventChipDrawer.draw(eventChip, canvas = this, textLayout)
+            }
+        } else {
+            val (firstEventChip, firstTextLayout) = events[0]
+            eventChipDrawer.draw(firstEventChip, canvas = this, firstTextLayout)
+
+            val needsExpandInfo = events.size >= 2
+            if (needsExpandInfo) {
+                drawExpandInfo(eventsCount = events.size - 1, priorEventChip = firstEventChip)
+            } else {
+                val (secondEventChip, secondTextLayout) = events[0]
+                eventChipDrawer.draw(secondEventChip, canvas = this, secondTextLayout)
+            }
+        }
+    }
+
+    private fun Canvas.drawExpandInfo(eventsCount: Int, priorEventChip: EventChip) {
+        // Draw +X text
+        val text = "+$eventsCount"
+        val textPaint = expandInfoTextPaint.apply {
+            textSize = viewState.allDayEventTextPaint.textSize
+            color = viewState.headerTextPaint.color
+        }
+
+        val x = priorEventChip.bounds.left + viewState.eventPaddingHorizontal.toFloat()
+        val y = priorEventChip.bounds.bottom +
+            viewState.eventMarginVertical +
+            viewState.eventPaddingVertical +
+            textPaint.textSize
+
+        drawText(text, x, y, textPaint)
     }
 }
 

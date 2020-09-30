@@ -37,6 +37,7 @@ internal class ViewState {
     var restoreNumberOfVisibleDays: Boolean = true
     var showFirstDayOfWeekFirst: Boolean = false
     var showCurrentTimeFirst: Boolean = false
+    var arrangeAllDayEventsVertically: Boolean = true
 
     // Time column
     var timeColumnPadding: Int = 0
@@ -121,7 +122,7 @@ internal class ViewState {
     var allDayEventsExpanded: Boolean = false
 
     val showAllDayEventsToggleArrow: Boolean
-        get() = maxNumberOfAllDayEvents > 2
+        get() = arrangeAllDayEventsVertically && maxNumberOfAllDayEvents > 2
 
     // Dates in the past have origin.x > 0, dates in the future have origin.x < 0
     var currentOrigin = PointF(0f, 0f)
@@ -388,10 +389,12 @@ internal class ViewState {
         var newHeight = headerPadding + dateLabelHeight + headerPadding
 
         if (maxNumberOfAllDayEvents > 0) {
-            val numberOfRows = if (allDayEventsExpanded) {
+            val numberOfRows = if (arrangeAllDayEventsVertically && allDayEventsExpanded) {
                 maxNumberOfAllDayEvents
-            } else {
+            } else if (arrangeAllDayEventsVertically) {
                 min(maxNumberOfAllDayEvents, 2)
+            } else {
+                1
             }
 
             val heightOfChips = numberOfRows * currentAllDayEventHeight

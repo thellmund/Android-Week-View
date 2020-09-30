@@ -51,19 +51,47 @@ internal class EventChipBoundsCalculator(
         startPixel: Float
     ): RectF {
         val padding = viewState.headerPadding
+        val dayWidth = viewState.drawableDayWidth
+
         val dateLabelHeight = padding + viewState.dateLabelHeight + padding
-
         val chipHeight = viewState.allDayEventTextPaint.textSize + viewState.eventPaddingVertical * 2
-        val previousChipsHeight = index * (eventChip.bounds.height() + viewState.eventMarginVertical)
 
-        val top = dateLabelHeight + previousChipsHeight
-        var right = startPixel + viewState.drawableDayWidth
+        val top = if (viewState.arrangeAllDayEventsVertically) {
+            val previousChipsHeight = index * (eventChip.bounds.height() + viewState.eventMarginVertical)
+            dateLabelHeight + previousChipsHeight
+        } else {
+            dateLabelHeight
+        }
+
+        var left = if (viewState.arrangeAllDayEventsVertically) {
+            startPixel
+        } else {
+            startPixel + eventChip.relativeStart * dayWidth
+        }
+
+        var right = if (viewState.arrangeAllDayEventsVertically) {
+            left + dayWidth
+        } else {
+            left + eventChip.relativeWidth * dayWidth
+        }
+
+        val isLeftMostColumn = left == startPixel
+        val isRightMostColumn = right == startPixel + dayWidth
+
+        if (!isLeftMostColumn) {
+            left += viewState.overlappingEventGap / 2f
+        }
+
+        if (!isRightMostColumn) {
+            right -= viewState.overlappingEventGap / 2f
+        }
+
         val bottom = top + chipHeight
 
-        if (viewState.isSingleDay) {
+        if (viewState.isSingleDay && isRightMostColumn) {
             right -= viewState.singleDayHorizontalPadding * 2
         }
 
-        return RectF(startPixel, top, right, bottom)
+        return RectF(left, top, right, bottom)
     }
 }
