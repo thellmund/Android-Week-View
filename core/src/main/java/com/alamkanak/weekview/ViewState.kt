@@ -116,6 +116,8 @@ internal class ViewState {
 
     var currentAllDayEventHeight: Int = 0
 
+    var maxNumberOfAllDayEvents: Int = 0
+
     // Dates in the past have origin.x > 0, dates in the future have origin.x < 0
     var currentOrigin = PointF(0f, 0f)
 
@@ -370,8 +372,13 @@ internal class ViewState {
     fun calculateHeaderHeight(): Float {
         var newHeight = headerPadding + dateLabelHeight + headerPadding
 
-        if (currentAllDayEventHeight > 0) {
-            newHeight += currentAllDayEventHeight.toFloat() + headerPadding
+        if (maxNumberOfAllDayEvents > 0) {
+            val heightOfChips = maxNumberOfAllDayEvents * currentAllDayEventHeight
+            val heightOfSpacing = (maxNumberOfAllDayEvents - 1) * eventMarginVertical
+            newHeight += heightOfChips + heightOfSpacing
+
+            // Add padding below the event chips
+            newHeight += headerPadding
         }
 
         if (showHeaderBottomLine) {

@@ -38,7 +38,7 @@ internal class EventChipsFactory {
         for (eventChip in eventChips) {
             val collidingGroup = collisionGroups.firstOrNull { it.collidesWith(eventChip) }
 
-            if (collidingGroup != null) {
+            if (collidingGroup != null && eventChip.originalEvent.isNotAllDay) {
                 collidingGroup.add(eventChip)
             } else {
                 collisionGroups += CollisionGroup(eventChip)

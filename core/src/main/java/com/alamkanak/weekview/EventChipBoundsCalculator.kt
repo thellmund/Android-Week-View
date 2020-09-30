@@ -46,33 +46,24 @@ internal class EventChipBoundsCalculator(
     }
 
     fun calculateAllDayEvent(
+        index: Int,
         eventChip: EventChip,
         startPixel: Float
     ): RectF {
         val padding = viewState.headerPadding
+        val dateLabelHeight = padding + viewState.dateLabelHeight + padding
 
-        val top = padding + viewState.dateLabelHeight + padding
-        val height = viewState.allDayEventTextPaint.textSize + viewState.eventPaddingVertical * 2
-        val bottom = top + height
+        val chipHeight = viewState.allDayEventTextPaint.textSize + viewState.eventPaddingVertical * 2
+        val previousChipsHeight = index * (eventChip.bounds.height() + viewState.eventMarginVertical)
 
-        val chipWidth = viewState.drawableDayWidth
+        val top = dateLabelHeight + previousChipsHeight
+        var right = startPixel + viewState.drawableDayWidth
+        val bottom = top + chipHeight
 
-        var left = startPixel + eventChip.relativeStart * chipWidth
-        var right = left + eventChip.relativeWidth * chipWidth
-
-        if (left > startPixel) {
-            left += viewState.overlappingEventGap / 2f
-        }
-
-        if (right < startPixel + chipWidth) {
-            right -= viewState.overlappingEventGap / 2f
-        }
-
-        val hasNoOverlaps = (right == startPixel + chipWidth)
-        if (viewState.isSingleDay && hasNoOverlaps) {
+        if (viewState.isSingleDay) {
             right -= viewState.singleDayHorizontalPadding * 2
         }
 
-        return RectF(left, top, right, bottom)
+        return RectF(startPixel, top, right, bottom)
     }
 }

@@ -188,8 +188,9 @@ private class AllDayEventsUpdater(
             }
 
             val eventChips = eventChipsCache.allDayEventChipsByDate(date)
-            for (eventChip in eventChips) {
-                eventChip.updateBounds(startPixel = modifiedStartPixel)
+
+            eventChips.forEachIndexed { index, eventChip ->
+                eventChip.updateBounds(index = index, startPixel = modifiedStartPixel)
                 if (eventChip.bounds.isNotEmpty) {
                     eventsLabelLayouts[eventChip] = textFitter.fit(eventChip)
                 } else {
@@ -203,10 +204,17 @@ private class AllDayEventsUpdater(
             .maxOrNull() ?: 0
 
         viewState.currentAllDayEventHeight = maximumChipHeight
+
+        val maximumChipsPerDay = eventsLabelLayouts.keys
+            .groupBy { it.event.startTime.toEpochDays() }
+            .values
+            .maxByOrNull { it.size }?.size ?: 0
+
+        viewState.maxNumberOfAllDayEvents = maximumChipsPerDay
     }
 
-    private fun EventChip.updateBounds(startPixel: Float) {
-        val candidate = boundsCalculator.calculateAllDayEvent(this, startPixel)
+    private fun EventChip.updateBounds(index: Int, startPixel: Float) {
+        val candidate = boundsCalculator.calculateAllDayEvent(index, eventChip = this, startPixel)
         bounds = if (candidate.isValid) candidate else RectF()
     }
 
