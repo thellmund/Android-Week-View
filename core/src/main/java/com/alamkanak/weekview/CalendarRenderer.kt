@@ -263,7 +263,7 @@ private class NowLineDrawer(
         val verticalOffset = top + portionOfDayInPixels
 
         val startX = max(startPixel, viewState.calendarGridBounds.left)
-        val endX = max(startPixel + viewState.dayWidth, viewState.calendarGridBounds.right)
+        val endX = min(startPixel + viewState.dayWidth, viewState.calendarGridBounds.right)
 
         drawLine(startX, verticalOffset, endX, verticalOffset, viewState.nowLinePaint)
 
@@ -276,8 +276,17 @@ private class NowLineDrawer(
         val dotRadius = viewState.nowDotPaint.strokeWidth
         val fullLineWidth = viewState.dayWidth
 
-        val lineStartX = max(startPixel, viewState.calendarGridBounds.left)
-        val lineEndX = min(startPixel + fullLineWidth, viewState.calendarGridBounds.right)
+        val lineStartX = if (viewState.isLtr) {
+            max(startPixel, viewState.calendarGridBounds.left)
+        } else {
+            startPixel
+        }
+
+        val lineEndX = if (viewState.isLtr) {
+            startPixel + fullLineWidth
+        } else {
+            min(startPixel + fullLineWidth, viewState.calendarGridBounds.right)
+        }
 
         val currentlyDisplayedWidth = lineEndX - lineStartX
         val currentlyDisplayedPortion = currentlyDisplayedWidth / fullLineWidth
