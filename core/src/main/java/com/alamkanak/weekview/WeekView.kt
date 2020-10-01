@@ -185,6 +185,18 @@ class WeekView @JvmOverloads constructor(
             viewState.showFirstDayOfWeekFirst = value
         }
 
+    /**
+     * Returns whether all-day events are arranged vertically. If false, all-day events are shown
+     * in a horizontal arrangement, occupying only a single row.
+     */
+    @PublicApi
+    var arrangeAllDayEventsVertically: Boolean
+        get() = viewState.arrangeAllDayEventsVertically
+        set(value) {
+            viewState.arrangeAllDayEventsVertically = value
+            invalidate()
+        }
+
     /*
      ***********************************************************************************************
      *
