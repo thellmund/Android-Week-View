@@ -262,6 +262,10 @@ internal class AllDayEventsDrawer(
     }
 
     private fun Canvas.renderEventsVertically(events: List<Pair<EventChip, StaticLayout>>) {
+        // Un-hide all events. To prevent any click handler from mapping a click to a hidden event,
+        // we set isHidden to true for all events that aren't shown in the collapsed state.
+        events.forEach { it.first.isHidden = false }
+
         if (viewState.allDayEventsExpanded || events.size <= 2) {
             // Draw them all!
             for ((eventChip, textLayout) in events) {
@@ -274,9 +278,11 @@ internal class AllDayEventsDrawer(
             val needsExpandInfo = events.size >= 2
             if (needsExpandInfo) {
                 drawExpandInfo(eventsCount = events.size - 1, priorEventChip = firstEventChip)
+                events.drop(1).forEach { it.first.isHidden = true }
             } else {
-                val (secondEventChip, secondTextLayout) = events[0]
+                val (secondEventChip, secondTextLayout) = events[1]
                 eventChipDrawer.draw(secondEventChip, canvas = this, secondTextLayout)
+                events.drop(2).forEach { it.first.isHidden = true }
             }
         }
     }
