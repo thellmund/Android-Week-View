@@ -72,7 +72,7 @@ internal class TextFitter(
             combineTitleAndLocation(title, location = null, isMultiLine = false)
         } else {
             val title = event.title.emojified
-            val location = event.location?.emojified.takeIf { includeLocation }
+            val location = (event as? ResolvedWeekViewEntity.Event<*>)?.location?.emojified.takeIf { includeLocation }
             combineTitleAndLocation(title, location, isMultiLine = true)
         }
     }

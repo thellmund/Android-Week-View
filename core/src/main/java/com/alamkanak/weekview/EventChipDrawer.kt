@@ -12,6 +12,10 @@ internal class EventChipDrawer(
     private val backgroundPaint = Paint()
     private val borderPaint = Paint()
 
+    private val patternPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        strokeWidth = 4f // TODO Make configurable
+    }
+
     internal fun draw(
         eventChip: EventChip,
         canvas: Canvas,
@@ -19,15 +23,23 @@ internal class EventChipDrawer(
     ) {
         canvas.drawInBounds(eventChip.bounds) {
             val event = eventChip.event
-            val cornerRadius = viewState.eventCornerRadius.toFloat()
+            val bounds = eventChip.bounds
+            val cornerRadius = event.style.cornerRadius?.toFloat() ?: viewState.eventCornerRadius.toFloat()
             updateBackgroundPaint(event, backgroundPaint)
 
-            val bounds = eventChip.bounds
-            drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
+            val pattern = event.style.pattern
+            if (pattern != null) {
+                val spacing = viewState.headerPadding / 1.5f
+                patternPaint.color = event.style.patternColor ?: viewState.hourSeparatorPaint.color
+                drawPattern(pattern, bounds = eventChip.bounds, spacing = spacing, paint = patternPaint)
+            } else {
+                drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
+            }
 
-            if (event.style.borderWidth != null) {
+            val borderWidth = event.style.borderWidth
+            if (borderWidth != null && borderWidth > 0) {
                 updateBorderPaint(event, borderPaint)
-                val borderBounds = bounds.insetBy(event.style.borderWidth / 2f)
+                val borderBounds = bounds.insetBy(borderWidth / 2f)
                 drawRoundRect(borderBounds, cornerRadius, cornerRadius, borderPaint)
             }
 
@@ -140,7 +152,7 @@ internal class EventChipDrawer(
     }
 
     private fun updateBackgroundPaint(
-        event: ResolvedWeekViewEvent<*>,
+        event: ResolvedWeekViewEntity,
         paint: Paint
     ) = with(paint) {
         color = event.style.backgroundColor ?: viewState.defaultEventColor
@@ -150,7 +162,7 @@ internal class EventChipDrawer(
     }
 
     private fun updateBorderPaint(
-        event: ResolvedWeekViewEvent<*>,
+        event: ResolvedWeekViewEntity,
         paint: Paint
     ) = with(paint) {
         color = event.style.borderColor ?: viewState.defaultEventColor

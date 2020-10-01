@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import com.alamkanak.weekview.WeekViewDisplayable
 import com.alamkanak.weekview.sample.data.EventsDatabase
+import com.alamkanak.weekview.sample.data.model.BlockedTimeSlot
 import com.alamkanak.weekview.sample.data.model.Event
 import com.alamkanak.weekview.sample.util.setupWithWeekView
 import com.alamkanak.weekview.sample.util.showToast
@@ -25,8 +26,32 @@ private class ViewModel(
     val events = MutableLiveData<List<WeekViewDisplayable<Event>>>()
 
     fun fetchEvents(startDate: LocalDate, endDate: LocalDate) {
-        val values = database.getEventsInRange(startDate, endDate)
-        events.value = values
+        val dbEvents = database.getEventsInRange(startDate, endDate)
+        val blockedTimes = listOf(
+            BlockedTimeSlot(
+                id = 123456789L,
+                startTime = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 16)
+                    set(Calendar.MINUTE, 0)
+                },
+                endTime = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 18)
+                    set(Calendar.MINUTE, 0)
+                }
+            ),
+            BlockedTimeSlot(
+                id = 123456790L,
+                startTime = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 19)
+                    set(Calendar.MINUTE, 0)
+                },
+                endTime = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 21)
+                    set(Calendar.MINUTE, 0)
+                }
+            )
+        )
+        events.value = dbEvents + blockedTimes
     }
 }
 

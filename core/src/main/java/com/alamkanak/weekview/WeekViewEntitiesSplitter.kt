@@ -1,6 +1,6 @@
 package com.alamkanak.weekview
 
-internal fun ResolvedWeekViewEvent<*>.split(viewState: ViewState): List<ResolvedWeekViewEvent<*>> {
+internal fun ResolvedWeekViewEntity.split(viewState: ViewState): List<ResolvedWeekViewEntity> {
     if (startTime >= endTime) {
         return emptyList()
     }
@@ -17,17 +17,17 @@ internal fun ResolvedWeekViewEvent<*>.split(viewState: ViewState): List<Resolved
     }
 }
 
-private fun ResolvedWeekViewEvent<*>.shortenTooLongAllDayEvent(
+private fun ResolvedWeekViewEntity.shortenTooLongAllDayEvent(
     viewState: ViewState
-): ResolvedWeekViewEvent<*> {
+): ResolvedWeekViewEntity {
     val newEndTime = endTime.withTimeAtEndOfPeriod(viewState.maxHour)
     return copy(endTime = newEndTime)
 }
 
-private fun ResolvedWeekViewEvent<*>.splitEventByDates(
+private fun ResolvedWeekViewEntity.splitEventByDates(
     viewState: ViewState
-): List<ResolvedWeekViewEvent<*>> {
-    val results = mutableListOf<ResolvedWeekViewEvent<*>>()
+): List<ResolvedWeekViewEntity> {
+    val results = mutableListOf<ResolvedWeekViewEntity>()
 
     val firstEventEnd = startTime.withTimeAtEndOfPeriod(viewState.maxHour)
     val firstEvent = copy(endTime = firstEventEnd)

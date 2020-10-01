@@ -6,7 +6,7 @@ import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.style.StrikethroughSpan
 import android.text.style.TypefaceSpan
 import com.alamkanak.weekview.WeekViewDisplayable
-import com.alamkanak.weekview.WeekViewEvent
+import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.sample.R
 import java.util.Calendar
 
@@ -21,12 +21,12 @@ data class Event(
     private val isCanceled: Boolean
 ) : WeekViewDisplayable<Event> {
 
-    override fun toWeekViewEvent(): WeekViewEvent<Event> {
+    override fun toWeekViewEntity(): WeekViewEntity {
         val backgroundColor = if (!isCanceled) color else Color.WHITE
         val textColor = if (!isCanceled) Color.WHITE else color
         val borderWidthResId = if (!isCanceled) R.dimen.no_border_width else R.dimen.border_width
 
-        val style = WeekViewEvent.Style.Builder()
+        val style = WeekViewEntity.Style.Builder()
             .setTextColor(textColor)
             .setBackgroundColor(backgroundColor)
             .setBorderWidthResource(borderWidthResId)
@@ -47,7 +47,7 @@ data class Event(
             }
         }
 
-        return WeekViewEvent.Builder(this)
+        return WeekViewEntity.Event.Builder(this)
             .setId(id)
             .setTitle(styledTitle)
             .setStartTime(startTime)

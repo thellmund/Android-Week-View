@@ -1471,46 +1471,52 @@ class WeekView @JvmOverloads constructor(
             weekView?.invalidate()
         }
 
-        internal fun onEventClick(id: Long) {
-            val event = eventsCache[id] ?: return
-            onEventClick(data = event.data)
+        internal fun onEventClick(id: Long, bounds: RectF) {
+            val data = findEventData(id) ?: return
+            onEventClick(data)
+            onEventClick(data, bounds)
         }
 
-        internal fun onEventLongClick(id: Long) {
-            val event = eventsCache[id] ?: return
-            onEventLongClick(data = event.data)
+        internal fun onEventLongClick(id: Long, bounds: RectF) {
+            val data = findEventData(id) ?: return
+            onEventLongClick(data)
+            onEventLongClick(data, bounds)
         }
 
-        private fun findEventData(id: Long): T? = eventsCache[id]?.data
+        @Suppress("UNCHECKED_CAST")
+        private fun findEventData(id: Long): T? {
+            val match = eventsCache[id]
+            return (match as? ResolvedWeekViewEntity.Event<T>)?.data
+        }
 
         /**
-         * Returns the data of the [WeekViewEvent] that the user clicked on.
+         * Returns the data of the [WeekViewEntity.Event] that the user clicked on.
          *
-         * @param data The data of the [WeekViewEvent]
+         * @param data The data of the [WeekViewEntity.Event]
          */
         open fun onEventClick(data: T) = Unit
 
         /**
-         * Returns the data of the [WeekViewEvent] that the user clicked on as well as the bounds
-         * of the [EventChip] in which it is displayed.
+         * Returns the data of the [WeekViewEntity.Event] that the user clicked on as well as the
+         * bounds of the [EventChip] in which it is displayed.
          *
-         * @param data The data of the [WeekViewEvent]
+         * @param data The data of the [WeekViewEntity.Event]
          * @param bounds The [RectF] representing the bounds of the event's [EventChip]
          */
         open fun onEventClick(data: T, bounds: RectF) = Unit
 
         /**
-         * Returns the data of the [WeekViewEvent] that the user long-clicked on.
+         * Returns the data of the [WeekViewEntity.Event] that the user long-clicked on.
          *
-         * @param data The data of the [WeekViewEvent]
+         * @param data The data of the [WeekViewEntity.Event]
          */
         open fun onEventLongClick(data: T) = Unit
 
         /**
-         * Returns the data of the [WeekViewEvent] that the user long-clicked on as well as the
-         * bounds of the [EventChip] in which it is displayed.
+         * Returns the data of the [WeekViewEntity.Event] that the user long-clicked on as well as
+         * the bounds of the [EventChip] in which it is displayed.
          *
-         * @param data The data of the [WeekViewEvent]
+         * @param data The data of the [WeekViewEntity.Event]
          * @param bounds The [RectF] representing the bounds of the event's [EventChip]
          */
         open fun onEventLongClick(data: T, bounds: RectF) = Unit

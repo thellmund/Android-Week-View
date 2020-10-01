@@ -14,8 +14,8 @@ class MainExecutor : Executor {
 }
 
 /**
- * A helper class that processes the submitted [WeekViewEvent]s and creates [EventChip]s on a
- * background thread.
+ * A helper class that processes the submitted [WeekViewEntity] objects and creates [EventChip]s
+ * on a background thread.
  */
 internal class EventsProcessor<T>(
     private val context: Context,
@@ -51,7 +51,7 @@ internal class EventsProcessor<T>(
         items: List<WeekViewDisplayable<T>>,
         viewState: ViewState
     ) {
-        val events = items.map { it.toResolvedWeekViewEvent(context) }
+        val events = items.map { it.toResolvedWeekViewEntity(context) }
         eventsCache.update(events)
 
         if (eventsCache is SimpleEventsCache) {
