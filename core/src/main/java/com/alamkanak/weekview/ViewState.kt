@@ -227,14 +227,6 @@ internal class ViewState {
 
     private val _calendarGridBounds: RectF = RectF()
 
-//    val calendarGridBounds: RectF
-//        get() = _calendarGridBounds.apply {
-//            left = timeColumnWidth
-//            top = headerHeight
-//            right = viewWidth.toFloat()
-//            bottom = viewHeight.toFloat()
-//        }
-
     val calendarGridBounds: RectF
         get() = _calendarGridBounds.apply {
             left = if (isLtr) timeColumnWidth else 0f
@@ -294,13 +286,15 @@ internal class ViewState {
         // If the week view is being drawn for the first time, consider the first day of the week.
         val today = today()
         val isWeekView = numberOfVisibleDays >= 7
-        val currentDayIsNotToday = today.dayOfWeek != today.firstDayOfWeek
+        val currentDayIsNotStartOfWeek = today.dayOfWeek != today.firstDayOfWeek
 
-        if (isWeekView && currentDayIsNotToday) {
+        if (isWeekView && currentDayIsNotStartOfWeek) {
             val difference = today.computeDifferenceWithFirstDayOfWeek()
-            currentOrigin.x += dayWidth * difference
+            val factor = if (isLtr) 1 else -1
+            currentOrigin.x += dayWidth * difference * factor
         }
 
+        // TODO: Test minX and maxX with RTL
         currentOrigin.x = currentOrigin.x.limit(minValue = minX, maxValue = maxX)
     }
 
@@ -475,9 +469,6 @@ internal class ViewState {
         val originX = currentOrigin.x
         val daysFromOrigin = ceil(originX / dayWidth).toInt() * (-1)
 
-        // startPixel = timeColumnWidth + originX + dayWidth * daysFromOrigin
-
-        // TODO
         startPixel = if (isLtr) {
             timeColumnWidth + originX + dayWidth * daysFromOrigin
         } else {
@@ -497,19 +488,23 @@ internal class ViewState {
             today() + Days(numberOfVisibleDays - 1 - daysFromOrigin)
         }
 
-        val newDateRange = if (isLtr) {
-            startDate.rangeWithDays(visibleDays)
-        } else {
-            startDate.negativeRangeWithDays(visibleDays)
-        }
-
-        dateRange += newDateRange.limitTo(minDate, maxDate)
+        val newDateRange = createDateRange(startDate, visibleDays)
+        dateRange += newDateRange.validate(viewState = this)
 
         startPixels.clear()
         startPixels += dateRange.indices.map { startPixel + it * dayWidth }
 
         dateRangeWithStartPixels.clear()
         dateRangeWithStartPixels += dateRange.zip(startPixels)
+    }
+
+    fun createDateRange(
+        startDate: Calendar,
+        visibleDays: Int = numberOfVisibleDays
+    ) = if (isLtr) {
+        (0 until visibleDays).map { startDate + Days(it) }
+    } else {
+        (0 until visibleDays).map { startDate - Days(it) }
     }
 
     fun onSizeChanged(width: Int, height: Int) {

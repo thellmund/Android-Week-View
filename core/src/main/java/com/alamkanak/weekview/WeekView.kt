@@ -150,16 +150,10 @@ class WeekView @JvmOverloads constructor(
             today() - Days(delta)
         }
 
-        val dateRange = firstVisibleDate.rangeWithDays(viewState.numberOfVisibleDays)
-        val adjustedDateRange = dateRange.limitTo(viewState.minDate, viewState.maxDate)
+        val dateRange = viewState.createDateRange(firstVisibleDate)
+        val adjustedDateRange = dateRange.validate(viewState = viewState)
 
         viewState.firstVisibleDate = adjustedDateRange.first()
-
-//        if (viewState.isLtr) {
-//            viewState.firstVisibleDate = adjustedDateRange.first()
-//        } else {
-//            viewState.firstVisibleDate = adjustedDateRange.last()
-//        }
 
         val hasFirstVisibleDayChanged = oldFirstVisibleDay.toEpochDays() != firstVisibleDate.toEpochDays()
         if (hasFirstVisibleDayChanged && !scroller.isRunning) {
