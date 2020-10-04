@@ -16,7 +16,7 @@ sealed class WeekViewEntity {
         internal val titleResource: TextResource,
         internal val startTime: Calendar = now(),
         internal val endTime: Calendar = now(),
-        internal val locationResource: TextResource? = null,
+        internal val subtitleResource: TextResource? = null,
         internal val isAllDay: Boolean = false,
         internal val style: Style = Style(),
         internal val data: T
@@ -26,7 +26,7 @@ sealed class WeekViewEntity {
 
             private var id: Long? = null
             private var title: TextResource? = null
-            private var location: TextResource? = null
+            private var subtitle: TextResource? = null
             private var startTime: Calendar? = null
             private var endTime: Calendar? = null
             private var style: Style? = null
@@ -62,15 +62,35 @@ sealed class WeekViewEntity {
                 return this
             }
 
+            @Deprecated(
+                message = "Use setSubtitle() instead.",
+                replaceWith = ReplaceWith(expression = "setSubtitle")
+            )
             @PublicApi
             fun setLocation(location: CharSequence): Builder<T> {
-                this.location = TextResource.Value(location)
+                this.subtitle = TextResource.Value(location)
+                return this
+            }
+
+            @Deprecated(
+                message = "Use setSubtitle() instead.",
+                replaceWith = ReplaceWith(expression = "setSubtitle")
+            )
+            @PublicApi
+            fun setLocation(resId: Int): Builder<T> {
+                this.subtitle = TextResource.Id(resId)
                 return this
             }
 
             @PublicApi
-            fun setLocation(resId: Int): Builder<T> {
-                this.location = TextResource.Id(resId)
+            fun setSubtitle(subtitle: CharSequence): Builder<T> {
+                this.subtitle = TextResource.Value(subtitle)
+                return this
+            }
+
+            @PublicApi
+            fun setSubtitle(resId: Int): Builder<T> {
+                this.subtitle = TextResource.Id(resId)
                 return this
             }
 
@@ -94,7 +114,7 @@ sealed class WeekViewEntity {
                 val endTime = checkNotNull(endTime) { "endTime == null" }
                 val data = checkNotNull(data) { "data == null" }
                 val style = this.style ?: Style()
-                return Event(id, title, startTime, endTime, location, isAllDay, style, data)
+                return Event(id, title, startTime, endTime, subtitle, isAllDay, style, data)
             }
         }
     }
@@ -102,6 +122,7 @@ sealed class WeekViewEntity {
     data class BlockedTime internal constructor(
         internal val id: Long = 0L,
         internal val titleResource: TextResource,
+        internal val subtitleResource: TextResource? = null,
         internal val startTime: Calendar = now(),
         internal val endTime: Calendar = now(),
         internal val style: Style = Style()
@@ -110,7 +131,8 @@ sealed class WeekViewEntity {
         class Builder {
 
             private var id: Long? = null
-            private var label: TextResource? = null
+            private var title: TextResource? = null
+            private var subtitle: TextResource? = null
             private var startTime: Calendar? = null
             private var endTime: Calendar? = null
             private var style: Style? = null
@@ -122,14 +144,14 @@ sealed class WeekViewEntity {
             }
 
             @PublicApi
-            fun setLabel(label: String): Builder {
-                this.label = TextResource.Value(label)
+            fun setTitle(title: String): Builder {
+                this.title = TextResource.Value(title)
                 return this
             }
 
             @PublicApi
-            fun setLabel(resId: Int): Builder {
-                this.label = TextResource.Id(resId)
+            fun setTitle(resId: Int): Builder {
+                this.title = TextResource.Id(resId)
                 return this
             }
 
@@ -146,6 +168,18 @@ sealed class WeekViewEntity {
             }
 
             @PublicApi
+            fun setSubtitle(subtitle: CharSequence): Builder {
+                this.subtitle = TextResource.Value(subtitle)
+                return this
+            }
+
+            @PublicApi
+            fun setSubtitle(resId: Int): Builder {
+                this.subtitle = TextResource.Id(resId)
+                return this
+            }
+
+            @PublicApi
             fun setStyle(style: Style): Builder {
                 this.style = style
                 return this
@@ -154,11 +188,11 @@ sealed class WeekViewEntity {
             @PublicApi
             fun build(): WeekViewEntity {
                 val id = checkNotNull(id) { "id == null" }
-                val label = label ?: TextResource.Value(text = "")
+                val title = title ?: TextResource.Value(text = "")
                 val startTime = checkNotNull(startTime) { "startTime == null" }
                 val endTime = checkNotNull(endTime) { "endTime == null" }
                 val style = style ?: Style()
-                return BlockedTime(id, label, startTime, endTime, style)
+                return BlockedTime(id, title, subtitle, startTime, endTime, style)
             }
         }
     }
@@ -290,7 +324,7 @@ data class WeekViewEvent<T> internal constructor(
         titleResource = titleResource,
         startTime = startTime,
         endTime = endTime,
-        locationResource = locationResource,
+        subtitleResource = locationResource,
         isAllDay = isAllDay,
         style = style.toWeekViewEntityStyle(),
         data = data

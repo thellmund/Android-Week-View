@@ -162,11 +162,7 @@ internal class WeekViewAccessibilityTouchHelper(
 
     private fun createDescriptionForVirtualView(event: ResolvedWeekViewEntity): String {
         val date = dateTimeFormatter.format(event.startTime.time)
-        val eventData = when (event) {
-            is ResolvedWeekViewEntity.Event<*> -> "${event.title}, ${event.location}"
-            is ResolvedWeekViewEntity.BlockedTime -> event.title
-        }
-        return "$date: $eventData"
+        return "$date: ${event.title}, ${event.subtitle}"
     }
 
     private fun createDescriptionForVirtualView(date: Calendar): String {

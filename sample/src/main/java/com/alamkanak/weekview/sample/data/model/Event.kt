@@ -52,7 +52,7 @@ data class Event(
             .setTitle(styledTitle)
             .setStartTime(startTime)
             .setEndTime(endTime)
-            .setLocation(styledLocation)
+            .setSubtitle(styledLocation)
             .setAllDay(isAllDay)
             .setStyle(style)
             .build()

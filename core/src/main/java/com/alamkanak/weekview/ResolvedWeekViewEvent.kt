@@ -8,6 +8,7 @@ internal sealed class ResolvedWeekViewEntity {
 
     internal abstract val id: Long
     internal abstract val title: CharSequence
+    internal abstract val subtitle: CharSequence?
     internal abstract val startTime: Calendar
     internal abstract val endTime: Calendar
     internal abstract val isAllDay: Boolean
@@ -18,7 +19,7 @@ internal sealed class ResolvedWeekViewEntity {
         override val title: CharSequence,
         override val startTime: Calendar,
         override val endTime: Calendar,
-        val location: CharSequence?,
+        override val subtitle: CharSequence?,
         override val isAllDay: Boolean,
         override val style: Style,
         val data: T?
@@ -27,6 +28,7 @@ internal sealed class ResolvedWeekViewEntity {
     data class BlockedTime(
         override val id: Long,
         override val title: CharSequence,
+        override val subtitle: CharSequence?,
         override val startTime: Calendar,
         override val endTime: Calendar,
         override val style: Style
@@ -108,7 +110,7 @@ internal fun WeekViewEntity.resolve(
         title = titleResource.resolve(context, semibold = true),
         startTime = startTime.withLocalTimeZone(),
         endTime = endTime.withLocalTimeZone(),
-        location = locationResource?.resolve(context, semibold = false),
+        subtitle = subtitleResource?.resolve(context, semibold = false),
         isAllDay = isAllDay,
         style = style.resolve(context),
         data = data
@@ -116,6 +118,7 @@ internal fun WeekViewEntity.resolve(
     is WeekViewEntity.BlockedTime -> ResolvedWeekViewEntity.BlockedTime(
         id = id,
         title = titleResource.resolve(context, semibold = true),
+        subtitle = subtitleResource?.resolve(context, semibold = false),
         startTime = startTime.withLocalTimeZone(),
         endTime = endTime.withLocalTimeZone(),
         style = style.resolve(context)

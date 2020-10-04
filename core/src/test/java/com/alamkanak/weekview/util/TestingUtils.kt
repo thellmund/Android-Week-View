@@ -12,7 +12,7 @@ internal fun createResolvedWeekViewEvent(
         title = "Title",
         startTime = startTime,
         endTime = endTime,
-        location = null,
+        subtitle = null,
         isAllDay = false,
         style = ResolvedWeekViewEntity.Style(
             backgroundColor = 0,
