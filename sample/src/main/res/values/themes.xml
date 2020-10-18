@@ -1,0 +1,13 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/gray_200</item>
+        <item name="colorPrimaryDark">@color/gray_200</item>
+        <item name="colorAccent">@color/blue_500</item>
+        <item name="android:colorBackground">@color/white</item>
+        <item name="android:shadowColor">@color/gray_400</item>
+        <item name="colorOnBackground">@color/gray_800</item>
+        <item name="colorSurface">@color/gray_200</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">?android:colorBackground</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    </style>
+</resources>

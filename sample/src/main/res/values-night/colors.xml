@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="event_color_01">#80DEEA</color>
+    <color name="event_color_02">#EF9A9A</color>
+    <color name="event_color_03">#A5D6A7</color>
+    <color name="event_color_04">#FFCC80</color>
+</resources>

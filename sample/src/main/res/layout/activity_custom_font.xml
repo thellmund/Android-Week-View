@@ -17,15 +17,12 @@
         app:arrangeAllDayEventsVertically="false"
         app:columnGap="1dp"
         app:eventCornerRadius="4dp"
-        app:eventTextColor="@color/white"
         app:fontFamily="monospace"
-        app:headerBottomLineColor="@color/gray_300"
         app:headerBottomLineWidth="1dp"
         app:headerPadding="12dp"
-        app:headerTextColor="@color/gray_600"
         app:hourHeight="60dp"
-        app:nowLineColor="@color/accent"
-        app:nowLineDotColor="@color/accent"
+        app:nowLineColor="?colorAccent"
+        app:nowLineDotColor="?colorAccent"
         app:nowLineDotRadius="5dp"
         app:nowLineStrokeWidth="1dp"
         app:numberOfVisibleDays="3"
@@ -36,12 +33,10 @@
         app:showNowLineDot="true"
         app:showTimeColumnSeparator="true"
         app:singleDayHorizontalPadding="8dp"
-        app:timeColumnBackgroundColor="@color/white"
         app:timeColumnPadding="8dp"
-        app:timeColumnSeparatorColor="@color/gray_300"
         app:timeColumnSeparatorStrokeWidth="1dp"
-        app:timeColumnTextColor="@color/gray_600"
+        app:timeColumnTextColor="?colorOnBackground"
         app:timeColumnTextSize="12sp"
-        app:todayHeaderTextColor="@color/accent" />
+        app:todayHeaderTextColor="?colorAccent" />
 
 </LinearLayout>

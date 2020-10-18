@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".LegacyActivity">
+    android:orientation="vertical">
 
     <include layout="@layout/view_toolbar" />
 
@@ -25,9 +24,11 @@
             app:eventPaddingHorizontal="4dp"
             app:eventPaddingVertical="5dp"
             app:eventTextSize="13sp"
+            app:headerBackgroundColor="?android:colorBackground"
+            app:headerBottomShadowColor="?android:shadowColor"
             app:headerBottomShadowRadius="4dp"
             app:headerPadding="8dp"
-            app:headerTextColor="@color/gray_600"
+            app:headerTextColor="?colorOnBackground"
             app:hourHeight="60dp"
             app:nowLineDotRadius="5dp"
             app:nowLineStrokeWidth="2dp"
@@ -42,17 +43,24 @@
             app:singleDayHorizontalPadding="8dp"
             app:timeColumnPadding="16dp"
             app:timeColumnSeparatorStrokeWidth="1dp"
-            app:timeColumnTextColor="@color/gray_600"
+            app:timeColumnTextColor="?colorOnBackground"
             app:timeColumnTextSize="12sp"
-            app:weekNumberBackgroundCornerRadius="@dimen/corner_radius" />
+            app:weekNumberBackgroundColor="?colorPrimary"
+            app:weekNumberBackgroundCornerRadius="@dimen/shadow_radius"
+            app:weekNumberTextColor="?colorOnBackground" />
 
         <FrameLayout
             android:id="@+id/blockingProgressIndicator"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white_alpha50"
             android:visibility="gone"
             tools:visibility="visible">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0.5"
+                android:background="?android:colorBackground" />
 
             <ProgressBar
                 android:layout_width="wrap_content"

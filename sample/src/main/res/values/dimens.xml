@@ -8,4 +8,5 @@
     <dimen name="dot_spacing">3dp</dimen>
     <dimen name="line_width">1dp</dimen>
     <dimen name="line_spacing">6dp</dimen>
+    <dimen name="shadow_radius">8dp</dimen>
 </resources>
