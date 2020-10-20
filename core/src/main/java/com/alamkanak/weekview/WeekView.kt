@@ -1294,7 +1294,6 @@ class WeekView @JvmOverloads constructor(
         }
 
     private fun setAdapterInternal(adapter: Adapter<*>?) {
-        adapter?.eventChipsCache = eventChipsCache
         internalAdapter = adapter
         touchHandler.adapter = adapter
         internalAdapter?.registerObserver(this)
@@ -1354,14 +1353,8 @@ class WeekView @JvmOverloads constructor(
 
         internal lateinit var eventChipsCache: EventChipsCache
 
-        internal val eventsProcessor: EventsProcessor<T> by lazy {
-            EventsProcessor(
-                context = context,
-                eventsCache = eventsCache,
-                eventChipsCache = eventChipsCache,
-                eventChipsFactory = eventChipsFactory
-            )
-        }
+        internal var eventsProcessor: EventsProcessor<T>? = null
+            private set
 
         internal var weekView: WeekView? = null
             private set
@@ -1410,6 +1403,13 @@ class WeekView @JvmOverloads constructor(
 
         internal fun registerObserver(weekView: WeekView) {
             this.weekView = weekView
+            this.eventChipsCache = weekView.eventChipsCache
+            this.eventsProcessor = EventsProcessor(
+                context = context,
+                eventsCache = eventsCache,
+                eventChipsCache = eventChipsCache,
+                eventChipsFactory = eventChipsFactory
+            )
         }
 
         internal fun updateObserver() {
@@ -1509,7 +1509,7 @@ class WeekView @JvmOverloads constructor(
         @PublicApi
         fun submit(events: List<WeekViewDisplayable<T>>) {
             val viewState = weekView?.viewState ?: return
-            eventsProcessor.submit(events, viewState, onFinished = this::updateObserver)
+            eventsProcessor?.submit(events, viewState, onFinished = this::updateObserver)
         }
     }
 
@@ -1541,7 +1541,7 @@ class WeekView @JvmOverloads constructor(
         @PublicApi
         fun submit(events: List<WeekViewDisplayable<T>>) {
             val viewState = weekView?.viewState ?: return
-            eventsProcessor.submit(events, viewState, onFinished = this::updateObserver)
+            eventsProcessor?.submit(events, viewState, onFinished = this::updateObserver)
         }
 
         /**
