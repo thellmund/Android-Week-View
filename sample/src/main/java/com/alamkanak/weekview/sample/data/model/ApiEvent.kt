@@ -2,7 +2,7 @@ package com.alamkanak.weekview.sample.data.model
 
 import android.graphics.Color
 import com.alamkanak.weekview.WeekViewDisplayable
-import com.alamkanak.weekview.WeekViewEvent
+import com.alamkanak.weekview.WeekViewEntity
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
@@ -30,9 +30,9 @@ data class ApiEvent(
     @Expose
     @SerializedName("color")
     var color: String
-) : WeekViewDisplayable<ApiEvent> {
+) : WeekViewDisplayable {
 
-    override fun toWeekViewEvent(): WeekViewEvent<ApiEvent> {
+    override fun toWeekViewEntity(): WeekViewEntity {
         // Titles have the format "Event 123"
         val id = title.split(" ").last().toLong()
 
@@ -55,11 +55,11 @@ data class ApiEvent(
         endTime.set(Calendar.DAY_OF_MONTH, startTime.get(Calendar.DAY_OF_MONTH))
 
         val color = Color.parseColor(color)
-        val style = WeekViewEvent.Style.Builder()
+        val style = WeekViewEntity.Style.Builder()
             .setBackgroundColor(color)
             .build()
 
-        return WeekViewEvent.Builder(this)
+        return WeekViewEntity.Event.Builder(this)
             .setId(id)
             .setTitle(title)
             .setStartTime(startTime)

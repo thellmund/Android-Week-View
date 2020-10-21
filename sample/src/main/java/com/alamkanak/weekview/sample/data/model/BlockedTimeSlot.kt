@@ -9,7 +9,7 @@ data class BlockedTimeSlot(
     val id: Long,
     private val startTime: Calendar,
     private val endTime: Calendar
-) : WeekViewDisplayable<Event> {
+) : WeekViewDisplayable {
 
     override fun toWeekViewEntity(): WeekViewEntity {
         val style = WeekViewEntity.Style.Builder()

@@ -98,7 +98,7 @@ internal fun ResolvedWeekViewEntity.copy(
     is ResolvedWeekViewEntity.BlockedTime -> copy(startTime = startTime, endTime = endTime)
 }
 
-internal fun <T> WeekViewDisplayable<T>.toResolvedWeekViewEntity(
+internal fun WeekViewDisplayable.toResolvedWeekViewEntity(
     context: Context
 ) = toWeekViewEntity().resolve(context)
 

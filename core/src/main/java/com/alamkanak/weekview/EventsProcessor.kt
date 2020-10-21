@@ -35,7 +35,7 @@ internal class EventsProcessor<T>(
      * @param onFinished Callback to inform the caller whether [WeekView] should invalidate.
      */
     fun submit(
-        items: List<WeekViewDisplayable<T>>,
+        items: List<WeekViewDisplayable>,
         viewState: ViewState,
         onFinished: () -> Unit
     ) {
@@ -48,7 +48,7 @@ internal class EventsProcessor<T>(
     }
 
     private fun submitItems(
-        items: List<WeekViewDisplayable<T>>,
+        items: List<WeekViewDisplayable>,
         viewState: ViewState
     ) {
         val events = items.map { it.toResolvedWeekViewEntity(context) }

@@ -315,9 +315,7 @@ data class WeekViewEvent<T> internal constructor(
     internal val isAllDay: Boolean = false,
     internal val style: Style = Style(),
     internal val data: T
-) : WeekViewDisplayable<T> {
-
-    override fun toWeekViewEvent(): WeekViewEvent<T> = this
+) : WeekViewDisplayable {
 
     override fun toWeekViewEntity(): WeekViewEntity = WeekViewEntity.Event(
         id = id,

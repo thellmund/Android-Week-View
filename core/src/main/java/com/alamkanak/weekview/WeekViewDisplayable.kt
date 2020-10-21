@@ -3,16 +3,17 @@ package com.alamkanak.weekview
 /**
  * This interface must be implemented by classes that should be displayed in [WeekView].
  */
-interface WeekViewDisplayable<T> {
+interface WeekViewDisplayable {
 
     /**
      * Returns a [WeekViewEvent] for use in [WeekView].
      */
     @Deprecated(
         message = "Use toWeekViewEntity() instead.",
-        replaceWith = ReplaceWith(expression = "toWeekViewEntity")
+        replaceWith = ReplaceWith(expression = "toWeekViewEntity"),
+        level = DeprecationLevel.ERROR
     )
-    fun toWeekViewEvent(): WeekViewEvent<T> {
+    fun <T> toWeekViewEvent(): WeekViewEvent<T> {
         throw IllegalStateException("toWeekViewEvent() is deprecated. Use toWeekViewEntity() instead.")
     }
 
@@ -20,5 +21,5 @@ interface WeekViewDisplayable<T> {
      * Returns a [WeekViewEntity] for use in [WeekView]. This can either be a
      * [WeekViewEntity.Event] or a [WeekViewEntity.BlockedTime].
      */
-    fun toWeekViewEntity(): WeekViewEntity = toWeekViewEvent().toWeekViewEntity()
+    fun toWeekViewEntity(): WeekViewEntity
 }

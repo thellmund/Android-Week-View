@@ -19,7 +19,7 @@ data class Event(
     private val color: Int,
     private val isAllDay: Boolean,
     private val isCanceled: Boolean
-) : WeekViewDisplayable<Event> {
+) : WeekViewDisplayable {
 
     override fun toWeekViewEntity(): WeekViewEntity {
         val backgroundColor = if (!isCanceled) color else Color.WHITE

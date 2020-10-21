@@ -23,7 +23,7 @@ import org.threeten.bp.format.FormatStyle.SHORT
 private class ViewModel(
     private val database: EventsDatabase
 ) {
-    val events = MutableLiveData<List<WeekViewDisplayable<Event>>>()
+    val events = MutableLiveData<List<WeekViewDisplayable>>()
 
     fun fetchEvents(startDate: LocalDate, endDate: LocalDate) {
         val dbEvents = database.getEventsInRange(startDate, endDate)

@@ -20,14 +20,14 @@ class EventsDatabase(context: Context) {
     fun getEventsInRange(
         startDate: LocalDate,
         endDate: LocalDate
-    ): List<WeekViewDisplayable<Event>> {
+    ): List<WeekViewDisplayable> {
         return getEventsInRange(startDate.toCalendar(), endDate.toCalendar())
     }
 
     fun getEventsInRange(
         startDate: Calendar,
         endDate: Calendar
-    ): List<WeekViewDisplayable<Event>> {
+    ): List<WeekViewDisplayable> {
         val monthStartDates = mutableListOf<Calendar>()
         while (startDate < endDate) {
             val monthStartDate = Calendar.getInstance()
@@ -40,12 +40,12 @@ class EventsDatabase(context: Context) {
 
     private fun simulateEventsForRange(
         startDate: Calendar
-    ): List<WeekViewDisplayable<Event>> {
+    ): List<WeekViewDisplayable> {
         val year = startDate.get(Calendar.YEAR)
         val month = startDate.get(Calendar.MONTH)
 
         val idOffset = year + 10L * month
-        val events = mutableListOf<WeekViewDisplayable<Event>>()
+        val events = mutableListOf<WeekViewDisplayable>()
 
         events += newEvent(
             id = idOffset + 1,
