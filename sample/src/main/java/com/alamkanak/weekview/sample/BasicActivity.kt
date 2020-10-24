@@ -1,12 +1,16 @@
 package com.alamkanak.weekview.sample
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.StrikethroughSpan
+import android.text.style.TypefaceSpan
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
-import com.alamkanak.weekview.WeekViewDisplayable
+import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.sample.data.EventsDatabase
-import com.alamkanak.weekview.sample.data.model.BlockedTimeSlot
-import com.alamkanak.weekview.sample.data.model.Event
+import com.alamkanak.weekview.sample.data.model.CalendarEntity
 import com.alamkanak.weekview.sample.util.setupWithWeekView
 import com.alamkanak.weekview.sample.util.showToast
 import com.alamkanak.weekview.threetenabp.WeekViewPagingAdapterThreeTenAbp
@@ -20,15 +24,14 @@ import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle.MEDIUM
 import org.threeten.bp.format.FormatStyle.SHORT
 
-private class ViewModel(
-    private val database: EventsDatabase
-) {
-    val events = MutableLiveData<List<WeekViewDisplayable>>()
+private class BasicViewModel(private val database: EventsDatabase) {
+
+    val events = MutableLiveData<List<CalendarEntity>>()
 
     fun fetchEvents(startDate: LocalDate, endDate: LocalDate) {
         val dbEvents = database.getEventsInRange(startDate, endDate)
         val blockedTimes = listOf(
-            BlockedTimeSlot(
+            CalendarEntity.BlockedTimeSlot(
                 id = 123456789L,
                 startTime = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 16)
@@ -39,7 +42,7 @@ private class ViewModel(
                     set(Calendar.MINUTE, 0)
                 }
             ),
-            BlockedTimeSlot(
+            CalendarEntity.BlockedTimeSlot(
                 id = 123456790L,
                 startTime = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 19)
@@ -60,8 +63,8 @@ class BasicActivity : AppCompatActivity() {
     private val weekdayFormatter = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
     private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd", Locale.getDefault())
 
-    private val viewModel: ViewModel by lazy {
-        ViewModel(EventsDatabase(this))
+    private val viewModel: BasicViewModel by lazy {
+        BasicViewModel(EventsDatabase(context = this))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,28 +82,91 @@ class BasicActivity : AppCompatActivity() {
             weekdayLabel + "\n" + dateLabel
         }
 
-        viewModel.events.observe(this) { events ->
-            adapter.submit(events)
-        }
+        viewModel.events.observe(this, adapter::submitList)
     }
 }
 
 private class BasicActivityWeekViewAdapter(
     private val loadMoreHandler: (startDate: LocalDate, endDate: LocalDate) -> Unit
-) : WeekViewPagingAdapterThreeTenAbp<Event>() {
+) : WeekViewPagingAdapterThreeTenAbp<CalendarEntity>() {
 
     private val formatter = DateTimeFormatter.ofLocalizedDateTime(MEDIUM, SHORT)
 
-    override fun onEventClick(data: Event) {
-        context.showToast("Clicked ${data.title}")
+    override fun onCreateEntity(item: CalendarEntity): WeekViewEntity {
+        return when (item) {
+            is CalendarEntity.Event -> createForEvent(item)
+            is CalendarEntity.BlockedTimeSlot -> createForBlockedTimeSlot(item)
+        }
+    }
+
+    private fun createForEvent(event: CalendarEntity.Event): WeekViewEntity {
+        val backgroundColor = if (!event.isCanceled) event.color else Color.WHITE
+        val textColor = if (!event.isCanceled) Color.WHITE else event.color
+        val borderWidthResId = if (!event.isCanceled) R.dimen.no_border_width else R.dimen.border_width
+
+        val style = WeekViewEntity.Style.Builder()
+            .setTextColor(textColor)
+            .setBackgroundColor(backgroundColor)
+            .setBorderWidthResource(borderWidthResId)
+            .setBorderColor(event.color)
+            .build()
+
+        val title = SpannableStringBuilder(event.title).apply {
+            val titleSpan = TypefaceSpan("sans-serif-medium")
+            setSpan(titleSpan, 0, event.title.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            if (event.isCanceled) {
+                setSpan(StrikethroughSpan(), 0, event.title.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+
+        val subtitle = SpannableStringBuilder(event.location).apply {
+            if (event.isCanceled) {
+                setSpan(StrikethroughSpan(), 0, event.location.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+
+        return WeekViewEntity.Event.Builder(event)
+            .setId(event.id)
+            .setTitle(title)
+            .setStartTime(event.startTime)
+            .setEndTime(event.endTime)
+            .setSubtitle(subtitle)
+            .setAllDay(event.isAllDay)
+            .setStyle(style)
+            .build()
+    }
+
+    private fun createForBlockedTimeSlot(
+        blockedTimeSlot: CalendarEntity.BlockedTimeSlot
+    ): WeekViewEntity {
+        val style = WeekViewEntity.Style.Builder()
+            .setTextColor(Color.RED)
+            .setPattern(WeekViewEntity.Style.Pattern.Diagonal, Color.LTGRAY)
+            .setCornerRadius(0)
+            .build()
+
+        return WeekViewEntity.BlockedTime.Builder()
+            .setId(blockedTimeSlot.id)
+            .setStartTime(blockedTimeSlot.startTime)
+            .setEndTime(blockedTimeSlot.endTime)
+            .setStyle(style)
+            .build()
+    }
+
+    override fun onEventClick(data: CalendarEntity) {
+        if (data is CalendarEntity.Event) {
+            context.showToast("Clicked ${data.title}")
+        }
     }
 
     override fun onEmptyViewClick(time: LocalDateTime) {
         context.showToast("Empty view clicked at ${formatter.format(time)}")
     }
 
-    override fun onEventLongClick(data: Event) {
-        context.showToast("Long-clicked ${data.title}")
+    override fun onEventLongClick(data: CalendarEntity) {
+        if (data is CalendarEntity.Event) {
+            context.showToast("Long-clicked ${data.title}")
+        }
     }
 
     override fun onEmptyViewLongClick(time: LocalDateTime) {

@@ -1,5 +1,6 @@
 package com.alamkanak.weekview
 
+import android.content.Context
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DimenRes
@@ -315,18 +316,9 @@ data class WeekViewEvent<T> internal constructor(
     internal val isAllDay: Boolean = false,
     internal val style: Style = Style(),
     internal val data: T
-) : WeekViewDisplayable {
+) : WeekViewDisplayable<T> {
 
-    override fun toWeekViewEntity(): WeekViewEntity = WeekViewEntity.Event(
-        id = id,
-        titleResource = titleResource,
-        startTime = startTime,
-        endTime = endTime,
-        subtitleResource = locationResource,
-        isAllDay = isAllDay,
-        style = style.toWeekViewEntityStyle(),
-        data = data
-    )
+    override fun toWeekViewEvent(): WeekViewEvent<T> = this
 
     @Deprecated(
         "Use WeekViewEntity.Style instead.",
@@ -487,31 +479,30 @@ data class WeekViewEvent<T> internal constructor(
     }
 }
 
-private fun WeekViewEvent.Style.toWeekViewEntityStyle(): WeekViewEntity.Style {
+internal fun <T> WeekViewDisplayable<T>.toWeekViewEntity(
+    context: Context
+) = toWeekViewEvent().toWeekViewEntity(context)
+
+internal fun <T> WeekViewEvent<T>.toWeekViewEntity(
+    context: Context
+): WeekViewEntity = WeekViewEntity.Event(
+    id = id,
+    titleResource = titleResource,
+    startTime = startTime,
+    endTime = endTime,
+    subtitleResource = locationResource,
+    isAllDay = isAllDay,
+    style = style.toWeekViewEntityStyle(context),
+    data = data
+)
+
+private fun WeekViewEvent.Style.toWeekViewEntityStyle(
+    context: Context
+): WeekViewEntity.Style {
     return WeekViewEntity.Style.Builder()
-        .apply {
-            when (val resource = backgroundColorResource) {
-                is ColorResource.Id -> setBackgroundColorResource(resource.resId)
-                is ColorResource.Value -> setBackgroundColor(resource.color)
-            }
-        }
-        .apply {
-            when (val resource = textColorResource) {
-                is ColorResource.Id -> setTextColorResource(resource.resId)
-                is ColorResource.Value -> setTextColor(resource.color)
-            }
-        }
-        .apply {
-            when (val resource = borderWidthResource) {
-                is DimenResource.Id -> setBorderWidthResource(resource.resId)
-                is DimenResource.Value -> setBorderWidthResource(resource.value)
-            }
-        }
-        .apply {
-            when (val resource = borderColorResource) {
-                is ColorResource.Id -> setBorderColorResource(resource.resId)
-                is ColorResource.Value -> setBorderColor(resource.color)
-            }
-        }
+        .apply { backgroundColorResource?.let { setBackgroundColor(it.resolve(context)) } }
+        .apply { textColorResource?.let { setTextColor(it.resolve(context)) } }
+        .apply { borderWidthResource?.let { setBorderWidth(it.resolve(context)) } }
+        .apply { borderColorResource?.let { setBorderColor(it.resolve(context)) } }
         .build()
 }

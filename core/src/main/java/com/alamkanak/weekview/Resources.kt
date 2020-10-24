@@ -55,6 +55,7 @@ internal sealed class PatternResource {
         override val pattern: WeekViewEntity.Style.Pattern,
         @ColorInt val color: Int
     ) : PatternResource()
+
     data class Id(
         override val pattern: WeekViewEntity.Style.Pattern,
         @ColorRes val colorResId: Int

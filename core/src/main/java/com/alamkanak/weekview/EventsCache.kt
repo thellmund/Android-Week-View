@@ -4,9 +4,9 @@ import androidx.collection.ArrayMap
 import java.util.Calendar
 
 /**
- * An abstract class that provides functionality to cache [ResolvedWeekViewEntity] objects.
+ * An abstract class that provides functionality to cache [ResolvedWeekViewEntity] elements.
  */
-internal abstract class EventsCache<T> {
+internal abstract class EventsCache {
 
     abstract val allEvents: List<ResolvedWeekViewEntity>
     abstract fun update(events: List<ResolvedWeekViewEntity>)
@@ -35,7 +35,7 @@ internal abstract class EventsCache<T> {
  * Represents an [EventsCache] that relies on a simple list of [ResolvedWeekViewEntity] objects.
  * When updated with new [ResolvedWeekViewEntity] objects, all existing ones are replaced.
  */
-internal class SimpleEventsCache<T> : EventsCache<T>() {
+internal class SimpleEventsCache : EventsCache() {
 
     private var _allEvents: List<ResolvedWeekViewEntity>? = null
 
@@ -55,7 +55,7 @@ internal class SimpleEventsCache<T> : EventsCache<T>() {
  * Represents an [EventsCache] that caches [ResolvedWeekViewEntity]s for their respective [Period]
  * and allows retrieval based on that [Period].
  */
-internal class PaginatedEventsCache<T> : EventsCache<T>() {
+internal class PaginatedEventsCache : EventsCache() {
 
     override val allEvents: List<ResolvedWeekViewEntity>
         get() = eventsByPeriod.values.flatten()

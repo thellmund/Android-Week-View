@@ -5,8 +5,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 
-import com.alamkanak.weekview.WeekViewDisplayable;
 import com.alamkanak.weekview.sample.data.EventsDatabase;
+import com.alamkanak.weekview.sample.data.model.CalendarEntity;
 import com.alamkanak.weekview.sample.util.ExtensionsKt;
 
 import org.threeten.bp.LocalDate;
@@ -34,12 +34,12 @@ class EventsFetcher {
         Handler handler = new Handler(looper);
 
         handler.post(() -> {
-            List<WeekViewDisplayable> events = database.getEventsInRange(startDate, endDate);
+            List<CalendarEntity.Event> events = database.getEventsInRange(startDate, endDate);
             listener.onEventsFetched(events);
         });
     }
 
     interface Listener {
-        void onEventsFetched(List<WeekViewDisplayable> events);
+        void onEventsFetched(List<CalendarEntity.Event> events);
     }
 }

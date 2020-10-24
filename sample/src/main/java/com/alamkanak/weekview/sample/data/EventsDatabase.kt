@@ -2,9 +2,8 @@ package com.alamkanak.weekview.sample.data
 
 import android.content.Context
 import androidx.core.content.ContextCompat
-import com.alamkanak.weekview.WeekViewDisplayable
 import com.alamkanak.weekview.sample.R
-import com.alamkanak.weekview.sample.data.model.Event
+import com.alamkanak.weekview.sample.data.model.CalendarEntity
 import com.alamkanak.weekview.sample.util.toCalendar
 import java.util.Calendar
 import java.util.TimeZone
@@ -20,14 +19,14 @@ class EventsDatabase(context: Context) {
     fun getEventsInRange(
         startDate: LocalDate,
         endDate: LocalDate
-    ): List<WeekViewDisplayable> {
+    ): List<CalendarEntity.Event> {
         return getEventsInRange(startDate.toCalendar(), endDate.toCalendar())
     }
 
     fun getEventsInRange(
         startDate: Calendar,
         endDate: Calendar
-    ): List<WeekViewDisplayable> {
+    ): List<CalendarEntity.Event> {
         val monthStartDates = mutableListOf<Calendar>()
         while (startDate < endDate) {
             val monthStartDate = Calendar.getInstance()
@@ -40,12 +39,12 @@ class EventsDatabase(context: Context) {
 
     private fun simulateEventsForRange(
         startDate: Calendar
-    ): List<WeekViewDisplayable> {
+    ): List<CalendarEntity.Event> {
         val year = startDate.get(Calendar.YEAR)
         val month = startDate.get(Calendar.MONTH)
 
         val idOffset = year + 10L * month
-        val events = mutableListOf<WeekViewDisplayable>()
+        val events = mutableListOf<CalendarEntity.Event>()
 
         events += newEvent(
             id = idOffset + 1,
@@ -245,7 +244,7 @@ class EventsDatabase(context: Context) {
         title: String = "Event $id",
         isAllDay: Boolean = false,
         isCanceled: Boolean = false
-    ): Event {
+    ): CalendarEntity.Event {
         val startTime = Calendar.getInstance(timeZone).apply {
             set(Calendar.YEAR, year)
             set(Calendar.MONTH, month)
@@ -258,7 +257,7 @@ class EventsDatabase(context: Context) {
         val endTime = startTime.clone() as Calendar
         endTime.add(Calendar.MINUTE, duration)
 
-        return Event(
+        return CalendarEntity.Event(
             id = id,
             title = title,
             startTime = startTime,

@@ -3,14 +3,11 @@ package com.alamkanak.weekview
 import android.graphics.RectF
 
 /**
- * This class encapsulates a [ResolvedWeekViewEntity] and its visual representation, a [RectF]
- * which is eventually drawn to the screen.
+ * This class encapsulates a [ResolvedWeekViewEntity] and its visual representation, a [RectF] which
+ * is eventually drawn to the screen.
  *
  * There may be more than one [EventChip] for any even (think multi-day events). In that case,
  * multiple [EventChip]s will be used for a single [ResolvedWeekViewEntity].
- *
- * The original [ResolvedWeekViewEntity] is accessible via [originalEvent]. The
- * [ResolvedWeekViewEntity] that corresponds to the drawn rectangle is accessible via [event].
  */
 internal data class EventChip(
     /**
@@ -31,7 +28,7 @@ internal data class EventChip(
         get() = "${event.id}-${this.event.startTime.timeInMillis}"
 
     /**
-     * The bounds in which the [ResolvedWeekViewEntity] will be drawn.
+     * The bounds in which the [event] will be drawn.
      */
     var bounds: RectF = RectF()
 

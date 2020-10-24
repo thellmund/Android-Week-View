@@ -88,19 +88,15 @@ internal sealed class ResolvedWeekViewEntity {
     internal fun endsOnLaterDay(
         originalEvent: ResolvedWeekViewEntity
     ): Boolean = endTime.isNotEqual(originalEvent.endTime)
-}
 
-internal fun ResolvedWeekViewEntity.copy(
-    startTime: Calendar = this.startTime,
-    endTime: Calendar = this.endTime
-): ResolvedWeekViewEntity = when (this) {
-    is ResolvedWeekViewEntity.Event<*> -> copy(startTime = startTime, endTime = endTime)
-    is ResolvedWeekViewEntity.BlockedTime -> copy(startTime = startTime, endTime = endTime)
+    internal fun createCopy(
+        startTime: Calendar = this.startTime,
+        endTime: Calendar = this.endTime
+    ): ResolvedWeekViewEntity = when (this) {
+        is Event<*> -> copy(startTime = startTime, endTime = endTime)
+        is BlockedTime -> copy(startTime = startTime, endTime = endTime)
+    }
 }
-
-internal fun WeekViewDisplayable.toResolvedWeekViewEntity(
-    context: Context
-) = toWeekViewEntity().resolve(context)
 
 internal fun WeekViewEntity.resolve(
     context: Context
