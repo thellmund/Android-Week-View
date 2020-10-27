@@ -43,8 +43,8 @@ internal class EventChipsCache {
         return results
     }
 
-    operator fun plusAssign(newChips: List<EventChip>) {
-        for (eventChip in newChips) {
+    operator fun plusAssign(eventChips: List<EventChip>) {
+        for (eventChip in eventChips) {
             val key = eventChip.event.startTime.atStartOfDay.timeInMillis
             if (eventChip.event.isAllDay) {
                 allDayEventChipsByDate.addOrReplace(key, eventChip)

@@ -23,6 +23,37 @@ class EventsDatabase(context: Context) {
         return getEventsInRange(startDate.toCalendar(), endDate.toCalendar())
     }
 
+    fun getBlockedTimesInRange(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<CalendarEntity> {
+        val date = startDate.toCalendar()
+        return listOf(
+            CalendarEntity.BlockedTimeSlot(
+                id = 123456789L,
+                startTime = date.copy {
+                    set(Calendar.HOUR_OF_DAY, 16)
+                    set(Calendar.MINUTE, 0)
+                },
+                endTime = date.copy {
+                    set(Calendar.HOUR_OF_DAY, 18)
+                    set(Calendar.MINUTE, 0)
+                }
+            ),
+            CalendarEntity.BlockedTimeSlot(
+                id = 123456790L,
+                startTime = date.copy {
+                    set(Calendar.HOUR_OF_DAY, 19)
+                    set(Calendar.MINUTE, 0)
+                },
+                endTime = date.copy {
+                    set(Calendar.HOUR_OF_DAY, 21)
+                    set(Calendar.MINUTE, 0)
+                }
+            )
+        )
+    }
+
     fun getEventsInRange(
         startDate: Calendar,
         endDate: Calendar
@@ -268,4 +299,10 @@ class EventsDatabase(context: Context) {
             isCanceled = isCanceled
         )
     }
+}
+
+private fun Calendar.copy(block: Calendar.() -> Unit): Calendar {
+    val copy = clone() as Calendar
+    copy.block()
+    return copy
 }

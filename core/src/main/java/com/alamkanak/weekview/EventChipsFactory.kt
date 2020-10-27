@@ -4,7 +4,7 @@ import java.util.Calendar
 
 internal class EventChipsFactory {
 
-    fun createEventChips(
+    fun create(
         events: List<ResolvedWeekViewEntity>,
         viewState: ViewState
     ): List<EventChip> {

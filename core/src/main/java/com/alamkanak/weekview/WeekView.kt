@@ -1411,6 +1411,7 @@ class WeekView @JvmOverloads constructor(
 
         internal val eventsProcessor: EventsProcessor by lazy {
             EventsProcessor(
+                context = context,
                 eventsCache = eventsCache,
                 eventChipsCache = eventChipsCache,
                 eventChipsFactory = eventChipsFactory
@@ -1589,7 +1590,7 @@ class WeekView @JvmOverloads constructor(
         fun submit(events: List<WeekViewDisplayable<T>>) {
             val viewState = weekView?.viewState ?: return
             val entities = events.map { it.toWeekViewEntity(context) }
-            eventsProcessor.submit(context, entities, viewState, onFinished = this::updateObserver)
+            eventsProcessor.submit(entities, viewState, onFinished = this::updateObserver)
         }
 
         /**
@@ -1603,7 +1604,7 @@ class WeekView @JvmOverloads constructor(
         fun submitList(elements: List<T>) {
             val viewState = weekView?.viewState ?: return
             val entities = elements.map(this::onCreateEntity)
-            eventsProcessor.submit(context, entities, viewState, onFinished = this::updateObserver)
+            eventsProcessor.submit(entities, viewState, onFinished = this::updateObserver)
         }
     }
 
@@ -1639,7 +1640,7 @@ class WeekView @JvmOverloads constructor(
         fun submit(events: List<WeekViewDisplayable<T>>) {
             val viewState = weekView?.viewState ?: return
             val entities = events.map { it.toWeekViewEntity(context) }
-            eventsProcessor.submit(context, entities, viewState, onFinished = this::updateObserver)
+            eventsProcessor.submit(entities, viewState, onFinished = this::updateObserver)
         }
 
         /**
@@ -1652,7 +1653,7 @@ class WeekView @JvmOverloads constructor(
         fun submitList(elements: List<T>) {
             val viewState = weekView?.viewState ?: return
             val entities = elements.map(this::onCreateEntity)
-            eventsProcessor.submit(context, entities, viewState, onFinished = this::updateObserver)
+            eventsProcessor.submit(entities, viewState, onFinished = this::updateObserver)
         }
 
         /**

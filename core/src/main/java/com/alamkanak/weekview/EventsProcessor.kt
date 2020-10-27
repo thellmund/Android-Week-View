@@ -19,6 +19,7 @@ class MainExecutor : Executor {
  * on a background thread.
  */
 internal class EventsProcessor(
+    private val context: Context,
     private val eventsCache: EventsCache,
     private val eventChipsFactory: EventChipsFactory,
     private val eventChipsCache: EventChipsCache
@@ -31,19 +32,17 @@ internal class EventsProcessor(
      * Updates the [EventsCache] with the provided [WeekViewEntity] elements and creates
      * [EventChip]s.
      *
-     * @param context The [Context] that the associated [WeekView] is running in
      * @param entities The list of new [WeekViewEntity] elements
      * @param viewState The current [ViewState] of [WeekView]
      * @param onFinished Callback to inform the caller whether [WeekView] should invalidate.
      */
     fun submit(
-        context: Context,
         entities: List<WeekViewEntity>,
         viewState: ViewState,
         onFinished: () -> Unit
     ) {
         backgroundExecutor.execute {
-            submitItems(context, entities, viewState)
+            submitItems(entities, viewState)
             mainThreadExecutor.execute {
                 onFinished()
             }
@@ -52,7 +51,6 @@ internal class EventsProcessor(
 
     @WorkerThread
     private fun submitItems(
-        context: Context,
         items: List<WeekViewEntity>,
         viewState: ViewState
     ) {
@@ -65,6 +63,7 @@ internal class EventsProcessor(
             eventChipsCache.clear()
         }
 
-        eventChipsCache += eventChipsFactory.createEventChips(resolvedItems, viewState)
+        // TODO Determine new chips, if submitting all instead of just the new range
+        eventChipsCache += eventChipsFactory.create(resolvedItems, viewState)
     }
 }
