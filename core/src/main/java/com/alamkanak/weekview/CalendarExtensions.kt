@@ -3,6 +3,7 @@ package com.alamkanak.weekview
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.roundToInt
 
 internal const val DAY_IN_MILLIS = 1000L * 60L * 60L * 24L
@@ -261,6 +262,13 @@ internal fun Calendar.withMinutes(minute: Int): Calendar {
     return copy().apply { set(Calendar.MINUTE, minute) }
 }
 
+internal fun Calendar.convertedToDefaultTimeZone(): Calendar {
+    val offset = TimeZone.getDefault().rawOffset - timeZone.rawOffset
+    return copy().apply {
+        timeZone = TimeZone.getDefault()
+    } + Millis(offset)
+}
+
 internal fun Calendar.copy(): Calendar = clone() as Calendar
 
 /**
@@ -289,9 +297,7 @@ internal fun defaultDateFormatter(
 
 internal fun defaultTimeFormatter(): SimpleDateFormat = SimpleDateFormat("hh a", Locale.getDefault())
 
-fun Calendar.format(
-    format: Int = java.text.DateFormat.MEDIUM
-): String {
-    val sdf = SimpleDateFormat.getDateInstance(format)
+internal fun Calendar.format(): String {
+    val sdf = SimpleDateFormat.getDateTimeInstance()
     return sdf.format(time)
 }

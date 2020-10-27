@@ -7,6 +7,7 @@ import com.alamkanak.weekview.sample.R
 import com.alamkanak.weekview.sample.data.model.Event
 import com.alamkanak.weekview.sample.util.toCalendar
 import java.util.Calendar
+import java.util.TimeZone
 import org.threeten.bp.LocalDate
 
 class EventsDatabase(context: Context) {
@@ -131,10 +132,11 @@ class EventsDatabase(context: Context) {
             year = year,
             month = month,
             dayOfMonth = 1,
-            hour = 9,
+            hour = 0,
             minute = 0,
             duration = 3 * 60,
-            color = color1
+            color = color1,
+            timeZone = TimeZone.getTimeZone("Europe/London")
         )
 
         events += newEvent(
@@ -212,10 +214,12 @@ class EventsDatabase(context: Context) {
         minute: Int,
         duration: Int,
         color: Int,
+        timeZone: TimeZone = TimeZone.getDefault(),
         isAllDay: Boolean = false,
         isCanceled: Boolean = false
     ): Event {
         val startTime = Calendar.getInstance().apply {
+            this.timeZone = timeZone
             set(Calendar.YEAR, year)
             set(Calendar.MONTH, month)
             set(Calendar.DAY_OF_MONTH, dayOfMonth)
