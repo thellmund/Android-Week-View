@@ -128,18 +128,6 @@ class EventsDatabase(context: Context) {
         )
 
         events += newEvent(
-            id = idOffset + 8,
-            year = year,
-            month = month,
-            dayOfMonth = 1,
-            hour = 0,
-            minute = 0,
-            duration = 3 * 60,
-            color = color1,
-            timeZone = TimeZone.getTimeZone("Europe/London")
-        )
-
-        events += newEvent(
             id = idOffset + 9,
             year = year,
             month = month,
@@ -202,6 +190,45 @@ class EventsDatabase(context: Context) {
             color = color4
         )
 
+        events += newEvent(
+            id = idOffset + 13,
+            year = year,
+            month = month,
+            dayOfMonth = 1,
+            hour = 0,
+            minute = 0,
+            duration = 3 * 60,
+            color = color1,
+            title = "Event in London",
+            timeZone = TimeZone.getTimeZone("Europe/London")
+        )
+
+        events += newEvent(
+            id = idOffset + 14,
+            year = year,
+            month = month,
+            dayOfMonth = 1,
+            hour = 0,
+            minute = 0,
+            duration = 3 * 60,
+            color = color2,
+            title = "Event in Toronto",
+            timeZone = TimeZone.getTimeZone("America/Toronto")
+        )
+
+        events += newEvent(
+            id = idOffset + 15,
+            year = year,
+            month = month,
+            dayOfMonth = 1,
+            hour = 0,
+            minute = 0,
+            duration = 3 * 60,
+            color = color3,
+            title = "Event in LA",
+            timeZone = TimeZone.getTimeZone("America/Los_Angeles")
+        )
+
         return events
     }
 
@@ -215,11 +242,11 @@ class EventsDatabase(context: Context) {
         duration: Int,
         color: Int,
         timeZone: TimeZone = TimeZone.getDefault(),
+        title: String = "Event $id",
         isAllDay: Boolean = false,
         isCanceled: Boolean = false
     ): Event {
-        val startTime = Calendar.getInstance().apply {
-            this.timeZone = timeZone
+        val startTime = Calendar.getInstance(timeZone).apply {
             set(Calendar.YEAR, year)
             set(Calendar.MONTH, month)
             set(Calendar.DAY_OF_MONTH, dayOfMonth)
@@ -233,7 +260,7 @@ class EventsDatabase(context: Context) {
 
         return Event(
             id = id,
-            title = "Event $id",
+            title = title,
             startTime = startTime,
             endTime = endTime,
             location = "Location 123",

@@ -10,21 +10,16 @@ internal fun <T> WeekViewDisplayable<T>.toResolvedWeekViewEvent(
 
 internal fun <T> WeekViewEvent<T>.resolve(
     context: Context
-): ResolvedWeekViewEvent<T> {
-    val adjustedStartTime = startTime.convertedToDefaultTimeZone()
-    val adjustedEndTime = endTime.convertedToDefaultTimeZone()
-
-    return ResolvedWeekViewEvent(
-        id = id,
-        title = titleResource.resolve(context, semibold = true),
-        startTime = adjustedStartTime,
-        endTime = adjustedEndTime,
-        location = locationResource?.resolve(context, semibold = false),
-        isAllDay = isAllDay,
-        style = style.resolve(context),
-        data = data
-    )
-}
+) = ResolvedWeekViewEvent(
+    id = id,
+    title = titleResource.resolve(context, semibold = true),
+    startTime = startTime.withLocalTimeZone(),
+    endTime = endTime.withLocalTimeZone(),
+    location = locationResource?.resolve(context, semibold = false),
+    isAllDay = isAllDay,
+    style = style.resolve(context),
+    data = data
+)
 
 internal fun WeekViewEvent.Style.resolve(
     context: Context

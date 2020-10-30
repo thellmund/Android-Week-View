@@ -262,11 +262,11 @@ internal fun Calendar.withMinutes(minute: Int): Calendar {
     return copy().apply { set(Calendar.MINUTE, minute) }
 }
 
-internal fun Calendar.convertedToDefaultTimeZone(): Calendar {
-    val offset = TimeZone.getDefault().rawOffset - timeZone.rawOffset
-    return copy().apply {
-        timeZone = TimeZone.getDefault()
-    } + Millis(offset)
+internal fun Calendar.withLocalTimeZone(): Calendar {
+    val localTimeZone = TimeZone.getDefault()
+    val localCalendar = Calendar.getInstance(localTimeZone)
+    localCalendar.timeInMillis = timeInMillis
+    return localCalendar
 }
 
 internal fun Calendar.copy(): Calendar = clone() as Calendar
