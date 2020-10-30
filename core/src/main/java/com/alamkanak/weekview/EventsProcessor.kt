@@ -58,12 +58,13 @@ internal class EventsProcessor(
         eventsCache.update(resolvedItems)
 
         if (eventsCache is SimpleEventsCache) {
-            // When using SimpleEventsCache, we completely replace all event chips that are
-            // currently cached.
-            eventChipsCache.clear()
+            val eventChips = eventChipsFactory.create(resolvedItems, viewState)
+            eventChipsCache.replaceAll(eventChips)
+        } else {
+            val existingIds = eventChipsCache.eventIds
+            val newResolvedItems = resolvedItems.filterNot { it.id in existingIds }
+            val eventChips = eventChipsFactory.create(newResolvedItems, viewState)
+            eventChipsCache.addAll(eventChips)
         }
-
-        // TODO Determine new chips, if submitting all instead of just the new range
-        eventChipsCache += eventChipsFactory.create(resolvedItems, viewState)
     }
 }

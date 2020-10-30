@@ -79,7 +79,7 @@ class EventsDatabase(context: Context) {
         val year = startDate.get(Calendar.YEAR)
         val month = startDate.get(Calendar.MONTH)
 
-        val idOffset = year + 10L * month
+        val idOffset = "$year${month}00".toLong()
         val events = mutableListOf<CalendarEntity.Event>()
 
         events += newEvent(

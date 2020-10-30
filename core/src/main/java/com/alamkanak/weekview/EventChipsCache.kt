@@ -8,6 +8,9 @@ internal typealias EventChipsCacheProvider = () -> EventChipsCache?
 
 internal class EventChipsCache {
 
+    val eventIds: Set<Long>
+        get() = allEventChips.map { it.originalEvent.id }.toSet()
+
     val allEventChips: List<EventChip>
         get() = normalEventChipsByDate.values.flatten() + allDayEventChipsByDate.values.flatten()
 
@@ -43,7 +46,12 @@ internal class EventChipsCache {
         return results
     }
 
-    operator fun plusAssign(eventChips: List<EventChip>) {
+    fun replaceAll(eventChips: List<EventChip>) {
+        clear()
+        addAll(eventChips)
+    }
+
+    fun addAll(eventChips: List<EventChip>) {
         for (eventChip in eventChips) {
             val key = eventChip.event.startTime.atStartOfDay.timeInMillis
             if (eventChip.event.isAllDay) {
