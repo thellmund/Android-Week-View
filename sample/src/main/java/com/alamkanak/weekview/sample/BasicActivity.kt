@@ -31,10 +31,6 @@ import java.io.IOException
 
 data class LoadParams(val startDate: LocalDate, val endDate: LocalDate)
 
-sealed class BasicViewEvent {
-    data class FetchRange(val loadParams: LoadParams) : BasicViewEvent()
-}
-
 private data class BasicViewState(
     val entities: List<CalendarEntity> = emptyList(),
     val error: RangeLoadingException? = null
@@ -63,7 +59,7 @@ private class BasicViewModel(
                 error = RangeLoadingException(loadParams = loadParams)
             )
         } else {
-            val newEvents = database.getEventsInRange(loadParams.startDate, loadParams.endDate)
+            val newEvents = database.getEntitiesInRange(loadParams.startDate, loadParams.endDate)
             _viewState.value = BasicViewState(
                 entities = existingEvents + newEvents,
                 error = null
@@ -175,7 +171,8 @@ private class BasicActivityWeekViewAdapter(
     ): WeekViewEntity {
         val style = WeekViewEntity.Style.Builder()
             .setTextColor(Color.RED)
-            .setPattern(WeekViewEntity.Style.Pattern.Diagonal, Color.LTGRAY)
+            .setPattern(WeekViewEntity.Style.Pattern.Dots, Color.DKGRAY)
+            .setBackgroundColorResource(R.color.white_alpha50)
             .setCornerRadius(0)
             .build()
 

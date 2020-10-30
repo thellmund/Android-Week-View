@@ -26,14 +26,13 @@ internal class EventChipDrawer(
             val bounds = eventChip.bounds
             val cornerRadius = event.style.cornerRadius?.toFloat() ?: viewState.eventCornerRadius.toFloat()
             updateBackgroundPaint(event, backgroundPaint)
+            drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
 
             val pattern = event.style.pattern
             if (pattern != null) {
                 val spacing = viewState.headerPadding / 1.5f
                 patternPaint.color = event.style.patternColor ?: viewState.hourSeparatorPaint.color
                 drawPattern(pattern, bounds = eventChip.bounds, spacing = spacing, paint = patternPaint)
-            } else {
-                drawRoundRect(bounds, cornerRadius, cornerRadius, backgroundPaint)
             }
 
             val borderWidth = event.style.borderWidth

@@ -3,7 +3,6 @@ package com.alamkanak.weekview
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
-import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 private data class Line(val startX: Float, val startY: Float, val stopX: Float, val stopY: Float)
@@ -14,7 +13,7 @@ internal fun Canvas.drawPattern(
     spacing: Float,
     paint: Paint
 ) = when (pattern) {
-    WeekViewEntity.Style.Pattern.Diagonal -> drawDiagonalLines(bounds, spacing, paint)
+    WeekViewEntity.Style.Pattern.DiagonalLines -> drawDiagonalLines(bounds, spacing, paint)
     WeekViewEntity.Style.Pattern.Dots -> drawDots(bounds, spacing, paint)
 }
 
@@ -53,13 +52,23 @@ private fun calculateDiagonalLine(startX: Float, startY: Float, stopY: Float): L
 }
 
 internal fun Canvas.drawDots(bounds: RectF, spacing: Float, paint: Paint) {
-    paint.style = Paint.Style.FILL
+    val strokeWidth = paint.strokeWidth
 
-    val columns = (bounds.width() / (paint.strokeWidth + spacing)).roundToInt()
-    val rows = (bounds.height() / (paint.strokeWidth + spacing)).roundToInt()
+    val horizontalDots = ((bounds.width() - spacing) / strokeWidth).toInt()
+    val verticalDots = ((bounds.height() - spacing) / strokeWidth).toInt()
 
-    val horizontalOffsets = (1..columns).map { it * (paint.strokeWidth + spacing) }
-    val verticalOffsets = (1..rows).map { it * (paint.strokeWidth + spacing) }
+    val dotsWidth = horizontalDots * strokeWidth + (horizontalDots - 1) * spacing
+    val dotsHeight = verticalDots * strokeWidth + (verticalDots - 1) * spacing
+
+    val horizontalPadding = bounds.width() - dotsWidth
+    val verticalPadding = bounds.height() - dotsHeight
+
+    val left = bounds.left + horizontalPadding / 2
+    val top = bounds.top + verticalPadding / 2
+
+    val range = 1..horizontalDots
+    val horizontalOffsets = range.map { left + it * (spacing + strokeWidth) }
+    val verticalOffsets = range.map { top + it * (spacing + strokeWidth) }
 
     for (horizontalOffset in horizontalOffsets) {
         for (verticalOffset in verticalOffsets) {

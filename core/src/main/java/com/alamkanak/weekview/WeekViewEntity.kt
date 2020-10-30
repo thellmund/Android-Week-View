@@ -211,7 +211,7 @@ sealed class WeekViewEntity {
         internal var isTextStrikeThrough: Boolean = false
 
         enum class Pattern {
-            Diagonal, Dots
+            DiagonalLines, Dots
         }
 
         class Builder {

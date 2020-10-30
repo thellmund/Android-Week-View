@@ -16,40 +16,45 @@ class EventsDatabase(context: Context) {
     private val color3 = ContextCompat.getColor(context, R.color.event_color_03)
     private val color4 = ContextCompat.getColor(context, R.color.event_color_04)
 
-    fun getEventsInRange(
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): List<CalendarEntity.Event> {
-        return getEventsInRange(startDate.toCalendar(), endDate.toCalendar())
-    }
-
-    fun getBlockedTimesInRange(
+    fun getEntitiesInRange(
         startDate: LocalDate,
         endDate: LocalDate
     ): List<CalendarEntity> {
-        val date = startDate.toCalendar()
+        val events = getEventsInRange(startDate, endDate)
+        val blockedTimes = getBlockedTimesInRange(startDate, endDate)
+        return events + blockedTimes
+    }
+
+    private fun getEventsInRange(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) = getEventsInRange(startDate.toCalendar(), endDate.toCalendar())
+
+    private fun getBlockedTimesInRange(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<CalendarEntity> {
+        val today = LocalDate.now()
+        if (today < startDate || today > endDate) {
+            return emptyList()
+        }
+
+        val date = today.toCalendar().apply {
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
         return listOf(
             CalendarEntity.BlockedTimeSlot(
                 id = 123456789L,
-                startTime = date.copy {
-                    set(Calendar.HOUR_OF_DAY, 16)
-                    set(Calendar.MINUTE, 0)
-                },
-                endTime = date.copy {
-                    set(Calendar.HOUR_OF_DAY, 18)
-                    set(Calendar.MINUTE, 0)
-                }
+                startTime = date.copy { set(Calendar.HOUR_OF_DAY, 16) },
+                endTime = date.copy { set(Calendar.HOUR_OF_DAY, 18) }
             ),
             CalendarEntity.BlockedTimeSlot(
                 id = 123456790L,
-                startTime = date.copy {
-                    set(Calendar.HOUR_OF_DAY, 19)
-                    set(Calendar.MINUTE, 0)
-                },
-                endTime = date.copy {
-                    set(Calendar.HOUR_OF_DAY, 21)
-                    set(Calendar.MINUTE, 0)
-                }
+                startTime = date.copy { set(Calendar.HOUR_OF_DAY, 19) },
+                endTime = date.copy { set(Calendar.HOUR_OF_DAY, 21) }
             )
         )
     }
