@@ -40,7 +40,6 @@ internal sealed class ResolvedWeekViewEntity {
         val textColor: Int? = null,
         val backgroundColor: Int? = null,
         val pattern: WeekViewEntity.Style.Pattern? = null,
-        val patternColor: Int? = null,
         val borderColor: Int? = null,
         val borderWidth: Int? = null,
         val cornerRadius: Int? = null
@@ -126,8 +125,7 @@ internal fun WeekViewEntity.Style.resolve(
 ) = ResolvedWeekViewEntity.Style(
     textColor = textColorResource?.resolve(context),
     backgroundColor = backgroundColorResource?.resolve(context),
-    pattern = patternResource?.pattern,
-    patternColor = patternResource?.resolveColor(context),
+    pattern = pattern,
     borderColor = borderColorResource?.resolve(context),
     borderWidth = borderWidthResource?.resolve(context),
     cornerRadius = cornerRadiusResource?.resolve(context)

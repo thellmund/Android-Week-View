@@ -7,6 +7,7 @@ import android.text.Spanned
 import android.text.style.StrikethroughSpan
 import android.text.style.TypefaceSpan
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -169,10 +170,15 @@ private class BasicActivityWeekViewAdapter(
     private fun createForBlockedTimeSlot(
         blockedTimeSlot: CalendarEntity.BlockedTimeSlot
     ): WeekViewEntity {
+        val pattern = WeekViewEntity.Style.Pattern.Dots(
+            color = ContextCompat.getColor(context, R.color.gray_600),
+            strokeWidth = context.resources.getDimensionPixelSize(R.dimen.dot_radius),
+            spacing = context.resources.getDimensionPixelSize(R.dimen.dot_spacing)
+        )
+
         val style = WeekViewEntity.Style.Builder()
-            .setTextColor(Color.RED)
-            .setPattern(WeekViewEntity.Style.Pattern.Dots, Color.DKGRAY)
-            .setBackgroundColorResource(R.color.white_alpha50)
+            .setPattern(pattern)
+            .setBackgroundColorResource(R.color.gray_alpha10)
             .setCornerRadius(0)
             .build()
 

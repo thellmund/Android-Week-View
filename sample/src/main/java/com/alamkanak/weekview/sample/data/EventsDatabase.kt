@@ -34,27 +34,27 @@ class EventsDatabase(context: Context) {
         startDate: LocalDate,
         endDate: LocalDate
     ): List<CalendarEntity> {
-        val today = LocalDate.now()
-        if (today < startDate || today > endDate) {
-            return emptyList()
-        }
-
-        val date = today.toCalendar().apply {
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val start = startDate.toCalendar()
+        val year = start.get(Calendar.YEAR)
+        val month = start.get(Calendar.MONTH)
+        val dayOfMonth = start.get(Calendar.DAY_OF_MONTH)
 
         return listOf(
-            CalendarEntity.BlockedTimeSlot(
+            newBlockedTime(
                 id = 123456789L,
-                startTime = date.copy { set(Calendar.HOUR_OF_DAY, 16) },
-                endTime = date.copy { set(Calendar.HOUR_OF_DAY, 18) }
+                year = year,
+                month = month,
+                dayOfMonth = dayOfMonth,
+                hour = 16,
+                duration = 2 * 60
             ),
-            CalendarEntity.BlockedTimeSlot(
+            newBlockedTime(
                 id = 123456790L,
-                startTime = date.copy { set(Calendar.HOUR_OF_DAY, 19) },
-                endTime = date.copy { set(Calendar.HOUR_OF_DAY, 21) }
+                year = year,
+                month = month,
+                dayOfMonth = dayOfMonth,
+                hour = 19,
+                duration = 2 * 60
             )
         )
     }
@@ -302,6 +302,34 @@ class EventsDatabase(context: Context) {
             color = color,
             isAllDay = isAllDay,
             isCanceled = isCanceled
+        )
+    }
+
+    private fun newBlockedTime(
+        id: Long,
+        year: Int,
+        month: Int,
+        dayOfMonth: Int,
+        hour: Int,
+        minute: Int = 0,
+        duration: Int
+    ): CalendarEntity.BlockedTimeSlot {
+        val startTime = Calendar.getInstance().apply {
+            set(Calendar.YEAR, year)
+            set(Calendar.MONTH, month)
+            set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val endTime = startTime.clone() as Calendar
+        endTime.add(Calendar.MINUTE, duration)
+
+        return CalendarEntity.BlockedTimeSlot(
+            id = id,
+            startTime = startTime,
+            endTime = endTime
         )
     }
 }

@@ -13,8 +13,8 @@ internal fun Canvas.drawPattern(
     spacing: Float,
     paint: Paint
 ) = when (pattern) {
-    WeekViewEntity.Style.Pattern.DiagonalLines -> drawDiagonalLines(bounds, spacing, paint)
-    WeekViewEntity.Style.Pattern.Dots -> drawDots(bounds, spacing, paint)
+    is WeekViewEntity.Style.Pattern.DiagonalLines -> drawDiagonalLines(bounds, spacing, paint)
+    is WeekViewEntity.Style.Pattern.Dots -> drawDots(bounds, pattern.spacing, paint)
 }
 
 internal fun Canvas.drawDiagonalLines(bounds: RectF, spacing: Float, paint: Paint) {
@@ -51,14 +51,16 @@ private fun calculateDiagonalLine(startX: Float, startY: Float, stopY: Float): L
     return Line(startX, startY, stopX, stopY)
 }
 
-internal fun Canvas.drawDots(bounds: RectF, spacing: Float, paint: Paint) {
+internal fun Canvas.drawDots(bounds: RectF, spacing: Int, paint: Paint) {
+    paint.style = Paint.Style.FILL
     val strokeWidth = paint.strokeWidth
 
-    val horizontalDots = ((bounds.width() - spacing) / strokeWidth).toInt()
-    val verticalDots = ((bounds.height() - spacing) / strokeWidth).toInt()
+    val paddedDot = strokeWidth + spacing
+    val horizontalDots = (bounds.width() / paddedDot).toInt()
+    val verticalDots = (bounds.height() / paddedDot).toInt()
 
-    val dotsWidth = horizontalDots * strokeWidth + (horizontalDots - 1) * spacing
-    val dotsHeight = verticalDots * strokeWidth + (verticalDots - 1) * spacing
+    val dotsWidth = horizontalDots * paddedDot
+    val dotsHeight = verticalDots * paddedDot
 
     val horizontalPadding = bounds.width() - dotsWidth
     val verticalPadding = bounds.height() - dotsHeight
@@ -66,14 +68,14 @@ internal fun Canvas.drawDots(bounds: RectF, spacing: Float, paint: Paint) {
     val left = bounds.left + horizontalPadding / 2
     val top = bounds.top + verticalPadding / 2
 
-    val range = 1..horizontalDots
-    val horizontalOffsets = range.map { left + it * (spacing + strokeWidth) }
-    val verticalOffsets = range.map { top + it * (spacing + strokeWidth) }
-
-    for (horizontalOffset in horizontalOffsets) {
-        for (verticalOffset in verticalOffsets) {
+    for (horizontalDot in 0 until horizontalDots) {
+        for (verticalDot in 0 until verticalDots) {
+            val leftBound = left + horizontalDot * paddedDot
+            val topBound = top + verticalDot * paddedDot
             val radius = paint.strokeWidth / 2
-            drawCircle(horizontalOffset, verticalOffset, radius, paint)
+            val x = leftBound + paddedDot / 2
+            val y = topBound + paddedDot / 2
+            drawCircle(x, y, radius, paint)
         }
     }
 }

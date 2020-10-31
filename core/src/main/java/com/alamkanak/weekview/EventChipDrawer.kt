@@ -12,9 +12,7 @@ internal class EventChipDrawer(
     private val backgroundPaint = Paint()
     private val borderPaint = Paint()
 
-    private val patternPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        strokeWidth = 4f // TODO Make configurable
-    }
+    private val patternPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     internal fun draw(
         eventChip: EventChip,
@@ -31,7 +29,8 @@ internal class EventChipDrawer(
             val pattern = event.style.pattern
             if (pattern != null) {
                 val spacing = viewState.headerPadding / 1.5f
-                patternPaint.color = event.style.patternColor ?: viewState.hourSeparatorPaint.color
+                patternPaint.color = pattern.color
+                patternPaint.strokeWidth = pattern.strokeWidth.toFloat()
                 drawPattern(pattern, bounds = eventChip.bounds, spacing = spacing, paint = patternPaint)
             }
 

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DimenRes
+import androidx.annotation.Dimension
 import java.util.Calendar
 
 /**
@@ -204,14 +205,28 @@ sealed class WeekViewEntity {
         internal var borderWidthResource: DimenResource? = null
         internal var borderColorResource: ColorResource? = null
         internal var backgroundColorResource: ColorResource? = null
-        internal var patternResource: PatternResource? = null
         internal var cornerRadiusResource: DimenResource? = null
+        internal var pattern: Pattern? = null
 
         @Deprecated("No longer used.")
         internal var isTextStrikeThrough: Boolean = false
 
-        enum class Pattern {
-            DiagonalLines, Dots
+        sealed class Pattern {
+
+            abstract val color: Int
+            abstract val strokeWidth: Int
+
+            data class DiagonalLines(
+                @ColorInt override val color: Int,
+                @Dimension override val strokeWidth: Int,
+                @Dimension val spacing: Int
+            ) : Pattern()
+
+            data class Dots(
+                @ColorInt override val color: Int,
+                @Dimension override val strokeWidth: Int,
+                @Dimension val spacing: Int
+            ) : Pattern()
         }
 
         class Builder {
@@ -274,14 +289,8 @@ sealed class WeekViewEntity {
             }
 
             @PublicApi
-            fun setPattern(pattern: Pattern, @ColorInt color: Int): Builder {
-                style.patternResource = PatternResource.Value(pattern, color)
-                return this
-            }
-
-            @PublicApi
-            fun setPatternResource(pattern: Pattern, @ColorRes resId: Int): Builder {
-                style.patternResource = PatternResource.Id(pattern, resId)
+            fun setPattern(pattern: Pattern): Builder {
+                style.pattern = pattern
                 return this
             }
 

@@ -46,23 +46,3 @@ internal sealed class DimenResource {
         is Value -> value
     }
 }
-
-internal sealed class PatternResource {
-
-    abstract val pattern: WeekViewEntity.Style.Pattern
-
-    data class Value(
-        override val pattern: WeekViewEntity.Style.Pattern,
-        @ColorInt val color: Int
-    ) : PatternResource()
-
-    data class Id(
-        override val pattern: WeekViewEntity.Style.Pattern,
-        @ColorRes val colorResId: Int
-    ) : PatternResource()
-
-    fun resolveColor(context: Context): Int = when (this) {
-        is Id -> ContextCompat.getColor(context, colorResId)
-        is Value -> color
-    }
-}
