@@ -15,7 +15,8 @@ internal class EventChipBoundsCalculator(
             is ResolvedWeekViewEntity.BlockedTime -> viewState.dayWidth
         }
 
-        val leftOffset = if (viewState.isLtr) 0 else viewState.columnGap
+        val isFullWidth = eventChip.originalEvent is ResolvedWeekViewEntity.BlockedTime
+        val leftOffset = if (viewState.isLtr || isFullWidth) 0 else viewState.columnGap
 
         val minutesFromStart = eventChip.minutesFromStartHour
         val top = calculateDistanceFromTop(minutesFromStart)

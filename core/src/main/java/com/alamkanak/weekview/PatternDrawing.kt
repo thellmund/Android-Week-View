@@ -16,9 +16,14 @@ internal fun Canvas.drawPattern(
     bounds: RectF,
     isLtr: Boolean,
     paint: Paint
-) = when (pattern) {
-    is Pattern.Lined -> drawDiagonalLines(bounds, pattern.spacing, isLtr, pattern.direction, paint)
-    is Pattern.Dotted -> drawDots(bounds, pattern.spacing, paint)
+) {
+    paint.color = pattern.color
+    paint.strokeWidth = pattern.strokeWidth.toFloat()
+
+    when (pattern) {
+        is Pattern.Lined -> drawDiagonalLines(bounds, pattern.spacing, isLtr, pattern.direction, paint)
+        is Pattern.Dotted -> drawDots(bounds, pattern.spacing, paint)
+    }
 }
 
 internal fun Canvas.drawDiagonalLines(

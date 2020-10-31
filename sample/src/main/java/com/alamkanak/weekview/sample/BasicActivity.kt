@@ -19,6 +19,7 @@ import com.alamkanak.weekview.sample.util.showToast
 import com.alamkanak.weekview.threetenabp.WeekViewPagingAdapterThreeTenAbp
 import com.alamkanak.weekview.threetenabp.setDateFormatter
 import com.google.android.material.snackbar.Snackbar
+import java.io.IOException
 import java.util.Locale
 import kotlin.random.Random
 import kotlinx.android.synthetic.main.activity_basic.weekView
@@ -28,7 +29,6 @@ import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle.MEDIUM
 import org.threeten.bp.format.FormatStyle.SHORT
-import java.io.IOException
 
 data class LoadParams(val startDate: LocalDate, val endDate: LocalDate)
 

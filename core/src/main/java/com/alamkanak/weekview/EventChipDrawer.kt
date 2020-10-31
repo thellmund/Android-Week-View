@@ -28,8 +28,6 @@ internal class EventChipDrawer(
 
             val pattern = event.style.pattern
             if (pattern != null) {
-                patternPaint.color = pattern.color
-                patternPaint.strokeWidth = pattern.strokeWidth.toFloat()
                 drawPattern(
                     pattern = pattern,
                     bounds = eventChip.bounds,
