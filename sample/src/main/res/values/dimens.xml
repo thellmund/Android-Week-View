@@ -6,4 +6,6 @@
     <dimen name="corner_radius">8dp</dimen>
     <dimen name="dot_radius">2dp</dimen>
     <dimen name="dot_spacing">3dp</dimen>
+    <dimen name="line_width">1dp</dimen>
+    <dimen name="line_spacing">6dp</dimen>
 </resources>

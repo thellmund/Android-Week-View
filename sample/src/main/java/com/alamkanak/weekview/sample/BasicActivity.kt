@@ -170,10 +170,11 @@ private class BasicActivityWeekViewAdapter(
     private fun createForBlockedTimeSlot(
         blockedTimeSlot: CalendarEntity.BlockedTimeSlot
     ): WeekViewEntity {
-        val pattern = WeekViewEntity.Style.Pattern.Dots(
-            color = ContextCompat.getColor(context, R.color.gray_600),
-            strokeWidth = context.resources.getDimensionPixelSize(R.dimen.dot_radius),
-            spacing = context.resources.getDimensionPixelSize(R.dimen.dot_spacing)
+        val pattern = WeekViewEntity.Style.Pattern.Lined(
+            color = ContextCompat.getColor(context, R.color.gray_500),
+            strokeWidth = context.resources.getDimensionPixelSize(R.dimen.line_width),
+            spacing = context.resources.getDimensionPixelSize(R.dimen.line_spacing),
+            direction = WeekViewEntity.Style.Pattern.Lined.Direction.EndToStart
         )
 
         val style = WeekViewEntity.Style.Builder()

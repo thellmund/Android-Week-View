@@ -216,13 +216,18 @@ sealed class WeekViewEntity {
             abstract val color: Int
             abstract val strokeWidth: Int
 
-            data class DiagonalLines(
+            data class Lined(
                 @ColorInt override val color: Int,
                 @Dimension override val strokeWidth: Int,
-                @Dimension val spacing: Int
-            ) : Pattern()
+                @Dimension val spacing: Int,
+                val direction: Direction = Direction.StartToEnd
+            ) : Pattern() {
+                enum class Direction {
+                    StartToEnd, EndToStart
+                }
+            }
 
-            data class Dots(
+            data class Dotted(
                 @ColorInt override val color: Int,
                 @Dimension override val strokeWidth: Int,
                 @Dimension val spacing: Int

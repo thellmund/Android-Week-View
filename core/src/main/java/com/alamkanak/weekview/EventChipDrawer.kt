@@ -28,10 +28,14 @@ internal class EventChipDrawer(
 
             val pattern = event.style.pattern
             if (pattern != null) {
-                val spacing = viewState.headerPadding / 1.5f
                 patternPaint.color = pattern.color
                 patternPaint.strokeWidth = pattern.strokeWidth.toFloat()
-                drawPattern(pattern, bounds = eventChip.bounds, spacing = spacing, paint = patternPaint)
+                drawPattern(
+                    pattern = pattern,
+                    bounds = eventChip.bounds,
+                    isLtr = viewState.isLtr,
+                    paint = patternPaint
+                )
             }
 
             val borderWidth = event.style.borderWidth
