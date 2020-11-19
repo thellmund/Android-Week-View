@@ -1,6 +1,12 @@
 Changelog
 =========
 
+## Version 5.1.0
+*(2020-11-19)*
+
+- Changed: WeekView no longer supports emojis by default. To add emoji support, you must add a dependency to `com.github.thellmund.Android-Week-View:emoji:x.y.z` and call `weekView.enableEmojiProcessing()` before submitting events.
+- Fixed: WeekView no longer forgets to call `onEmptyViewLongClick()` if an empty area in the calendar was long-clicked.
+
 ## Version 5.0.3
 *(2020-11-10)*
 
