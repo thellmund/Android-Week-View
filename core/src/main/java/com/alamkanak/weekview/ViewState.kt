@@ -8,7 +8,7 @@ import android.graphics.Typeface
 import android.os.Build
 import android.text.TextPaint
 import android.view.View
-import java.util.Calendar
+import java.util.*
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -16,13 +16,13 @@ import kotlin.math.min
 typealias DateFormatter = (Calendar) -> String
 typealias TimeFormatter = (Int) -> String
 
-internal class ViewState {
+internal class ViewState : WeekView.DrawBounds {
 
     // View
-    var viewWidth: Int = 0
-    var viewHeight: Int = 0
+    override var viewWidth: Int = 0
+    override var viewHeight: Int = 0
 
-    var isLtr: Boolean = true
+    override var isLtr: Boolean = true
 
     // Calendar state
     var firstVisibleDate: Calendar = today()
@@ -64,7 +64,7 @@ internal class ViewState {
     var eventMarginVertical: Int = 0
     var singleDayHorizontalPadding: Int = 0
 
-    var hourHeight: Float = 0f
+    override var hourHeight: Float = 0f
     var minHourHeight: Float = 0f
     var maxHourHeight: Float = 0f
     var effectiveMinHourHeight: Float = 0f
@@ -94,6 +94,8 @@ internal class ViewState {
     var maxHour: Int = 24
 
     var typeface: Typeface = Typeface.DEFAULT
+
+    var additionalDrawers: Map<WeekView.DrawBase, List<WeekView.Drawer>> = emptyMap()
 
     var timeColumnWidth: Float = 0f
     var timeColumnTextHeight: Float = 0f
@@ -134,13 +136,13 @@ internal class ViewState {
 
     // In LTR: Dates in the past have origin.x > 0, dates in the future have origin.x < 0
     // In RTL: Dates in the past have origin.x < 0, dates in the future have origin.x > 0
-    var currentOrigin = PointF(0f, 0f)
+    override var currentOrigin = PointF(0f, 0f)
 
     val headerBackgroundPaint = Paint()
 
     val headerBackgroundWithShadowPaint = Paint()
 
-    val dayWidth: Float
+    override val dayWidth: Float
         get() = (viewWidth - timeColumnWidth) / numberOfVisibleDays
 
     val drawableDayWidth: Float
@@ -237,7 +239,7 @@ internal class ViewState {
 
     private val _calendarGridBounds: RectF = RectF()
 
-    val calendarGridBounds: RectF
+    override val calendarGridBounds: RectF
         get() = _calendarGridBounds.apply {
             left = if (isLtr) timeColumnWidth else 0f
             top = headerHeight

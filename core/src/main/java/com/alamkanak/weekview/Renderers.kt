@@ -6,7 +6,7 @@ internal interface Updater {
     fun update()
 }
 
-internal interface Drawer {
+internal interface DrawerInternal {
     fun draw(canvas: Canvas)
 }
 
