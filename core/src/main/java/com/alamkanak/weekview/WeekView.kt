@@ -31,11 +31,32 @@ class WeekView @JvmOverloads constructor(
     private val eventChipsCacheProvider: EventChipsCacheProvider = { adapter?.eventChipsCache }
 
     private val touchHandler = WeekViewTouchHandler(viewState)
+
+    private val navigationListener = object : Navigator.NavigationListener {
+        override fun onHorizontalScrollPositionChanged() {
+            invalidate()
+        }
+
+        override fun onHorizontalScrollingFinished() {
+            notifyRangeChangedListener()
+        }
+
+        override fun onVerticalScrollPositionChanged() {
+            invalidate()
+        }
+
+        override fun requestInvalidation() {
+            ViewCompat.postInvalidateOnAnimation(this@WeekView)
+        }
+    }
+
+    private val navigator = Navigator(viewState = viewState, listener = navigationListener)
+
     private val gestureHandler = WeekViewGestureHandler(
         context = context,
         viewState = viewState,
         touchHandler = touchHandler,
-        onInvalidation = { ViewCompat.postInvalidateOnAnimation(this) }
+        navigator = navigator
     )
 
     private var accessibilityTouchHelper = WeekViewAccessibilityTouchHelper(
@@ -44,8 +65,6 @@ class WeekView @JvmOverloads constructor(
         touchHandler = touchHandler,
         eventChipsCacheProvider = eventChipsCacheProvider
     )
-
-    private val scroller = ValueAnimator()
 
     private val renderers: List<Renderer> = listOf(
         TimeColumnRenderer(viewState),
@@ -76,8 +95,7 @@ class WeekView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         performPendingScrolls()
-        updateDataHolders()
-        notifyScrollListeners()
+        updateViewState()
         refreshEvents()
         performRendering(canvas)
     }
@@ -96,8 +114,8 @@ class WeekView @JvmOverloads constructor(
         }
     }
 
-    private fun updateDataHolders() {
-        viewState.update()
+    private fun updateViewState() {
+        viewState.update(navigationListener = navigationListener)
     }
 
     private fun refreshEvents() {
@@ -139,9 +157,7 @@ class WeekView @JvmOverloads constructor(
         renderers.forEach { it.onSizeChanged(width, height) }
     }
 
-    private fun notifyScrollListeners() {
-        val oldFirstVisibleDay = viewState.firstVisibleDate
-
+    private fun updateDateRange(): Boolean {
         val daysScrolled = viewState.currentOrigin.x / viewState.dayWidth
         val delta = daysScrolled.roundToInt() * (-1)
 
@@ -154,12 +170,22 @@ class WeekView @JvmOverloads constructor(
         val dateRange = viewState.createDateRange(firstVisibleDate)
         val adjustedDateRange = dateRange.validate(viewState = viewState)
 
-        viewState.firstVisibleDate = adjustedDateRange.first()
+        val oldFirstVisibleDate = viewState.firstVisibleDate
+        val newFirstVisibleDate = adjustedDateRange.first()
 
-        val hasFirstVisibleDayChanged = oldFirstVisibleDay.toEpochDays() != firstVisibleDate.toEpochDays()
-        if (hasFirstVisibleDayChanged && !scroller.isRunning) {
-            val lastVisibleDate = adjustedDateRange.last()
-            adapter?.onRangeChanged(firstVisibleDate, lastVisibleDate)
+        viewState.firstVisibleDate = newFirstVisibleDate
+        return !oldFirstVisibleDate.isSameDate(newFirstVisibleDate)
+    }
+
+    private fun notifyRangeChangedListener() {
+        val didChange = updateDateRange()
+        if (didChange && navigator.isNotRunning) {
+            val firstVisibleDate = viewState.firstVisibleDate
+            val lastVisibleDate = firstVisibleDate + Days(viewState.numberOfVisibleDays - 1)
+            adapter?.onRangeChanged(
+                firstVisibleDate = firstVisibleDate,
+                lastVisibleDate = lastVisibleDate
+            )
         }
     }
 
@@ -1241,28 +1267,7 @@ class WeekView @JvmOverloads constructor(
             return
         }
 
-        val destinationOffset = viewState.getXOriginForDate(date)
-        val adjustedDestinationOffset = destinationOffset.coerceIn(
-            minimumValue = viewState.minX,
-            maximumValue = viewState.maxX
-        )
-
-        scroller.animate(
-            fromValue = viewState.currentOrigin.x,
-            toValue = adjustedDestinationOffset,
-            onUpdate = {
-                viewState.currentOrigin.x = it
-                invalidate()
-            },
-            onEnd = {
-                val lastVisibleDate = adjustedDate + Days(numberOfVisibleDays - 1)
-                adapter?.onRangeChanged(
-                    firstVisibleDate = adjustedDate,
-                    lastVisibleDate = lastVisibleDate
-                )
-                onComplete()
-            }
-        )
+        navigator.scrollHorizontallyTo(date = date, onFinished = onComplete)
     }
 
     /**
@@ -1304,14 +1309,7 @@ class WeekView @JvmOverloads constructor(
         val maxOffset = viewState.dayHeight - height
         val finalOffset = min(maxOffset, verticalOffset) * (-1)
 
-        scroller.animate(
-            fromValue = viewState.currentOrigin.y,
-            toValue = finalOffset,
-            onUpdate = {
-                viewState.currentOrigin.y = it
-                invalidate()
-            }
-        )
+        navigator.scrollHorizontallyTo(offset = finalOffset)
     }
 
     /**
@@ -1506,7 +1504,8 @@ class WeekView @JvmOverloads constructor(
          * @return A [WeekViewEntity] that will be rendered in [WeekView]
          */
         open fun onCreateEntity(item: T): WeekViewEntity {
-            throw RuntimeException("You called submitList() on WeekView's adapter, but didn't implement onCreateEntity(). Please do so to convert the submitted elements to WeekViewEntity objects.")
+            throw RuntimeException("You called submitList() on WeekView's adapter, but didn't implement onCreateEntity(). " +
+                "Please do so to convert the submitted elements to WeekViewEntity objects.")
         }
 
         /**
