@@ -157,7 +157,7 @@ class WeekView @JvmOverloads constructor(
         renderers.forEach { it.onSizeChanged(width, height) }
     }
 
-    private fun updateDateRange(): Boolean {
+    private fun updateDateRange(): List<Calendar> {
         val daysScrolled = viewState.currentOrigin.x / viewState.dayWidth
         val delta = daysScrolled.roundToInt() * (-1)
 
@@ -168,23 +168,22 @@ class WeekView @JvmOverloads constructor(
         }
 
         val dateRange = viewState.createDateRange(firstVisibleDate)
-        val adjustedDateRange = dateRange.validate(viewState = viewState)
-
-        val oldFirstVisibleDate = viewState.firstVisibleDate
-        val newFirstVisibleDate = adjustedDateRange.first()
-
-        viewState.firstVisibleDate = newFirstVisibleDate
-        return !oldFirstVisibleDate.isSameDate(newFirstVisibleDate)
+        return dateRange.validate(viewState = viewState)
     }
 
     private fun notifyRangeChangedListener() {
-        val didChange = updateDateRange()
-        if (didChange && navigator.isNotRunning) {
-            val firstVisibleDate = viewState.firstVisibleDate
-            val lastVisibleDate = firstVisibleDate + Days(viewState.numberOfVisibleDays - 1)
+        val currentFirstVisibleDate = viewState.firstVisibleDate
+        val newDateRange = updateDateRange()
+        val newFirstVisibleDate = newDateRange.first()
+
+        val didFirstVisibleDateChange = !currentFirstVisibleDate.isSameDate(newFirstVisibleDate)
+        viewState.firstVisibleDate = newFirstVisibleDate
+
+        if (didFirstVisibleDateChange && navigator.isNotRunning) {
+            val newLastVisibleDate = newDateRange.last()
             adapter?.onRangeChanged(
-                firstVisibleDate = firstVisibleDate,
-                lastVisibleDate = lastVisibleDate
+                firstVisibleDate = newFirstVisibleDate,
+                lastVisibleDate = newLastVisibleDate
             )
         }
     }
@@ -1167,14 +1166,14 @@ class WeekView @JvmOverloads constructor(
      */
     @PublicApi
     val firstVisibleDate: Calendar
-        get() = viewState.firstVisibleDate.copy()
+        get() = viewState.dateRange.first().copy()
 
     /**
      * Returns the last visible date.
      */
     @PublicApi
     val lastVisibleDate: Calendar
-        get() = viewState.firstVisibleDate + Days(viewState.numberOfVisibleDays - 1)
+        get() = viewState.dateRange.last().copy()
 
     /**
      * Scrolls to the specified date. Any provided [Calendar] that falls outside the range of
@@ -1314,7 +1313,7 @@ class WeekView @JvmOverloads constructor(
         val maxOffset = viewState.dayHeight - height
         val finalOffset = min(maxOffset, verticalOffset) * (-1)
 
-        navigator.scrollHorizontallyTo(offset = finalOffset)
+        navigator.scrollVerticallyTo(offset = finalOffset)
     }
 
     /**
