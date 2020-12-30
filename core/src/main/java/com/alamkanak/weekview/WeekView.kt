@@ -204,11 +204,16 @@ class WeekView @JvmOverloads constructor(
     var numberOfVisibleDays: Int
         get() = viewState.numberOfVisibleDays
         set(value) {
+            val currentFirstVisibleDate = viewState.firstVisibleDate
             viewState.numberOfVisibleDays = value
+
             dateTimeInterpreter.onSetNumberOfDays(value)
             renderers.filterIsInstance(DateFormatterDependent::class.java).forEach {
                 it.onDateFormatterChanged(viewState.dateFormatter)
             }
+
+            val newOrigin = viewState.getXOriginForDate(currentFirstVisibleDate)
+            viewState.currentOrigin.x = newOrigin
             invalidate()
         }
 

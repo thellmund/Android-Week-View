@@ -7,10 +7,10 @@ internal class Navigator(
     private val listener: NavigationListener
 ) {
 
-    private val scroller = ValueAnimator()
+    private val animator = ValueAnimator()
 
     val isNotRunning: Boolean
-        get() = !scroller.isRunning
+        get() = !animator.isRunning
 
     fun scrollHorizontallyBy(distance: Float) {
         viewState.currentOrigin.x -= distance
@@ -33,7 +33,7 @@ internal class Navigator(
             maximumValue = viewState.maxX
         )
 
-        scroller.animate(
+        animator.animate(
             fromValue = viewState.currentOrigin.x,
             toValue = adjustedDestinationOffset,
             onUpdate = {
@@ -48,7 +48,7 @@ internal class Navigator(
     }
 
     fun scrollHorizontallyTo(offset: Float) {
-        scroller.animate(
+        animator.animate(
             fromValue = viewState.currentOrigin.x,
             toValue = offset,
             onUpdate = {
@@ -71,7 +71,7 @@ internal class Navigator(
             maximumValue = maxY
         )
 
-        scroller.animate(
+        animator.animate(
             fromValue = viewState.currentOrigin.y,
             toValue = finalOffset,
             onUpdate = {
@@ -82,7 +82,7 @@ internal class Navigator(
     }
 
     fun stop() {
-        scroller.stop()
+        animator.stop()
     }
 
     fun requestInvalidation() {
