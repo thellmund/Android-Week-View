@@ -1183,7 +1183,7 @@ class WeekView @JvmOverloads constructor(
      */
     @PublicApi
     fun scrollToDate(date: Calendar) {
-        scrollToDateWithCompletion(date.withLocalTimeZone())
+        internalScrollToDate(date.withLocalTimeZone())
     }
 
     /**
@@ -1196,8 +1196,8 @@ class WeekView @JvmOverloads constructor(
     @PublicApi
     fun scrollToDateTime(dateTime: Calendar) {
         val localeDate = dateTime.withLocalTimeZone()
-        scrollToDateWithCompletion(localeDate) {
-            goToHour(localeDate.hour)
+        internalScrollToDate(localeDate) {
+            scrollToTime(hour = it.hour, minute = it.minute)
         }
     }
 
@@ -1210,82 +1210,6 @@ class WeekView @JvmOverloads constructor(
      */
     @PublicApi
     fun scrollToTime(hour: Int, minute: Int) {
-        val date = viewState.firstVisibleDate.withTime(hour, minute)
-        scrollToDateTime(date)
-    }
-
-    /**
-     * Scrolls to the current date.
-     */
-    @Deprecated(
-        message = "This method will be removed in a future release. Use scrollToDate() instead.",
-        replaceWith = ReplaceWith(expression = "scrollToDate")
-    )
-    @PublicApi
-    fun goToToday() {
-        goToDate(today())
-    }
-
-    /**
-     * Scrolls to the current date and time.
-     */
-    @Deprecated(
-        message = "This method will be removed in a future release. Use scrollToDateTime() instead.",
-        replaceWith = ReplaceWith(expression = "scrollToDateTime")
-    )
-    @PublicApi
-    fun goToCurrentTime() {
-        val now = now()
-        scrollToDateWithCompletion(now, onComplete = { goToHour(now.hour) })
-    }
-
-    /**
-     * Scrolls to a specific date. If the date is before [minDate] or after [maxDate], [WeekView]
-     * will scroll to them instead.
-     *
-     * @param date The date to show.
-     */
-    @Deprecated(
-        message = "This method will be removed in a future release. Use scrollToDate() instead.",
-        replaceWith = ReplaceWith(expression = "scrollToDate")
-    )
-    @PublicApi
-    fun goToDate(date: Calendar) {
-        scrollToDateWithCompletion(date)
-    }
-
-    private fun scrollToDateWithCompletion(date: Calendar, onComplete: () -> Unit = {}) {
-        val adjustedDate = viewState.getStartDateInAllowedRange(date)
-        if (adjustedDate.toEpochDays() == viewState.firstVisibleDate.toEpochDays()) {
-            onComplete()
-            return
-        }
-
-        gestureHandler.forceScrollFinished()
-
-        val isWaitingToBeLaidOut = ViewCompat.isLaidOut(this).not()
-        if (isWaitingToBeLaidOut) {
-            // If the view's dimensions have just changed or if it hasn't been laid out yet, we
-            // postpone the action until onDraw() is called the next time.
-            viewState.scrollToDate = adjustedDate
-            return
-        }
-
-        navigator.scrollHorizontallyTo(date = date, onFinished = onComplete)
-    }
-
-    /**
-     * Scrolls to a specific hour. If the hour is before [minHour] or after [maxHour], [WeekView]
-     * will scroll to them instead.
-     *
-     * @param hour The hour to scroll to, in 24-hour format. Supported values are 0-24.
-     */
-    @Deprecated(
-        message = "This method will be removed in a future release. Use scrollToTime() instead.",
-        replaceWith = ReplaceWith(expression = "scrollToTime")
-    )
-    @PublicApi
-    fun goToHour(hour: Int) {
         val isWaitingToBeLaidOut = ViewCompat.isLaidOut(this).not()
         if (isWaitingToBeLaidOut) {
             // If the view's dimensions have just changed or if it hasn't been laid out yet, we
@@ -1314,6 +1238,83 @@ class WeekView @JvmOverloads constructor(
         val finalOffset = min(maxOffset, verticalOffset) * (-1)
 
         navigator.scrollVerticallyTo(offset = finalOffset)
+    }
+
+    /**
+     * Scrolls to the current date.
+     */
+    @Deprecated(
+        message = "This method will be removed in a future release. Use scrollToDate() instead.",
+        replaceWith = ReplaceWith(expression = "scrollToDate")
+    )
+    @PublicApi
+    fun goToToday() {
+        scrollToDate(today())
+    }
+
+    /**
+     * Scrolls to the current date and time.
+     */
+    @Deprecated(
+        message = "This method will be removed in a future release. Use scrollToDateTime() instead.",
+        replaceWith = ReplaceWith(expression = "scrollToDateTime")
+    )
+    @PublicApi
+    fun goToCurrentTime() {
+        internalScrollToDate(
+            date = now(),
+            onComplete = { scrollToTime(hour = it.hour, minute = it.minute) }
+        )
+    }
+
+    /**
+     * Scrolls to a specific date. If the date is before [minDate] or after [maxDate], [WeekView]
+     * will scroll to them instead.
+     *
+     * @param date The date to show.
+     */
+    @Deprecated(
+        message = "This method will be removed in a future release. Use scrollToDate() instead.",
+        replaceWith = ReplaceWith(expression = "scrollToDate")
+    )
+    @PublicApi
+    fun goToDate(date: Calendar) {
+        scrollToDate(date)
+    }
+
+    private fun internalScrollToDate(date: Calendar, onComplete: (Calendar) -> Unit = {}) {
+        val adjustedDate = viewState.getStartDateInAllowedRange(date)
+        if (adjustedDate.toEpochDays() == viewState.firstVisibleDate.toEpochDays()) {
+            onComplete(adjustedDate)
+            return
+        }
+
+        gestureHandler.forceScrollFinished()
+
+        val isWaitingToBeLaidOut = ViewCompat.isLaidOut(this).not()
+        if (isWaitingToBeLaidOut) {
+            // If the view's dimensions have just changed or if it hasn't been laid out yet, we
+            // postpone the action until onDraw() is called the next time.
+            viewState.scrollToDate = adjustedDate
+            return
+        }
+
+        navigator.scrollHorizontallyTo(date = date, onFinished = { onComplete(adjustedDate) })
+    }
+
+    /**
+     * Scrolls to a specific hour. If the hour is before [minHour] or after [maxHour], [WeekView]
+     * will scroll to them instead.
+     *
+     * @param hour The hour to scroll to, in 24-hour format. Supported values are 0-24.
+     */
+    @Deprecated(
+        message = "This method will be removed in a future release. Use scrollToTime() instead.",
+        replaceWith = ReplaceWith(expression = "scrollToTime")
+    )
+    @PublicApi
+    fun goToHour(hour: Int) {
+        scrollToTime(hour = hour, minute = 0)
     }
 
     /**
