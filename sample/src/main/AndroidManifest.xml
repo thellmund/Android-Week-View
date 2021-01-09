@@ -78,6 +78,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.main.MainActivity" />
         </activity>
+        <activity
+            android:name=".ui.CustomDrawersActivity"
+            android:label="@string/week_view"
+            android:parentActivityName=".ui.main.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.main.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
