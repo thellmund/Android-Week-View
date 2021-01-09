@@ -174,6 +174,33 @@ internal val Calendar.atStartOfDay: Calendar
 internal val Calendar.atEndOfDay: Calendar
     get() = withTimeAtEndOfPeriod(24)
 
+/**
+ * Return a new [Calendar] containing the last time that precedes the current [Calendar], and falls
+ * strictly within the hourStart / hourEnd range.
+ */
+internal fun Calendar.lastTimeStrictlyWithinPeriod(hourStart: Int, hourEnd: Int): Calendar {
+    val hour = get(Calendar.HOUR_OF_DAY)
+    return when {
+        hour >= hourEnd -> withTimeAtEndOfPeriod(hourEnd)
+        hour < hourStart || isStartOfPeriod(hourStart) ->
+            withTimeAtEndOfPeriod(hourEnd).apply { add(Calendar.DATE, -1) }
+        else -> copy()
+    }
+}
+
+/**
+ * Return a new [Calendar] containing the first time that is after the current [Calendar], and falls
+ * within the hourStart / hourEnd range.
+ */
+internal fun Calendar.nextTimeWithinPeriod(hourStart: Int, hourEnd: Int): Calendar {
+    val hour = get(Calendar.HOUR_OF_DAY)
+    return when {
+        hour >= hourEnd -> withTimeAtStartOfPeriod(hourStart).apply { add(Calendar.DATE, 1) }
+        hour < hourStart -> withTimeAtStartOfPeriod(hourStart)
+        else -> copy()
+    }
+}
+
 internal val Calendar.daysFromToday: Int
     get() {
         val diff = (atStartOfDay.timeInMillis - today().timeInMillis).toFloat()
@@ -272,19 +299,17 @@ internal fun Calendar.withLocalTimeZone(): Calendar {
 internal fun Calendar.copy(): Calendar = clone() as Calendar
 
 /**
- * Checks if this date is at the start of the next day after startTime.
- * For example, if the start date was January the 1st and startDate was January the 2nd at 00:00,
+ * Checks if this date is at the start of a period.
+ * For example, if the period starts at 7AM and startDate was January the 2nd at 07:00,
  * this method would return true.
- * @param startDate The start date of the event
- * @return Whether or not this date is at the start of the day after startDate
+ * @param startHour The hour at which the period starts
+ * @return Whether or not this date is at the start of the period
  */
-internal fun Calendar.isAtStartOfNextDay(startDate: Calendar): Boolean {
-    return if (isEqual(atStartOfDay)) {
-        val endOfPreviousDay = this - Millis(1)
-        endOfPreviousDay.isSameDate(startDate)
-    } else {
-        false
-    }
+internal fun Calendar.isStartOfPeriod(startHour: Int): Boolean {
+    return get(Calendar.HOUR_OF_DAY) == startHour &&
+            get(Calendar.MINUTE) == 0 &&
+            get(Calendar.SECOND) == 0 &&
+            get(Calendar.MILLISECOND) == 0
 }
 
 internal fun defaultDateFormatter(
