@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Canvas
+import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Parcelable
@@ -1351,6 +1352,53 @@ class WeekView @JvmOverloads constructor(
         get() = viewState.typeface
         set(value) {
             viewState.typeface = value
+            invalidate()
+        }
+
+    /*
+     ***********************************************************************************************
+     *
+     *   Custom drawers
+     *
+     ***********************************************************************************************
+     */
+
+    /**
+     * Bounds available to [Drawer] to draw on the [Canvas] during rendering.
+     */
+    @PublicApi
+    interface DrawBounds {
+        val calendarGridBounds: RectF
+        val currentOrigin: PointF
+        val viewWidth: Int
+        val viewHeight: Int
+        val dayWidth: Float
+        val hourHeight: Float
+        val isLtr: Boolean
+    }
+
+    @PublicApi
+    enum class DrawBase {
+        CANVAS, BACKGROUND, GRID, EVENTS, NOWLINE, TOP;
+    }
+
+    @PublicApi
+    interface Drawer {
+        fun draw(canvas: Canvas, bounds: DrawBounds)
+        val base: DrawBase
+    }
+
+    /**
+     * Additional drawers that will be draw on the view during rendering.
+     *
+     * Each drawer will draw on top of the layer specified by [Drawer.base]. Drawers with the same
+     * base will draw in the order specified in the list.
+     */
+    @PublicApi
+    var additionalDrawers: List<Drawer>
+        get() = viewState.additionalDrawers.values.flatten()
+        set(value) {
+            viewState.additionalDrawers = value.groupBy { it.base }
             invalidate()
         }
 

@@ -136,7 +136,7 @@ private class HeaderUpdater(
 private class DateLabelsDrawer(
     private val viewState: ViewState,
     private val dateLabelLayouts: SparseArray<StaticLayout>
-) : Drawer {
+) : DrawerInternal {
 
     override fun draw(canvas: Canvas) {
         canvas.drawInBounds(viewState.headerBounds) {
@@ -240,7 +240,7 @@ private class AllDayEventsUpdater(
 internal class AllDayEventsDrawer(
     private val viewState: ViewState,
     private val allDayEventLayouts: ArrayMap<EventChip, StaticLayout>
-) : Drawer {
+) : DrawerInternal {
 
     private val eventChipDrawer = EventChipDrawer(viewState)
 
@@ -319,7 +319,7 @@ internal class AllDayEventsDrawer(
 private class HeaderDrawer(
     context: Context,
     private val viewState: ViewState
-) : Drawer {
+) : DrawerInternal {
 
     private val upArrow: Drawable by lazy {
         checkNotNull(ContextCompat.getDrawable(context, R.drawable.ic_arrow_up))

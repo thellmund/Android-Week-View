@@ -6,11 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alamkanak.weekview.sample.R
 import com.alamkanak.weekview.sample.databinding.ActivityMainBinding
-import com.alamkanak.weekview.sample.ui.CustomFontActivity
-import com.alamkanak.weekview.sample.ui.LegacyActivity
-import com.alamkanak.weekview.sample.ui.LimitedActivity
-import com.alamkanak.weekview.sample.ui.StaticActivity
-import com.alamkanak.weekview.sample.ui.WithFragmentActivity
+import com.alamkanak.weekview.sample.ui.*
 import com.alamkanak.weekview.sample.ui.async.AsyncActivity
 import com.alamkanak.weekview.sample.ui.basic.BasicActivity
 import com.alamkanak.weekview.sample.util.EqualSpacingItemDecoration
@@ -47,6 +43,7 @@ class MainActivity : AppCompatActivity() {
             Sample(R.string.title_activity_custom_font, "Custom font in WeekView\nAll-day events arranged horizontally", CustomFontActivity::class.java),
             Sample(R.string.title_activity_asynchronous, "Asynchronous events fetching from an API", AsyncActivity::class.java),
             Sample(R.string.title_activity_with_fragment, "Displays WeekView within a Fragment", WithFragmentActivity::class.java),
+            Sample(R.string.title_activity_custom_drawers, "Custom drawers on the view", CustomDrawersActivity::class.java),
             Sample(R.string.title_activity_legacy, "Implemented in Java", LegacyActivity::class.java)
         )
     }

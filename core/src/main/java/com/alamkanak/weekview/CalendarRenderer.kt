@@ -5,12 +5,13 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.text.StaticLayout
 import androidx.collection.ArrayMap
+import com.alamkanak.weekview.WeekView.DrawBase
 import java.util.Calendar
 import kotlin.math.max
 import kotlin.math.min
 
 internal class CalendarRenderer(
-    viewState: ViewState,
+    private val viewState: ViewState,
     eventChipsCacheProvider: EventChipsCacheProvider
 ) : Renderer {
 
@@ -29,9 +30,21 @@ internal class CalendarRenderer(
     override fun render(canvas: Canvas) {
         eventsUpdater.update()
 
+        drawAdditional(canvas, DrawBase.CANVAS)
         for (drawer in drawers) {
-            drawer.draw(canvas)
+            drawer.draw(canvas, viewState)
+            drawAdditional(canvas, drawer.base)
         }
+        drawAdditional(canvas, DrawBase.TOP)
+    }
+
+    private fun drawAdditional(canvas: Canvas, base: DrawBase) {
+        val drawers = viewState.additionalDrawers[base]
+        if (drawers.isNullOrEmpty()) return
+
+        val saveCount = canvas.save()
+        drawers.forEach { it.draw(canvas, viewState) }
+        canvas.restoreToCount(saveCount)
     }
 }
 
@@ -107,9 +120,10 @@ private class SingleEventsUpdater(
 
 private class DayBackgroundDrawer(
     private val viewState: ViewState
-) : Drawer {
+) : WeekView.Drawer {
+    override val base = DrawBase.BACKGROUND
 
-    override fun draw(canvas: Canvas) {
+    override fun draw(canvas: Canvas, bounds: WeekView.DrawBounds) {
         canvas.drawInBounds(viewState.calendarGridBounds) {
             viewState.dateRangeWithStartPixels.forEach { (date, startPixel) ->
                 drawDayBackground(date, startPixel, canvas)
@@ -167,9 +181,10 @@ private class DayBackgroundDrawer(
 
 private class BackgroundGridDrawer(
     private val viewState: ViewState
-) : Drawer {
+) : WeekView.Drawer {
+    override val base = DrawBase.GRID
 
-    override fun draw(canvas: Canvas) {
+    override fun draw(canvas: Canvas, bounds: WeekView.DrawBounds) {
         canvas.drawInBounds(viewState.calendarGridBounds) {
             if (viewState.showHourSeparators) {
                 drawHourLines()
@@ -201,7 +216,7 @@ private class BackgroundGridDrawer(
     private fun Canvas.drawHourLine(hour: Int) {
         val heightOfHour = (viewState.hourHeight * (hour - viewState.minHour))
         val verticalOffset = viewState.headerHeight + viewState.currentOrigin.y + heightOfHour
-        val horizontalOffset = if (viewState.isLtr) viewState.timeColumnWidth else 0f
+        val horizontalOffset = viewState.calendarGridBounds.left
 
         drawHorizontalLine(
             verticalOffset = verticalOffset,
@@ -216,11 +231,12 @@ private class SingleEventsDrawer(
     private val viewState: ViewState,
     private val chipsCacheProvider: EventChipsCacheProvider,
     private val eventLabels: ArrayMap<String, StaticLayout>
-) : Drawer {
+) : WeekView.Drawer {
+    override val base = DrawBase.EVENTS
 
     private val eventChipDrawer = EventChipDrawer(viewState)
 
-    override fun draw(canvas: Canvas) {
+    override fun draw(canvas: Canvas, bounds: WeekView.DrawBounds) {
         canvas.drawInBounds(viewState.calendarGridBounds) {
             for (date in viewState.dateRange) {
                 drawEventsForDate(date)
@@ -241,9 +257,10 @@ private class SingleEventsDrawer(
 
 private class NowLineDrawer(
     private val viewState: ViewState
-) : Drawer {
+) : WeekView.Drawer {
+    override val base = DrawBase.NOWLINE
 
-    override fun draw(canvas: Canvas) {
+    override fun draw(canvas: Canvas, bounds: WeekView.DrawBounds) {
         if (viewState.showNowLine.not()) {
             return
         }

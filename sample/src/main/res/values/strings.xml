@@ -15,4 +15,5 @@
     <string name="async_error">Could not download events from the internet</string>
     <string name="date_infos">From %1$s to %2$s</string>
     <string name="title_activity_with_fragment">With Fragment</string>
+    <string name="title_activity_custom_drawers">With custom drawers</string>
 </resources>
