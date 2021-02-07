@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.alamkanak.weekview.sample">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:name=".SampleApp"
         android:allowBackup="true"

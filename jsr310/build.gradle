@@ -1,9 +1,11 @@
-group = 'com.github.thellmund.Android-Week-View'
-version = '5.2.2'
-
-apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+
+ext {
+    PUBLISH_ARTIFACT_ID = 'jsr310'
+}
+
+apply from: "${rootProject.projectDir}/scripts/publish-mavencentral.gradle"
 
 android {
     compileSdkVersion buildConfig.compileSdk
