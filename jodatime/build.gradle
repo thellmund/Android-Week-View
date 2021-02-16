@@ -1,9 +1,11 @@
-group = 'com.github.thellmund.Android-Week-View'
-version = '5.2.2'
-
-apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+
+ext {
+    PUBLISH_ARTIFACT_ID = 'jodatime'
+}
+
+apply from: "${rootProject.projectDir}/scripts/publish-mavencentral.gradle"
 
 android {
     compileSdkVersion buildConfig.compileSdk
@@ -25,7 +27,6 @@ dependencies {
     implementation libraries.jodaTimeAndroid
 
     testImplementation libraries.jodaTime
-
     testImplementation testing.jUnit
     testImplementation testing.mockitoCore
     testImplementation testing.mockitoInline
