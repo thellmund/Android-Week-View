@@ -1,6 +1,7 @@
 package com.alamkanak.weekview.sample.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.jsr310.WeekViewPagingAdapterJsr310
@@ -84,5 +85,12 @@ private class BasicActivityWeekViewAdapter(
 
     override fun onLoadMore(startDate: LocalDate, endDate: LocalDate) {
         loadMoreHandler(yearMonthsBetween(startDate, endDate))
+    }
+
+    override fun onVerticalScrollPositionChanged(firstVisibleHour: Int, firstFullyVisibleHour: Int, lastVisibleHour: Int, lastFullyVisibleHour: Int) {
+        Log.d("BasicActivity", "First visible: $firstVisibleHour")
+        Log.d("BasicActivity", "First fully visible: $firstFullyVisibleHour")
+        Log.d("BasicActivity", "Last visible: $lastVisibleHour")
+        Log.d("BasicActivity", "Last fully visible: $lastFullyVisibleHour")
     }
 }

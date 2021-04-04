@@ -25,11 +25,6 @@ internal class Navigator(
         listener.onHorizontalScrollPositionChanged()
     }
 
-    fun scrollVerticallyBy(distance: Float) {
-        viewState.currentOrigin.y -= distance
-        listener.onVerticalScrollPositionChanged()
-    }
-
     fun scrollHorizontallyTo(date: Calendar, onFinished: () -> Unit = {}) {
         val destinationOffset = viewState.getXOriginForDate(date)
         val adjustedDestinationOffset = destinationOffset.coerceIn(
@@ -48,20 +43,21 @@ internal class Navigator(
                 listener.onHorizontalScrollPositionChanged()
             },
             onEnd = {
-                if (Build.VERSION.SDK_INT > 25) {
+                afterNavigationFinishes {
                     listener.onHorizontalScrollingFinished()
                     onFinished()
-                } else {
-                    // Delay calling the listener to avoid navigator.isNotRunning still
-                    // being false on API 25 and below.
-                    // See: https://github.com/thellmund/Android-Week-View/issues/227
-                    Handler(Looper.getMainLooper()).post {
-                        listener.onHorizontalScrollingFinished()
-                        onFinished()
-                    }
                 }
             }
         )
+    }
+
+    fun scrollVerticallyBy(distance: Float) {
+        viewState.currentOrigin.y -= distance
+        listener.onVerticalScrollPositionChanged()
+    }
+
+    fun notifyVerticalScrollingFinished() {
+        listener.onVerticalScrollingFinished()
     }
 
     fun scrollVerticallyTo(offset: Float) {
@@ -82,6 +78,11 @@ internal class Navigator(
             onUpdate = {
                 viewState.currentOrigin.y = it
                 listener.onVerticalScrollPositionChanged()
+            },
+            onEnd = {
+                afterNavigationFinishes {
+                    listener.onVerticalScrollingFinished()
+                }
             }
         )
     }
@@ -94,10 +95,24 @@ internal class Navigator(
         listener.requestInvalidation()
     }
 
+    private fun afterNavigationFinishes(block: () -> Unit) {
+        if (Build.VERSION.SDK_INT > 25) {
+            block()
+        } else {
+            // Delay calling the listener to avoid navigator.isNotRunning still
+            // being false on API 25 and below.
+            // See: https://github.com/thellmund/Android-Week-View/issues/227
+            Handler(Looper.getMainLooper()).post {
+                block()
+            }
+        }
+    }
+
     internal interface NavigationListener {
         fun onHorizontalScrollPositionChanged()
         fun onHorizontalScrollingFinished()
         fun onVerticalScrollPositionChanged()
+        fun onVerticalScrollingFinished()
         fun requestInvalidation()
     }
 }

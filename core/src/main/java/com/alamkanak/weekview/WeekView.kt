@@ -14,7 +14,6 @@ import android.view.accessibility.AccessibilityManager
 import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import java.util.Calendar
-import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -43,6 +42,10 @@ class WeekView @JvmOverloads constructor(
 
         override fun onVerticalScrollPositionChanged() {
             invalidate()
+        }
+
+        override fun onVerticalScrollingFinished() {
+            notifyVerticalScrollListener()
         }
 
         override fun requestInvalidation() {
@@ -179,13 +182,22 @@ class WeekView @JvmOverloads constructor(
         val didFirstVisibleDateChange = !currentFirstVisibleDate.isSameDate(newFirstVisibleDate)
         viewState.firstVisibleDate = newFirstVisibleDate
 
-        if (didFirstVisibleDateChange && navigator.isNotRunning) {
+        if (didFirstVisibleDateChange) {
             val newLastVisibleDate = newDateRange.last()
             adapter?.onRangeChanged(
                 firstVisibleDate = newFirstVisibleDate,
                 lastVisibleDate = newLastVisibleDate
             )
         }
+    }
+
+    private fun notifyVerticalScrollListener() {
+        adapter?.onVerticalScrollPositionChanged(
+            firstVisibleHour,
+            firstFullyVisibleHour,
+            lastVisibleHour,
+            lastFullyVisibleHour
+        )
     }
 
     /*
@@ -1334,14 +1346,28 @@ class WeekView @JvmOverloads constructor(
      */
     @PublicApi
     val firstVisibleHour: Int
-        get() = viewState.minHour + (viewState.currentOrigin.y * -1 / viewState.hourHeight).toInt()
+        get() = viewState.firstVisibleHour
 
     /**
      * Returns the first hour that is fully visible on the screen.
      */
     @PublicApi
     val firstFullyVisibleHour: Int
-        get() = viewState.minHour + ceil(viewState.currentOrigin.y * -1 / viewState.hourHeight).toInt()
+        get() = viewState.firstFullyVisibleHour
+
+    /**
+     * Returns the last hour that is visible on the screen.
+     */
+    @PublicApi
+    val lastVisibleHour: Int
+        get() = viewState.lastVisibleHour
+
+    /**
+     * Returns the last hour that is fully visible on the screen.
+     */
+    @PublicApi
+    val lastFullyVisibleHour: Int
+        get() = viewState.lastFullyVisibleHour
 
     /*
      ***********************************************************************************************
@@ -1584,6 +1610,21 @@ class WeekView @JvmOverloads constructor(
          * @param lastVisibleDate A [Calendar] representing the last visible date
          */
         open fun onRangeChanged(firstVisibleDate: Calendar, lastVisibleDate: Calendar) = Unit
+
+        /**
+         * Called whenever the vertical scroll position in [WeekView] changes.
+         *
+         * @param firstVisibleHour The first hour that's at least partially visible
+         * @param firstFullyVisibleHour The first hour that's completely visible
+         * @param lastVisibleHour The last hour that's at least partially visible
+         * @param lastFullyVisibleHour The last hour that's completely visible
+         */
+        open fun onVerticalScrollPositionChanged(
+            firstVisibleHour: Int,
+            firstFullyVisibleHour: Int,
+            lastVisibleHour: Int,
+            lastFullyVisibleHour: Int
+        ) = Unit
     }
 
     /**
