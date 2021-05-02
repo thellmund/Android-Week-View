@@ -12,6 +12,7 @@ import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 internal data class DragState(
     val eventId: Long,
@@ -36,9 +37,12 @@ internal class ViewState {
     // Calendar configuration
     var numberOfVisibleDays: Int = 3
     var restoreNumberOfVisibleDays: Boolean = true
-    var showFirstDayOfWeekFirst: Boolean = false
     var showCurrentTimeFirst: Boolean = false
     var arrangeAllDayEventsVertically: Boolean = true
+    var stickToActualWeek: Boolean = true
+
+    @Deprecated(message = "Deprecated")
+    var showFirstDayOfWeekFirst: Boolean = false
 
     // Drawing context
     private var startPixel: Float = 0f
@@ -315,6 +319,12 @@ internal class ViewState {
         return if (isLtr) (date.daysFromToday * dayWidth * -1f) else (date.daysFromToday * dayWidth)
     }
 
+    fun getDateForX(x: Float): Calendar {
+        val factor = if (isLtr) -1f else 1f
+        val daysFromToday = x / (dayWidth * factor)
+        return today() + Days(daysFromToday.roundToInt())
+    }
+
     private fun scrollToFirstDayOfWeek(navigationListener: Navigator.NavigationListener) {
         // If the week view is being drawn for the first time, consider the first day of the week.
         val today = today()
@@ -363,22 +373,11 @@ internal class ViewState {
             minDate
         } else if (candidate.isAfter(maxDate)) {
             maxDate - Days(numberOfVisibleDays - 1)
-        } else if (numberOfVisibleDays >= 7 && showFirstDayOfWeekFirst) {
+        } else if (numberOfVisibleDays >= 7 && stickToActualWeek) {
             val diff = candidate.computeDifferenceWithFirstDayOfWeek()
             candidate - Days(diff)
         } else {
             candidate
-        }
-    }
-
-    private fun Calendar.computeDifferenceWithFirstDayOfWeek(): Int {
-        val firstDayOfWeek = firstDayOfWeek
-        return if (firstDayOfWeek == Calendar.MONDAY && dayOfWeek == Calendar.SUNDAY) {
-            // Special case, because Calendar.MONDAY has constant value 2 and Calendar.SUNDAY has
-            // constant value 1. The correct result to return is 6 days, not -1 days.
-            6
-        } else {
-            dayOfWeek - firstDayOfWeek
         }
     }
 
@@ -531,12 +530,13 @@ internal class ViewState {
         updateVerticalOrigin()
     }
 
+    // TODO Better name!
     private fun updateViewState(navigationListener: Navigator.NavigationListener) {
         if (!isFirstDraw) {
             return
         }
 
-        if (showFirstDayOfWeekFirst) {
+        if (showFirstDayOfWeekFirst || stickToActualWeek) {
             scrollToFirstDayOfWeek(navigationListener)
         }
 
