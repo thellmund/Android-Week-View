@@ -22,11 +22,10 @@ internal class EventsProcessor(
     private val context: Context,
     private val eventsCache: EventsCache,
     private val eventChipsFactory: EventChipsFactory,
-    private val eventChipsCache: EventChipsCache
+    private val eventChipsCache: EventChipsCache,
+    private val backgroundExecutor: Executor = Executors.newSingleThreadExecutor(),
+    private val mainThreadExecutor: Executor = MainExecutor(),
 ) {
-
-    private val backgroundExecutor = Executors.newSingleThreadExecutor()
-    private val mainThreadExecutor = MainExecutor()
 
     /**
      * Updates the [EventsCache] with the provided [WeekViewEntity] elements and creates
