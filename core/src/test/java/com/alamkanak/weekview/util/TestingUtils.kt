@@ -18,9 +18,4 @@ internal fun createResolvedWeekViewEvent(
     data = Unit
 )
 
-internal fun ResolvedWeekViewEntity.withDifferentId(): ResolvedWeekViewEntity {
-    return when (this) {
-        is ResolvedWeekViewEntity.Event<*> -> copy(id = Random.nextLong())
-        is ResolvedWeekViewEntity.BlockedTime -> copy(id = Random.nextLong())
-    }
-}
+internal fun ResolvedWeekViewEntity.Event<*>.withDifferentId() = copy(id = Random.nextLong())

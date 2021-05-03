@@ -30,7 +30,7 @@ class GenericViewModel(
     }
 
     fun remove(id: Long) {
-        val entities = _viewState.value!!.entities.toMutableList()
+        val entities = requireNotNull(viewState.value).entities.toMutableList()
         entities.removeIf { (it as? CalendarEntity.Event)?.id == id }
         _viewState.value = GenericViewState(entities.toList())
     }
