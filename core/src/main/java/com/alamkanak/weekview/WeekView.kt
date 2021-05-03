@@ -14,6 +14,7 @@ import android.view.accessibility.AccessibilityManager
 import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import java.util.Calendar
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -40,12 +41,13 @@ class WeekView @JvmOverloads constructor(
             notifyRangeChangedListener()
         }
 
-        override fun onVerticalScrollPositionChanged() {
+        override fun onVerticalScrollPositionChanged(distance: Float) {
+            notifyVerticalScrollChanged(distance)
             invalidate()
         }
 
         override fun onVerticalScrollingFinished() {
-            notifyVerticalScrollListener()
+            notifyVerticalScrollFinished()
         }
 
         override fun requestInvalidation() {
@@ -93,7 +95,7 @@ class WeekView @JvmOverloads constructor(
             ViewCompat.setAccessibilityDelegate(this, accessibilityTouchHelper)
         }
 
-        setLayerType(LAYER_TYPE_SOFTWARE, null)
+        setLayerType(LAYER_TYPE_HARDWARE, null)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -191,13 +193,17 @@ class WeekView @JvmOverloads constructor(
         }
     }
 
-    private fun notifyVerticalScrollListener() {
-        adapter?.onVerticalScrollPositionChanged(
-            firstVisibleHour,
-            firstFullyVisibleHour,
-            lastVisibleHour,
-            lastFullyVisibleHour
-        )
+    private fun notifyVerticalScrollChanged(distance: Float) {
+        if (abs(distance) >= 1f) {
+            adapter?.onVerticalScrollPositionChanged(
+                currentOffset = verticalScrollOffset,
+                distance = distance
+            )
+        }
+    }
+
+    private fun notifyVerticalScrollFinished() {
+        adapter?.onVerticalScrollFinished(currentOffset = verticalScrollOffset)
     }
 
     /*
@@ -1369,6 +1375,18 @@ class WeekView @JvmOverloads constructor(
     val lastFullyVisibleHour: Int
         get() = viewState.lastFullyVisibleHour
 
+    /**
+     * Returns the current vertical offset (in pixels) from the top. This is 0 if WeekView is
+     * scrolled up all the way to [minHour].
+     */
+    @PublicApi
+    val verticalScrollOffset: Float
+        get() {
+            // Invert the current origin, as it feels more natural
+            // to have a positive verticalScrollOffset.
+            return viewState.currentOrigin.y * -1
+        }
+
     /*
      ***********************************************************************************************
      *
@@ -1612,19 +1630,21 @@ class WeekView @JvmOverloads constructor(
         open fun onRangeChanged(firstVisibleDate: Calendar, lastVisibleDate: Calendar) = Unit
 
         /**
-         * Called whenever the vertical scroll position in [WeekView] changes.
+         * Called whenever the vertical scroll position in [WeekView] changes. A [distance] > 0
+         * indicates that the user is scrolling down towards later hours; a [distance] < 0 that the
+         * user is scrolling up towards earlier hours.
          *
-         * @param firstVisibleHour The first hour that's at least partially visible
-         * @param firstFullyVisibleHour The first hour that's completely visible
-         * @param lastVisibleHour The last hour that's at least partially visible
-         * @param lastFullyVisibleHour The last hour that's completely visible
+         * @param currentOffset The current vertical offset.
+         * @param distance The distance that the user scrolled vertically.
          */
-        open fun onVerticalScrollPositionChanged(
-            firstVisibleHour: Int,
-            firstFullyVisibleHour: Int,
-            lastVisibleHour: Int,
-            lastFullyVisibleHour: Int
-        ) = Unit
+        open fun onVerticalScrollPositionChanged(currentOffset: Float, distance: Float) = Unit
+
+        /**
+         * Called when the vertical scrolling in [WeekView] finished.
+         *
+         * @param currentOffset The current vertical offset.
+         */
+        open fun onVerticalScrollFinished(currentOffset: Float) = Unit
     }
 
     /**

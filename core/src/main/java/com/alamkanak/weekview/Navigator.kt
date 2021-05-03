@@ -4,7 +4,9 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import java.util.Calendar
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 internal class Navigator(
     private val viewState: ViewState,
@@ -52,8 +54,30 @@ internal class Navigator(
     }
 
     fun scrollVerticallyBy(distance: Float) {
-        viewState.currentOrigin.y -= distance
-        listener.onVerticalScrollPositionChanged()
+        val currentVerticalOffset = abs(viewState.currentOrigin.y)
+        val isScrollingDown = distance > 0
+        val isScrollingUp = distance < 0
+
+        if (currentVerticalOffset == 0f && isScrollingUp) {
+            // Trying to scroll up when already at the top
+            return
+        }
+
+        val maxY = viewState.dayHeight - (viewState.headerHeight + viewState.calendarGridBounds.height())
+
+        if (currentVerticalOffset == maxY && isScrollingDown) {
+            // Trying to scroll down when already at the bottom
+            return
+        }
+
+        val maxScrollDistance = if (isScrollingUp) {
+            max(distance, currentVerticalOffset * -1f)
+        } else {
+            min(distance, maxY - currentVerticalOffset)
+        }
+
+        viewState.currentOrigin.y -= maxScrollDistance
+        listener.onVerticalScrollPositionChanged(distance = maxScrollDistance)
     }
 
     fun notifyVerticalScrollingFinished() {
@@ -75,9 +99,12 @@ internal class Navigator(
         animator.animate(
             fromValue = viewState.currentOrigin.y,
             toValue = finalOffset,
-            onUpdate = {
-                viewState.currentOrigin.y = it
-                listener.onVerticalScrollPositionChanged()
+            onUpdate = { newOffset ->
+                val currentOffset = viewState.currentOrigin.y
+                viewState.currentOrigin.y = newOffset
+
+                val distance = abs(newOffset) - abs(currentOffset)
+                listener.onVerticalScrollPositionChanged(distance = distance)
             },
             onEnd = {
                 afterNavigationFinishes {
@@ -102,16 +129,14 @@ internal class Navigator(
             // Delay calling the listener to avoid navigator.isNotRunning still
             // being false on API 25 and below.
             // See: https://github.com/thellmund/Android-Week-View/issues/227
-            Handler(Looper.getMainLooper()).post {
-                block()
-            }
+            Handler(Looper.getMainLooper()).post(block)
         }
     }
 
     internal interface NavigationListener {
         fun onHorizontalScrollPositionChanged()
         fun onHorizontalScrollingFinished()
-        fun onVerticalScrollPositionChanged()
+        fun onVerticalScrollPositionChanged(distance: Float)
         fun onVerticalScrollingFinished()
         fun requestInvalidation()
     }

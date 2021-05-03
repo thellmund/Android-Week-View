@@ -87,10 +87,11 @@ private class BasicActivityWeekViewAdapter(
         loadMoreHandler(yearMonthsBetween(startDate, endDate))
     }
 
-    override fun onVerticalScrollPositionChanged(firstVisibleHour: Int, firstFullyVisibleHour: Int, lastVisibleHour: Int, lastFullyVisibleHour: Int) {
-        Log.d("BasicActivity", "First visible: $firstVisibleHour")
-        Log.d("BasicActivity", "First fully visible: $firstFullyVisibleHour")
-        Log.d("BasicActivity", "Last visible: $lastVisibleHour")
-        Log.d("BasicActivity", "Last fully visible: $lastFullyVisibleHour")
+    override fun onVerticalScrollPositionChanged(currentOffset: Float, distance: Float) {
+        Log.d("BasicActivity", "Scrolling vertically (distance: ${distance.toInt()}, current offset ${currentOffset.toInt()})")
+    }
+
+    override fun onVerticalScrollFinished(currentOffset: Float) {
+        Log.d("BasicActivity", "Vertical scroll finished (current offset ${currentOffset.toInt()})")
     }
 }

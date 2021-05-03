@@ -41,6 +41,8 @@ class WeekViewGestureHandler internal constructor(
 
     private val gestureDetector = GestureDetector(context, this)
 
+    private var preFlingFirstVisibleDate: Calendar = today()
+
     override fun onDown(e: MotionEvent): Boolean {
         goToNearestOrigin()
         return true
@@ -114,8 +116,6 @@ class WeekViewGestureHandler internal constructor(
         return true
     }
 
-    private lateinit var preFlingFirstVisibleDate: Calendar
-
     private fun onFlingHorizontal() {
         val destinationDate = preFlingFirstVisibleDate.performFling(
             direction = flingDirection,
@@ -158,7 +158,7 @@ class WeekViewGestureHandler internal constructor(
     }
 
     fun onTouchEvent(event: MotionEvent): Boolean {
-        if (currentScrollDirection == Vertical && currentFlingDirection == None) {
+        if (scrollDirection == Vertical && scrollDirection == None) {
             scaleDetector.onTouchEvent(event)
         }
 
