@@ -1,18 +1,10 @@
 package com.alamkanak.weekview
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.WorkerThread
+import androidx.core.content.ContextCompat
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
-
-class MainExecutor : Executor {
-    private val handler = Handler(Looper.getMainLooper())
-    override fun execute(runnable: Runnable) {
-        handler.post(runnable)
-    }
-}
 
 /**
  * A helper class that processes the submitted [WeekViewEntity] objects and creates [EventChip]s
@@ -24,7 +16,7 @@ internal class EventsProcessor(
     private val eventChipsFactory: EventChipsFactory,
     private val eventChipsCache: EventChipsCache,
     private val backgroundExecutor: Executor = Executors.newSingleThreadExecutor(),
-    private val mainThreadExecutor: Executor = MainExecutor(),
+    private val mainThreadExecutor: Executor = ContextCompat.getMainExecutor(context),
 ) {
 
     /**
@@ -82,26 +74,38 @@ internal class EventsProcessor(
         eventChipsCache.addAll(eventChips)
     }
 
-    private fun performDiff(entities: List<ResolvedWeekViewEntity>): DiffResult {
+    private fun performDiff(newEntities: List<ResolvedWeekViewEntity>): DiffResult {
         val existingEventChips = eventChipsCache.allEventChips
-        val existingEvents = existingEventChips.map { it.event }
-        val existingEventIds = existingEvents.map { it.id }
-
-        val submittedEntityIds = entities.map { it.id }
-        val addedEvents = entities.filter { it.id !in existingEventIds }
-        val deletedEventIds = existingEventIds.filter { it !in submittedEntityIds }
-
-        val updatedEvents = entities.filter { it.id in existingEventIds }
-        val changed = updatedEvents.filter { it !in existingEvents }
-
-        return DiffResult(
-            itemsToAddOrUpdate = addedEvents + changed,
-            itemsToRemove = deletedEventIds,
+        val existingEntities = existingEventChips.map { it.event }
+        return DiffResult.calculateDiff(
+            existingEntities = existingEntities,
+            newEntities = newEntities,
         )
     }
 
-    private data class DiffResult(
+    data class DiffResult(
         val itemsToAddOrUpdate: List<ResolvedWeekViewEntity>,
-        val itemsToRemove: List<Long>,
-    )
+        val itemsToRemove: List<ResolvedWeekViewEntity>,
+    ) {
+        companion object {
+            fun calculateDiff(
+                existingEntities: List<ResolvedWeekViewEntity>,
+                newEntities: List<ResolvedWeekViewEntity>,
+            ): DiffResult {
+                val existingEntityIds = existingEntities.map { it.id }
+
+                val submittedEntityIds = newEntities.map { it.id }
+                val addedEvents = newEntities.filter { it.id !in existingEntityIds }
+                val deletedEvents = existingEntities.filter { it.id !in submittedEntityIds }
+
+                val updatedEvents = newEntities.filter { it.id in existingEntityIds }
+                val changed = updatedEvents.filter { it !in existingEntities }
+
+                return DiffResult(
+                    itemsToAddOrUpdate = addedEvents + changed,
+                    itemsToRemove = deletedEvents,
+                )
+            }
+        }
+    }
 }

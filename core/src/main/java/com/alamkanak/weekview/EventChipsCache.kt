@@ -70,7 +70,8 @@ internal class EventChipsCache {
         }
     }
 
-    fun removeAll(eventIds: List<Long>) {
+    fun removeAll(events: List<ResolvedWeekViewEntity>) {
+        val eventIds = events.map { it.id }
         val eventChips = allEventChips.filter { it.event.id in eventIds }
 
         for (eventChip in eventChips) {
