@@ -10,9 +10,9 @@ import android.text.TextPaint
 import android.view.View
 import java.util.Calendar
 import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 internal data class DragState(
     val eventId: Long,
@@ -319,11 +319,12 @@ internal class ViewState {
         return if (isLtr) (date.daysFromToday * dayWidth * -1f) else (date.daysFromToday * dayWidth)
     }
 
-    fun getDateForX(x: Float): Calendar {
-        val factor = if (isLtr) -1f else 1f
-        val daysFromToday = x / (dayWidth * factor)
-        return today() + Days(daysFromToday.roundToInt())
-    }
+    val currentDate: Calendar
+        get() {
+            val factor = if (isLtr) -1f else 1f
+            val daysFromToday = currentOrigin.x / (dayWidth * factor)
+            return today() + Days(floor(daysFromToday).toInt())
+        }
 
     private fun scrollToFirstDayOfWeek(navigationListener: Navigator.NavigationListener) {
         // If the week view is being drawn for the first time, consider the first day of the week.
