@@ -86,7 +86,7 @@ internal class EventsProcessor(
     private fun performDiff(entities: List<ResolvedWeekViewEntity>): DiffResult {
         val existingEventChips = eventChipsCache.allEventChips
         val existingEvents = existingEventChips.map { it.event }
-        val existingEventIds = existingEventChips.map { it.event.id }
+        val existingEventIds = existingEvents.map { it.id }
 
         val submittedEntityIds = entities.map { it.id }
         val addedEvents = entities.filter { it.id !in existingEventIds }

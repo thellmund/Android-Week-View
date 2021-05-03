@@ -36,7 +36,10 @@ class BasicActivity : AppCompatActivity() {
 
         binding.toolbarContainer.toolbar.setupWithWeekView(binding.weekView)
 
-        val adapter = BasicActivityWeekViewAdapter(loadMoreHandler = viewModel::fetchEvents)
+        val adapter = BasicActivityWeekViewAdapter(
+            onClick = { viewModel.remove(it) },
+            loadMoreHandler = viewModel::fetchEvents
+        )
         binding.weekView.adapter = adapter
 
         binding.weekView.setDateFormatter { date: LocalDate ->
@@ -52,6 +55,7 @@ class BasicActivity : AppCompatActivity() {
 }
 
 private class BasicActivityWeekViewAdapter(
+    private val onClick: (Long) -> Unit,
     private val loadMoreHandler: (List<YearMonth>) -> Unit
 ) : WeekViewPagingAdapterJsr310<CalendarEntity>() {
 
@@ -70,6 +74,7 @@ private class BasicActivityWeekViewAdapter(
     override fun onEventLongClick(data: CalendarEntity) {
         if (data is CalendarEntity.Event) {
             context.showToast("Long-clicked ${data.title}")
+            onClick(data.id)
         }
     }
 
