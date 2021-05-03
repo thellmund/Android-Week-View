@@ -42,7 +42,7 @@ internal class EventsProcessor(
         onFinished: () -> Unit
     ) {
         backgroundExecutor.execute {
-            submitItems(entities, viewState)
+            submitEntities(entities, viewState)
             mainThreadExecutor.execute {
                 onFinished()
             }
@@ -50,21 +50,59 @@ internal class EventsProcessor(
     }
 
     @WorkerThread
-    private fun submitItems(
-        items: List<WeekViewEntity>,
+    private fun submitEntities(
+        entities: List<WeekViewEntity>,
         viewState: ViewState
     ) {
-        val resolvedItems = items.map { it.resolve(context) }
-        eventsCache.update(resolvedItems)
+        val resolvedEntities = entities.map { it.resolve(context) }
+        eventsCache.update(resolvedEntities)
 
         if (eventsCache is SimpleEventsCache) {
-            val eventChips = eventChipsFactory.create(resolvedItems, viewState)
-            eventChipsCache.replaceAll(eventChips)
+            submitEntitiesToSimpleCache(resolvedEntities, viewState)
         } else {
-            val existingIds = eventChipsCache.eventIds
-            val newResolvedItems = resolvedItems.filterNot { it.id in existingIds }
-            val eventChips = eventChipsFactory.create(newResolvedItems, viewState)
-            eventChipsCache.addAll(eventChips)
+            submitEntitiesToPagedCache(resolvedEntities, viewState)
         }
     }
+
+    private fun submitEntitiesToSimpleCache(
+        entities: List<ResolvedWeekViewEntity>,
+        viewState: ViewState,
+    ) {
+        val eventChips = eventChipsFactory.create(entities, viewState)
+        eventChipsCache.replaceAll(eventChips)
+    }
+
+    private fun submitEntitiesToPagedCache(
+        entities: List<ResolvedWeekViewEntity>,
+        viewState: ViewState,
+    ) {
+        val diffResult = performDiff(entities)
+        eventChipsCache.removeAll(diffResult.itemsToRemove)
+
+        val eventChips = eventChipsFactory.create(diffResult.itemsToAddOrUpdate, viewState)
+        eventChipsCache.addAll(eventChips)
+    }
+
+    private fun performDiff(entities: List<ResolvedWeekViewEntity>): DiffResult {
+        val existingEventChips = eventChipsCache.allEventChips
+        val existingEvents = existingEventChips.map { it.event }
+        val existingEventIds = existingEventChips.map { it.event.id }
+
+        val submittedEntityIds = entities.map { it.id }
+        val addedEvents = entities.filter { it.id !in existingEventIds }
+        val deletedEventIds = existingEventIds.filter { it !in submittedEntityIds }
+
+        val updatedEvents = entities.filter { it.id in existingEventIds }
+        val changed = updatedEvents.filter { it !in existingEvents }
+
+        return DiffResult(
+            itemsToAddOrUpdate = addedEvents + changed,
+            itemsToRemove = deletedEventIds,
+        )
+    }
+
+    private data class DiffResult(
+        val itemsToAddOrUpdate: List<ResolvedWeekViewEntity>,
+        val itemsToRemove: List<Long>,
+    )
 }
